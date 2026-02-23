@@ -2,9 +2,11 @@
 export { RequestersList } from "./components/RequestersList";
 export { RequesterListFilters } from "./components/RequesterListFilters";
 export { RequesterListTable } from "./components/RequesterListTable";
+export { RequesterListSkeleton } from "./components/RequesterListSkeleton";
 
 // Components - Details
 export { RequesterDetails } from "./components/RequesterDetails";
+export { RequesterDetailsSkeleton } from "./components/RequesterDetailsSkeleton";
 export { RequesterPersonalInfo } from "./components/RequesterPersonalInfo";
 export { RequesterAdminActions } from "./components/RequesterAdminActions";
 export { RequesterWalletTab } from "./components/RequesterWalletTab";

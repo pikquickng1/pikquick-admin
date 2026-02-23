@@ -2,9 +2,11 @@
 export { RunnersList } from "./components/RunnersList";
 export { RunnerListFilters } from "./components/RunnerListFilters";
 export { RunnerListTable } from "./components/RunnerListTable";
+export { RunnerListSkeleton } from "./components/RunnerListSkeleton";
 
 // Components - Details
 export { RunnerDetails } from "./components/RunnerDetails";
+export { RunnerDetailsSkeleton } from "./components/RunnerDetailsSkeleton";
 export { RunnerPersonalInfo } from "./components/RunnerPersonalInfo";
 export { RunnerAvailabilityPerformance } from "./components/RunnerAvailabilityPerformance";
 export { RunnerAdminActions } from "./components/RunnerAdminActions";

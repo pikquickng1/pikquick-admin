@@ -6,6 +6,7 @@ import { Pagination } from "@/components/ui/pagination";
 import { useRunnerList } from "../hooks/useRunnerList";
 import { RunnerListFilters } from "./RunnerListFilters";
 import { RunnerListTable } from "./RunnerListTable";
+import { RunnerListSkeleton } from "./RunnerListSkeleton";
 import { RunnerListFilters as Filters } from "../types/runner-list.types";
 
 export function RunnersList() {
@@ -39,14 +40,7 @@ export function RunnersList() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-sm text-neutral-500">Loading runners...</p>
-        </div>
-      </div>
-    );
+    return <RunnerListSkeleton />;
   }
 
   return (
