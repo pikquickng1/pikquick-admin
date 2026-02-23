@@ -12,6 +12,7 @@ import { RunnerKYCTab } from "./RunnerKYCTab";
 import { RunnerWalletTab } from "./RunnerWalletTab";
 import { RunnerRatingTab } from "./RunnerRatingTab";
 import { RunnerTaskRecordsTab } from "./RunnerTaskRecordsTab";
+import { RunnerDetailsSkeleton } from "./RunnerDetailsSkeleton";
 import { AdjustWalletModal } from "@/features/users/requesters";
 import { useRunnerActions } from "../hooks/useRunnerActions";
 
@@ -41,14 +42,7 @@ export function RunnerDetails({ runnerId, onBack }: RunnerDetailsProps) {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-sm text-neutral-500">Loading runner details...</p>
-        </div>
-      </div>
-    );
+    return <RunnerDetailsSkeleton />;
   }
 
   if (error || !runner || !wallet) {

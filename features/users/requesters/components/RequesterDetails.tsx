@@ -10,6 +10,7 @@ import { RequesterAdminActions } from "./RequesterAdminActions";
 import { RequesterWalletTab } from "./RequesterWalletTab";
 import { RequesterTaskHistoryTab } from "./RequesterTaskHistoryTab";
 import { RequesterPaymentsTab } from "./RequesterPaymentsTab";
+import { RequesterDetailsSkeleton } from "./RequesterDetailsSkeleton";
 import { AdjustWalletModal } from "./AdjustWalletModal";
 import { useRequesterActions } from "../hooks/useRequesterActions";
 
@@ -40,14 +41,7 @@ export function RequesterDetails({ requesterId, onBack }: RequesterDetailsProps)
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-sm text-neutral-500">Loading requester details...</p>
-        </div>
-      </div>
-    );
+    return <RequesterDetailsSkeleton />;
   }
 
   if (error || !requester || !wallet) {
