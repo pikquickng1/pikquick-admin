@@ -84,7 +84,7 @@ export function RunnerTaskRecordsTab({ tasks }: RunnerTaskRecordsTabProps) {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-2xl border border-light p-6">
+      <div className="bg-white rounded border border-neutral-200 p-6">
         <div className="mb-6">
           <h2 className="text-xl font-semibold text-text-primary mb-2">Task Records</h2>
           <p className="text-sm text-text-secondary">

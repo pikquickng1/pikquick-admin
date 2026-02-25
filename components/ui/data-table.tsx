@@ -43,9 +43,9 @@ export function DataTable<T>({
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="bg-neutral-50 border-b border-neutral-200">
+            <tr className="bg-neutral-200 border-b border-neutral-200">
               {selectable && (
-                <th className="text-left p-4 w-12">
+                <th className="text-left py-6 px-4 w-12">
                   <input
                     type="checkbox"
                     checked={allSelected}
@@ -57,7 +57,7 @@ export function DataTable<T>({
               {columns.map((column) => (
                 <th
                   key={column.key}
-                  className="text-left p-4 text-sm font-medium text-text-primary"
+                  className="text-left py-6 px-4 text-sm font-medium text-text-primary"
                   style={column.width ? { width: column.width } : undefined}
                 >
                   {column.header}
@@ -70,7 +70,7 @@ export function DataTable<T>({
               <tr>
                 <td
                   colSpan={columns.length + (selectable ? 1 : 0)}
-                  className="p-8 text-center text-sm text-neutral-500"
+                  className="py-6 px-4 text-center text-sm text-neutral-500"
                 >
                   {emptyMessage}
                 </td>
@@ -86,7 +86,7 @@ export function DataTable<T>({
                     className="border-b border-neutral-200 last:border-b-0 hover:bg-neutral-50 transition-colors"
                   >
                     {selectable && (
-                      <td className="p-4">
+                      <td className="py-8 px-4">
                         <input
                           type="checkbox"
                           checked={isSelected}
@@ -96,7 +96,7 @@ export function DataTable<T>({
                       </td>
                     )}
                     {columns.map((column) => (
-                      <td key={column.key} className="p-4">
+                      <td key={column.key} className="py-6 px-4">
                         {column.render(item)}
                       </td>
                     ))}

@@ -20,7 +20,7 @@ export function RequesterWalletTab({
       <div className="bg-white rounded-2xl border border-light p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold text-text-primary">Wallet Summary</h2>
-          <Button onClick={onAdjustWallet} className="bg-primary-500 hover:bg-primary-600 text-white">
+          <Button onClick={onAdjustWallet} className="bg-primary-500 rounded py-6 px-4 hover:bg-primary-600 text-white">
             Adjust Wallet
           </Button>
         </div>
