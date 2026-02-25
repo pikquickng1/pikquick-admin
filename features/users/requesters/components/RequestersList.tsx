@@ -46,19 +46,21 @@ export function RequestersList() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-semibold text-text-primary">Requesters Management</h1>
+        <h1 className="text-2xl font-semibold text-text-primary">Requesters Management</h1>
         <p className="text-sm text-text-secondary mt-1">Manage and view all registered customers</p>
       </div>
 
-      <RequesterListTable
-        requesters={requesters}
-        selectedRows={selectedRows}
-        onRowSelect={toggleRow}
-        onSelectAll={toggleAll}
-        onViewDetails={handleViewDetails}
-        filters={filters}
-        onFiltersChange={setFilters}
-      />
+      <div className="bg-white rounded">
+        <RequesterListTable
+          requesters={requesters}
+          selectedRows={selectedRows}
+          onRowSelect={toggleRow}
+          onSelectAll={toggleAll}
+          onViewDetails={handleViewDetails}
+          filters={filters}
+          onFiltersChange={setFilters}
+        />
+      </div>
 
       <Pagination
         currentPage={pagination.currentPage}

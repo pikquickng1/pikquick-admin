@@ -74,22 +74,22 @@ export function RunnerWalletTab({ wallet, onAdjustWallet }: RunnerWalletTabProps
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="bg-blue-50 rounded-xl p-6">
-                        <p className="text-3xl font-bold text-blue-600 mb-2">
+                    <div className="bg-blue-50 rounded-[4px] border border-[#4A85E466] p-6">
+                        <p className="text-2xl font-semibold text-blue-600 mb-2">
                             {formatCurrency(wallet.balance)}
                         </p>
                         <p className="text-sm text-blue-600">Current Balance</p>
                     </div>
 
-                    <div className="bg-green-50 rounded-xl p-6">
-                        <p className="text-3xl font-bold text-green-600 mb-2">
+                    <div className="bg-green-50 rounded-[4px] border border-[#40B86966] p-6">
+                        <p className="text-2xl font-semibold text-green-600 mb-2">
                             {formatCurrency(wallet.totalEarnings)}
                         </p>
                         <p className="text-sm text-green-600">Total Earned</p>
                     </div>
 
-                    <div className="bg-orange-50 rounded-xl p-6">
-                        <p className="text-3xl font-bold text-orange-500 mb-2">
+                    <div className="bg-orange-50 rounded-[4px] border border-[#F5B54666] p-6">
+                        <p className="text-2xl font-semibold text-orange-500 mb-2">
                             {formatCurrency(wallet.pendingAmount)}
                         </p>
                         <p className="text-sm text-orange-500">Pending Payouts</p>
@@ -101,13 +101,13 @@ export function RunnerWalletTab({ wallet, onAdjustWallet }: RunnerWalletTabProps
             <div className="bg-white rounded-2xl border border-light p-6">
                 <h3 className="text-lg font-semibold text-text-primary mb-4">₦100 Daily Payment Summary</h3>
 
-                <div className="bg-green-50 rounded-lg p-4 mb-6">
+                <div className="bg-green-50 rounded-[4px] border border-[#40B86966] p-4 mb-6">
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-sm font-medium text-green-600 mb-1">Current Status</p>
                             <p className="text-sm text-green-600">Last payment: {lastPaymentDate}</p>
                         </div>
-                        <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-green-500 text-white">
+                        <span className="px-2 py-1 rounded-[24px] text-[12px] font-small bg-green-500 text-white">
                             Paid Today
                         </span>
                     </div>

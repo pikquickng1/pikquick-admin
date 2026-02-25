@@ -92,14 +92,14 @@ export function RequesterDetails({ requesterId, onBack }: RequesterDetailsProps)
                 <span className="text-sm text-text-primary">{requester.id}</span>
                 <span
                   className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${requester.status === "Active"
-                      ? "bg-green-100 text-green-700"
-                      : "bg-red-100 text-red-700"
+                    ? "bg-green-100 text-green-700"
+                    : "bg-red-100 text-red-700"
                     }`}
                 >
                   {requester.status}
                 </span>
               </div>
-              <div className="flex items-center gap-4 mt-2 text-sm text-text-primary">
+              <div className="flex items-center gap-4 mt-2 text-sm text-text-secondary">
                 <span className="flex items-center gap-1.5">
                   <Mail className="w-4 h-4" />
                   {requester.email}
@@ -110,7 +110,12 @@ export function RequesterDetails({ requesterId, onBack }: RequesterDetailsProps)
                 </span>
                 <span className="flex items-center gap-1.5">
                   <Calendar className="w-4 h-4" />
-                  Joined {new Date(requester.joinedDate).toLocaleDateString()}
+                  Joined{" "}
+                  {new Date(requester.joinedDate).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
                 </span>
               </div>
             </div>
@@ -123,33 +128,29 @@ export function RequesterDetails({ requesterId, onBack }: RequesterDetailsProps)
         <div className="flex gap-3">
           <button
             onClick={() => setActiveTab("overview")}
-            className={`px-4 py-2 text-sm font-medium rounded-[4px] ${
-              activeTab === "overview" ? "bg-primary-50 text-primary-500" : "hover:bg-neutral-50"
-            }`}
+            className={`px-4 py-2 text-sm font-medium rounded-[4px] ${activeTab === "overview" ? "bg-primary-50 text-primary-500" : "hover:bg-neutral-50"
+              }`}
           >
             Overview
           </button>
           <button
             onClick={() => setActiveTab("wallet")}
-            className={`px-4 py-2 text-sm font-medium rounded-[4px] ${
-              activeTab === "wallet" ? "bg-primary-50 text-primary-500" : "hover:bg-neutral-50"
-            }`}
+            className={`px-4 py-2 text-sm font-medium rounded-[4px] ${activeTab === "wallet" ? "bg-primary-50 text-primary-500" : "hover:bg-neutral-50"
+              }`}
           >
             Wallet
           </button>
           <button
             onClick={() => setActiveTab("taskHistory")}
-            className={`px-4 py-2 text-sm font-medium rounded-[4px] ${
-              activeTab === "taskHistory" ? "bg-primary-50 text-primary-500" : "hover:bg-neutral-50"
-            }`}
+            className={`px-4 py-2 text-sm font-medium rounded-[4px] ${activeTab === "taskHistory" ? "bg-primary-50 text-primary-500" : "hover:bg-neutral-50"
+              }`}
           >
             Task History
           </button>
           <button
             onClick={() => setActiveTab("payments")}
-            className={`px-4 py-2 text-sm font-medium rounded-[4px] ${
-              activeTab === "payments" ? "bg-primary-50 text-primary-500" : "hover:bg-neutral-50"
-            }`}
+            className={`px-4 py-2 text-sm font-medium rounded-[4px] ${activeTab === "payments" ? "bg-primary-50 text-primary-500" : "hover:bg-neutral-50"
+              }`}
           >
             Payments
           </button>
@@ -166,8 +167,8 @@ export function RequesterDetails({ requesterId, onBack }: RequesterDetailsProps)
 
           {/* Right Column - Admin Actions (takes 1 column) */}
           <div className="bg-white rounded-2xl border border-light p-6">
-            <RequesterAdminActions 
-              requesterId={requesterId} 
+            <RequesterAdminActions
+              requesterId={requesterId}
               accountStatus={requester.status}
               userName={requester.name}
               userEmail={requester.email}

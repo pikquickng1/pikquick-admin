@@ -45,7 +45,7 @@ const menuItems: MenuItem[] = [
             { label: "Transaction Overview", href: "/dashboard/finance/transactions" },
             { label: "Payout Requests", href: "/dashboard/finance/payouts" },
             { label: "Wallets Overview", href: "/dashboard/finance/wallets" },
-            { label: "Revenue Reports", href: "/dashboard/finance/reports" },
+            { label: "Revenue Reports", href: "/dashboard/finance/revenue-reports" },
         ],
     },
     {

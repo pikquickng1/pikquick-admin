@@ -109,11 +109,13 @@ export function RunnerDetails({ runnerId, onBack }: RunnerDetailsProps) {
             <div className="flex items-center gap-1 mb-3">
               <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
               <span className="text-sm font-medium text-text-primary">
-                {runner.rating}({runner.totalReviews} tasks)
+                {runner.rating}
               </span>
-              <span className="mx-2 text-gray-300">•</span>
+              <span className="text-sm font-medium text-text-secondary">
+                ({runner.totalReviews} tasks)
+              </span>
               <svg
-                className="w-5 h-5 text-green-500"
+                className="w-5 h-5 ml-2 text-green-500"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"

@@ -46,21 +46,23 @@ export function RunnersList() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-semibold text-text-primary">Runners Management</h1>
+        <h1 className="text-2xl font-semibold text-text-primary">Runners Management</h1>
         <p className="text-sm text-text-secondary mt-1">
           Manage and view all registered service providers
         </p>
       </div>
 
-      <RunnerListTable
-        runners={runners}
-        selectedRows={selectedRows}
-        onRowSelect={toggleRow}
-        onSelectAll={toggleAll}
-        onViewDetails={handleViewDetails}
-        filters={filters}
-        onFiltersChange={setFilters}
-      />
+      <div className="bg-white rounded">
+        <RunnerListTable
+          runners={runners}
+          selectedRows={selectedRows}
+          onRowSelect={toggleRow}
+          onSelectAll={toggleAll}
+          onViewDetails={handleViewDetails}
+          filters={filters}
+          onFiltersChange={setFilters}
+        />
+      </div>
 
       <Pagination
         currentPage={pagination.currentPage}

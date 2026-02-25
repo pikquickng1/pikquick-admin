@@ -102,46 +102,34 @@ export function TasksList() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-2xl border border-light p-6">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
-              <CheckSquare className="w-6 h-6 text-blue-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-text-primary">
-                {stats.activeTasks.toLocaleString()}
-              </p>
-              <p className="text-sm text-text-secondary">Active Tasks</p>
-            </div>
+        <div className="bg-white rounded border border-neutral-200 p-6">
+          <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center mb-4">
+            <CheckSquare className="w-6 h-6 text-blue-600" />
           </div>
+          <p className="text-xl font-semibold text-text-primary mb-1">
+            {stats.activeTasks.toLocaleString()}
+          </p>
+          <p className="text-sm text-text-secondary">Active Tasks</p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-light p-6">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
-              <DollarSign className="w-6 h-6 text-green-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-text-primary">
-                {formatCurrency(stats.approvedRefunds)}
-              </p>
-              <p className="text-sm text-text-secondary">Approved Refunds</p>
-            </div>
+        <div className="bg-white rounded border border-neutral-200 p-6">
+          <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center mb-4">
+            <DollarSign className="w-6 h-6 text-green-600" />
           </div>
+          <p className="text-xl font-semibold text-text-primary mb-1">
+            {formatCurrency(stats.approvedRefunds)}
+          </p>
+          <p className="text-sm text-text-secondary">Approved Refunds</p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-light p-6">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center">
-              <UserCheck className="w-6 h-6 text-purple-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-text-primary">
-                {stats.activeRunners.toLocaleString()}
-              </p>
-              <p className="text-sm text-text-secondary">Active Runners</p>
-            </div>
+        <div className="bg-white rounded border border-neutral-200 p-6">
+          <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center mb-4">
+            <UserCheck className="w-6 h-6 text-purple-600" />
           </div>
+          <p className="text-xl font-semibold text-text-primary mb-1">
+            {stats.activeRunners.toLocaleString()}
+          </p>
+          <p className="text-sm text-text-secondary">Active Runners</p>
         </div>
       </div>
 

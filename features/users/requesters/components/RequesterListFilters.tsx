@@ -19,23 +19,22 @@ export function RequesterListFilters({ filters, onFiltersChange }: RequesterList
 
   return (
     <div className="flex items-center gap-4">
-      <div className="flex-1 max-w-md relative">
+      <div className="flex-1 relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
         <Input
           type="text"
           placeholder="Search by name, email or phone number"
-          className="pl-10 h-12 border-neutral-200"
+          className="pl-10 py-7 rounded w-[480px] border-neutral-200"
           value={filters.search}
           onChange={(e) => onFiltersChange({ ...filters, search: e.target.value })}
         />
       </div>
 
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button className="h-12 px-4 border border-neutral-200 rounded-lg text-sm text-text-primary bg-white flex items-center gap-2 hover:bg-neutral-50">
-            {filters.status}
+        <DropdownMenuTrigger className="flex items-center gap-2 px-4 py-4 bg-white border border-neutral-200 rounded-[4px] text-sm text-text-primary hover:bg-gray-50">
+          {filters.status}
             <ChevronDown className="w-4 h-4" />
-          </button>
+          
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-48">
           {statusOptions.map((status) => (
@@ -51,11 +50,10 @@ export function RequesterListFilters({ filters, onFiltersChange }: RequesterList
       </DropdownMenu>
 
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button className="h-12 px-4 border border-neutral-200 rounded-lg text-sm text-text-primary bg-white flex items-center gap-2 hover:bg-neutral-50">
-            {filters.sortBy}
+<DropdownMenuTrigger className="flex items-center gap-2 px-4 py-4 bg-white border border-neutral-200 rounded-[4px] text-sm text-text-primary hover:bg-gray-50">
+              {filters.sortBy}
             <ChevronDown className="w-4 h-4" />
-          </button>
+          
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-48">
           {sortOptions.map((sort) => (

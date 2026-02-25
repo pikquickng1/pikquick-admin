@@ -12,13 +12,13 @@ export default function DashboardPage() {
         <h1 className="text-2xl font-semibold text-text-primary">Dashboard</h1>
 
         <div className="flex items-center gap-3">
-          <Button variant="outline" className="h-12 bg-white text-text-primary border-neutral-300 hover:bg-neutral-50 shadow-none">
+          <Button variant="outline" className="rounded py-6 px-4 bg-white text-text-primary border-neutral-300 hover:bg-neutral-50 shadow-none">
             View Disputes
           </Button>
-          <Button variant="outline" className="h-12 bg-white text-text-primary border-neutral-300 hover:bg-neutral-50 shadow-none">
+          <Button variant="outline" className="rounded py-6 px-4 bg-white text-text-primary border-neutral-300 hover:bg-neutral-50 shadow-none">
             Review Payouts
           </Button>
-          <Button className="h-12 bg-primary-500 hover:bg-primary-600 text-white shadow-none">
+          <Button className=" bg-primary-500 rounded py-6 px-4 hover:bg-primary-600 text-white shadow-none">
             Approve KYC
           </Button>
         </div>
