@@ -2,10 +2,22 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogOut, ChevronDown } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { LogOut } from "lucide-react";
+import { useAuth } from "@/lib/hooks/useAuth";
+
+function getInitials(fullName: string): string {
+  const parts = fullName.trim().split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+  if (parts[0]?.length) {
+    return parts[0].slice(0, 2).toUpperCase();
+  }
+  return "AD";
+}
 
 interface MenuItem {
     id: string;
@@ -82,7 +94,17 @@ const menuItems: MenuItem[] = [
 
 export function Sidebar() {
     const pathname = usePathname();
+    const router = useRouter();
+    const { user, logout } = useAuth();
     const [expandedItems, setExpandedItems] = useState<string[]>(["users", "finance"]);
+
+    const displayName = user?.full_name ?? "Admin";
+    const initials = getInitials(displayName);
+
+    const handleLogout = () => {
+        logout();
+        router.replace("/login");
+    };
 
     const toggleExpand = (id: string) => {
         setExpandedItems((prev) =>
@@ -196,17 +218,31 @@ export function Sidebar() {
 
                 {/* User Profile */}
                 <div className="mt-3 pt-3 border-t border-neutral-200">
-                    <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-neutral-50 transition-colors">
-                        <Avatar className="w-10 h-10">
-                            <AvatarImage src="/avatar-placeholder.jpg" alt="User Avatar" />
-                            <AvatarFallback className="bg-neutral-800 text-white">TN</AvatarFallback>
+                    <div className="flex items-center gap-3 px-3 py-2.5">
+                        <Avatar className="w-10 h-10 shrink-0 rounded-full bg-primary-500">
+                            <AvatarFallback className="rounded-full bg-primary-500 text-white text-sm font-medium">
+                                {initials}
+                            </AvatarFallback>
                         </Avatar>
-                        <div className="flex-1 text-left">
-                            <p className="text-[15px] font-medium text-text-primary">Text Name</p>
-                            <p className="text-xs text-text-secondary">example@email.com</p>
+                        <div className="flex-1 min-w-0 text-left">
+                            <p className="text-[15px] font-medium text-text-primary truncate">
+                                {displayName}
+                            </p>
+                            {user?.email && (
+                                <p className="text-xs text-text-secondary truncate">
+                                    {user.email}
+                                </p>
+                            )}
                         </div>
-                        <LogOut className="w-5 h-5 text-text-primary" />
-                    </button>
+                        <button
+                            type="button"
+                            onClick={handleLogout}
+                            className="shrink-0 p-1.5 rounded-lg hover:bg-neutral-100 text-text-primary transition-colors"
+                            aria-label="Log out"
+                        >
+                            <LogOut className="w-5 h-5" />
+                        </button>
+                    </div>
                 </div>
             </div>
         </aside>

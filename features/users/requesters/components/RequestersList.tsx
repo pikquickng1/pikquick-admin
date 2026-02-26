@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Pagination } from "@/components/ui/pagination";
 import { useRequesterList } from "../hooks/useRequesterList";
@@ -8,6 +8,9 @@ import { RequesterListFilters } from "./RequesterListFilters";
 import { RequesterListTable } from "./RequesterListTable";
 import { RequesterListSkeleton } from "./RequesterListSkeleton";
 import { RequesterListFilters as Filters } from "../types/requester-list.types";
+import { useDebouncedValue } from "@/lib/hooks/useDebouncedValue";
+
+const SEARCH_DEBOUNCE_MS = 300;
 
 export function RequestersList() {
   const router = useRouter();
@@ -19,7 +22,14 @@ export function RequestersList() {
     sortBy: "Most Recent",
   });
 
-  const { requesters, loading, pagination } = useRequesterList(filters, currentPage);
+  const debouncedSearch = useDebouncedValue(filters.search, SEARCH_DEBOUNCE_MS);
+  const apiFilters = { ...filters, search: debouncedSearch };
+
+  const { requesters, loading, pagination } = useRequesterList(apiFilters, currentPage);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters.search, filters.status]);
 
   const toggleRow = (id: string) => {
     setSelectedRows((prev) =>

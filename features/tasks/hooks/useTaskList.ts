@@ -1,36 +1,63 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { TaskListItem, TaskListFilters } from "../types/task.types";
-import { taskApi } from "../api/taskApi";
+import { useQuery } from "@tanstack/react-query";
+import { tasksService } from "@/lib/services";
+import { queryKeys } from "@/lib/query/keys";
+import type { TaskListFilters } from "../types/task.types";
+import { mapAdminTaskToListItem } from "../lib/mapAdminTaskToListItem";
+
+const LIMIT = 20;
+
+function statusToApi(status: string): string | undefined {
+  if (!status || status === "All Status") return undefined;
+  switch (status) {
+    case "In Progress":
+      return "task_assigned";
+    case "Completed":
+      return "completed";
+    case "Pending":
+      return "pending";
+    case "Cancelled":
+      return "cancelled";
+    default:
+      return undefined;
+  }
+}
 
 export function useTaskList(filters: TaskListFilters, page: number = 1) {
-  const [tasks, setTasks] = useState<TaskListItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [pagination, setPagination] = useState({
-    currentPage: 1,
-    totalPages: 1,
-    totalItems: 0,
-    itemsPerPage: 10,
+  const { data, isLoading, error } = useQuery({
+    queryKey: queryKeys.tasks.list({
+      page,
+      limit: LIMIT,
+      status: statusToApi(filters.status),
+      search: filters.search || undefined,
+    }),
+    queryFn: async () => {
+      const res = await tasksService.listAll({
+        page,
+        limit: LIMIT,
+        status: statusToApi(filters.status),
+        search: filters.search || undefined,
+      });
+      return res;
+    },
   });
 
-  useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        setLoading(true);
-        const response = await taskApi.getTasksList(filters, page);
-        setTasks(response.data);
-        setPagination(response.pagination);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to fetch tasks");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const tasks = (data?.data ?? []).map(mapAdminTaskToListItem);
+  const total = data?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / LIMIT));
 
-    fetchTasks();
-  }, [filters.search, filters.status, filters.sortBy, page]);
+  const pagination = {
+    currentPage: data?.page ?? page,
+    totalPages,
+    totalItems: total,
+    itemsPerPage: data?.limit ?? LIMIT,
+  };
 
-  return { tasks, loading, error, pagination };
+  return {
+    tasks,
+    loading: isLoading,
+    error: error instanceof Error ? error.message : null,
+    pagination,
+  };
 }

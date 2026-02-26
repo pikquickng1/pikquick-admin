@@ -1,8 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Runner, RunnerWallet, RunnerTransaction, RunnerTaskHistory } from "../types/runner.types";
+import {
+  Runner,
+  RunnerWallet,
+  RunnerTransaction,
+  RunnerTaskHistory,
+} from "../types/runner.types";
 import { runnerApi } from "../api/runnerApi";
+import { usersService } from "@/lib/services";
+import { mapAdminUserToRunner } from "../lib/mapAdminUserToRunnerDetail";
 
 export function useRunner(id: string) {
   const [runner, setRunner] = useState<Runner | null>(null);
@@ -13,16 +20,19 @@ export function useRunner(id: string) {
   const [error, setError] = useState<string | null>(null);
 
   const fetchRunnerData = async () => {
+    if (!id) return;
     try {
       setLoading(true);
-      const [runnerData, walletData, transactionsData, taskHistoryData] = await Promise.all([
-        runnerApi.getRunnerById(id),
-        runnerApi.getRunnerWallet(id),
-        runnerApi.getRunnerTransactions(id),
-        runnerApi.getRunnerTaskHistory(id),
-      ]);
+      setError(null);
+      const [userRes, walletData, transactionsData, taskHistoryData] =
+        await Promise.all([
+          usersService.getById(id).then(mapAdminUserToRunner),
+          runnerApi.getRunnerWallet(id),
+          runnerApi.getRunnerTransactions(id),
+          runnerApi.getRunnerTaskHistory(id),
+        ]);
 
-      setRunner(runnerData);
+      setRunner(userRes);
       setWallet(walletData);
       setTransactions(transactionsData);
       setTaskHistory(taskHistoryData);
@@ -34,10 +44,16 @@ export function useRunner(id: string) {
   };
 
   useEffect(() => {
-    if (id) {
-      fetchRunnerData();
-    }
+    fetchRunnerData();
   }, [id]);
 
-  return { runner, wallet, transactions, taskHistory, loading, error, refetch: fetchRunnerData };
+  return {
+    runner,
+    wallet,
+    transactions,
+    taskHistory,
+    loading,
+    error,
+    refetch: fetchRunnerData,
+  };
 }
