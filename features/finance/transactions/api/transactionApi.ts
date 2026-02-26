@@ -87,10 +87,8 @@ export const transactionApi = {
     
     await new Promise((resolve) => setTimeout(resolve, 500));
 
-    // Mock PDF generation
     console.log("Downloading receipt for transaction:", transactionId);
 
-    // Return empty blob for now
     return new Blob(["Mock receipt content"], { type: "application/pdf" });
   },
 
@@ -103,7 +101,6 @@ export const transactionApi = {
 
     console.log("Exporting transactions with filters:", filters, "Format:", format);
 
-    // Return empty blob for now
     const mimeType = format === "csv" ? "text/csv" : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     return new Blob(["Mock export content"], { type: mimeType });
   },

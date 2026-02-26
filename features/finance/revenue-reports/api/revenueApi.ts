@@ -2,7 +2,6 @@ import { RevenueData } from "../types/revenue.types";
 
 export const revenueApi = {
   getRevenueData: async (): Promise<RevenueData> => {
-    // TODO: Replace with actual API call
     await new Promise((resolve) => setTimeout(resolve, 300));
 
     return {
