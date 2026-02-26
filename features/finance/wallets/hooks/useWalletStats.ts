@@ -1,35 +1,22 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { WalletStats } from "../types/wallet.types";
-import { walletApi } from "../api/walletApi";
+import { useQuery } from "@tanstack/react-query";
+import { walletsService } from "@/lib/services";
+import { queryKeys } from "@/lib/query/keys";
+import type { WalletStats } from "../types/wallet.types";
 
 export function useWalletStats() {
-  const [stats, setStats] = useState<WalletStats>({
-    totalRequesterBalance: 0,
-    totalRunnerBalance: 0,
-    totalWallets: 0,
+  const { data, isLoading } = useQuery({
+    queryKey: queryKeys.wallets.list({ page: 1, limit: 1 }),
+    queryFn: () => walletsService.list({ page: 1, limit: 1 }),
   });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  const fetchStats = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await walletApi.getWalletStats();
-      setStats(data);
-    } catch (err) {
-      console.error("Failed to fetch wallet stats:", err);
-      setError("Failed to load wallet statistics");
-    } finally {
-      setLoading(false);
-    }
+  const summary = data?.summary;
+  const stats: WalletStats = {
+    totalRequesterBalance: summary?.total_balance_ngn ?? summary?.total_balance ?? 0,
+    totalRunnerBalance: summary?.total_balance_ngn ?? summary?.total_balance ?? 0,
+    totalWallets: summary?.total_wallets ?? 0,
   };
 
-  useEffect(() => {
-    fetchStats();
-  }, []);
-
-  return { stats, loading, error, refetch: fetchStats };
+  return { stats, loading: isLoading, error: null, refetch: () => {} };
 }

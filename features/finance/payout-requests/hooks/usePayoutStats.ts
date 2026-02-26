@@ -1,35 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { PayoutStats } from "../types/payout.types";
-import { payoutApi } from "../api/payoutApi";
+import { useQuery } from "@tanstack/react-query";
+import { dashboardService } from "@/lib/services";
+import { queryKeys } from "@/lib/query/keys";
+import type { PayoutStats } from "../types/payout.types";
 
 export function usePayoutStats() {
-  const [stats, setStats] = useState<PayoutStats>({
-    pendingRequests: 0,
+  const { data: dashboardStats } = useQuery({
+    queryKey: queryKeys.dashboard.stats(),
+    queryFn: () => dashboardService.getStats(),
+  });
+
+  const stats: PayoutStats = {
+    pendingRequests: dashboardStats?.withdrawals?.pending_count ?? 0,
     approvedThisWeek: 0,
     totalPendingAmount: 0,
-  });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchStats = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await payoutApi.getPayoutStats();
-      setStats(data);
-    } catch (err) {
-      console.error("Failed to fetch payout stats:", err);
-      setError("Failed to load payout statistics");
-    } finally {
-      setLoading(false);
-    }
   };
 
-  useEffect(() => {
-    fetchStats();
-  }, []);
-
-  return { stats, loading, error, refetch: fetchStats };
+  return { stats, loading: false, error: null, refetch: () => {} };
 }

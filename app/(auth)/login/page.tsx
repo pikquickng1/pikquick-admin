@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,14 +12,26 @@ import { useAuth } from "@/lib/hooks/useAuth";
 import { authService } from "@/lib/services";
 import { isAxiosError } from "axios";
 
-export default function LoginPage() {
+const DEFAULT_REDIRECT = "/dashboard";
+
+function LoginForm() {
   const router = useRouter();
-  const { login } = useAuth();
+  const searchParams = useSearchParams();
+  const { login, isAuthenticated, isAdmin } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Redirect if already logged in as admin
+  useEffect(() => {
+    if (isAuthenticated && isAdmin) {
+      const redirect = searchParams.get("redirect") ?? DEFAULT_REDIRECT;
+      const path = redirect.startsWith("/") ? redirect : DEFAULT_REDIRECT;
+      router.replace(path);
+    }
+  }, [isAuthenticated, isAdmin, router, searchParams]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -35,7 +47,9 @@ export default function LoginPage() {
         return;
       }
       login(access_token, refresh_token, user);
-      router.push("/dashboard");
+      const redirect = searchParams.get("redirect") ?? DEFAULT_REDIRECT;
+      const path = redirect.startsWith("/") ? redirect : DEFAULT_REDIRECT;
+      router.replace(path);
     } catch (err) {
       const message = isAxiosError(err)
         ? (err.response?.data as { message?: string })?.message ?? err.message
@@ -140,5 +154,19 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-white">
+          <div className="h-10 w-10 animate-spin rounded-full border-2 border-primary-500 border-t-transparent" />
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }

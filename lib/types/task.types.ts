@@ -11,6 +11,7 @@ export interface AdminTaskListParams {
   end_date?: string;
   page?: number;
   limit?: number;
+  search?: string;
 }
 
 // Same shape as TaskResponseDto; extend with full fields from BE as needed

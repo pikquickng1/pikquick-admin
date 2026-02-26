@@ -60,7 +60,7 @@ export function PayoutListFilters({ filters, onFiltersChange }: PayoutListFilter
             {statusOptions.map((option) => (
               <DropdownMenuItem
                 key={option}
-                onClick={() => onFiltersChange({ ...filters, status: option })}
+                onSelect={() => onFiltersChange({ ...filters, status: option })}
               >
                 {option}
               </DropdownMenuItem>

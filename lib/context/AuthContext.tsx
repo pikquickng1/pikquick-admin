@@ -4,6 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -102,7 +103,15 @@ function clearStoredAuth() {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<AuthState>(loadStoredAuth);
+  const [state, setState] = useState<AuthState>(initialState);
+
+  useEffect(() => {
+    const stored = loadStoredAuth();
+    if (stored.isAuthenticated && stored.accessToken && stored.user) {
+      setState(stored);
+      setTokenGetter(() => stored.accessToken);
+    }
+  }, []);
 
   const login = useCallback(
     (accessToken: string, refreshToken: string, user: AuthUser) => {

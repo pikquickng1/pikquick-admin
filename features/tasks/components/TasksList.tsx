@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import { CheckSquare, DollarSign, UserCheck, ChevronDown } from "lucide-react";
 import { Pagination } from "@/components/ui/pagination";
 import {
@@ -15,7 +16,10 @@ import { TaskListFilters } from "./TaskListFilters";
 import { TaskListTable } from "./TaskListTable";
 import { TaskListSkeleton } from "./TaskListSkeleton";
 import { TaskListFilters as Filters } from "../types/task.types";
-import { taskApi } from "../api/taskApi";
+import { dashboardService } from "@/lib/services";
+import { queryKeys } from "@/lib/query/keys";
+import { formatNgn } from "@/lib/utils/money";
+import { useDebouncedValue } from "@/lib/hooks/useDebouncedValue";
 
 export function TasksList() {
   const router = useRouter();
@@ -27,21 +31,26 @@ export function TasksList() {
     status: "All Status",
     sortBy: "Highest Rating",
   });
-  const [stats, setStats] = useState({
-    activeTasks: 0,
-    approvedRefunds: 0,
-    activeRunners: 0,
+
+  const debouncedSearch = useDebouncedValue(filters.search, 300);
+  const apiFilters = { ...filters, search: debouncedSearch };
+
+  const { data: dashboardStats } = useQuery({
+    queryKey: queryKeys.dashboard.stats(),
+    queryFn: () => dashboardService.getStats(),
   });
 
-  const { tasks, loading, pagination } = useTaskList(filters, currentPage);
+  const { tasks, loading, pagination } = useTaskList(apiFilters, currentPage);
 
   useEffect(() => {
-    const fetchStats = async () => {
-      const data = await taskApi.getTaskStats();
-      setStats(data);
-    };
-    fetchStats();
-  }, []);
+    setCurrentPage(1);
+  }, [filters.search, filters.status]);
+
+  const stats = {
+    activeTasks: dashboardStats?.tasks?.total ?? 0,
+    approvedRefunds: 0,
+    activeRunners: dashboardStats?.users?.by_role?.runner ?? 0,
+  };
 
   const toggleRow = (id: string) => {
     setSelectedRows((prev) =>
@@ -62,11 +71,7 @@ export function TasksList() {
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN",
-      minimumFractionDigits: 0,
-    }).format(amount);
+    return amount === 0 ? "—" : formatNgn(amount);
   };
 
   const dateFilterOptions = ["Today", "This Week", "This Month", "All Time"];

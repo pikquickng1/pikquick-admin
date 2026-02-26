@@ -39,7 +39,7 @@ export function RunnerListFilters({ filters, onFiltersChange }: RunnerListFilter
           {statusOptions.map((option) => (
             <DropdownMenuItem
               key={option}
-              onClick={() => onFiltersChange({ ...filters, status: option })}
+              onSelect={() => onFiltersChange({ ...filters, status: option })}
             >
               {option}
             </DropdownMenuItem>
@@ -56,7 +56,7 @@ export function RunnerListFilters({ filters, onFiltersChange }: RunnerListFilter
           {sortOptions.map((option) => (
             <DropdownMenuItem
               key={option}
-              onClick={() => onFiltersChange({ ...filters, sortBy: option })}
+              onSelect={() => onFiltersChange({ ...filters, sortBy: option })}
             >
               {option}
             </DropdownMenuItem>

@@ -1,9 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Requester, RequesterWallet, RequesterTransaction, RequesterTaskHistory } from "../types/requester.types";
+import {
+  Requester,
+  RequesterWallet,
+  RequesterTransaction,
+  RequesterTaskHistory,
+} from "../types/requester.types";
 import { RequesterPayment } from "../types/payment.types";
 import { requesterApi } from "../api/requesterApi";
+import { usersService } from "@/lib/services";
+import { mapAdminUserToRequester } from "../lib/mapAdminUserToRequesterDetail";
 
 export function useRequester(id: string) {
   const [requester, setRequester] = useState<Requester | null>(null);
@@ -15,17 +22,20 @@ export function useRequester(id: string) {
   const [error, setError] = useState<string | null>(null);
 
   const fetchRequesterData = async () => {
+    if (!id) return;
     try {
       setLoading(true);
-      const [requesterData, walletData, transactionsData, taskHistoryData, paymentsData] = await Promise.all([
-        requesterApi.getRequesterById(id),
-        requesterApi.getRequesterWallet(id),
-        requesterApi.getRequesterTransactions(id),
-        requesterApi.getRequesterTaskHistory(id),
-        requesterApi.getRequesterPayments(id),
-      ]);
+      setError(null);
+      const [userRes, walletData, transactionsData, taskHistoryData, paymentsData] =
+        await Promise.all([
+          usersService.getById(id).then(mapAdminUserToRequester),
+          requesterApi.getRequesterWallet(id),
+          requesterApi.getRequesterTransactions(id),
+          requesterApi.getRequesterTaskHistory(id),
+          requesterApi.getRequesterPayments(id),
+        ]);
 
-      setRequester(requesterData);
+      setRequester(userRes);
       setWallet(walletData);
       setTransactions(transactionsData);
       setTaskHistory(taskHistoryData);
@@ -38,10 +48,17 @@ export function useRequester(id: string) {
   };
 
   useEffect(() => {
-    if (id) {
-      fetchRequesterData();
-    }
+    fetchRequesterData();
   }, [id]);
 
-  return { requester, wallet, transactions, taskHistory, payments, loading, error, refetch: fetchRequesterData };
+  return {
+    requester,
+    wallet,
+    transactions,
+    taskHistory,
+    payments,
+    loading,
+    error,
+    refetch: fetchRequesterData,
+  };
 }
