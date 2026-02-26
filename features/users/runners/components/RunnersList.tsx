@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Pagination } from "@/components/ui/pagination";
 import { useRunnerList } from "../hooks/useRunnerList";
@@ -8,6 +8,9 @@ import { RunnerListFilters } from "./RunnerListFilters";
 import { RunnerListTable } from "./RunnerListTable";
 import { RunnerListSkeleton } from "./RunnerListSkeleton";
 import { RunnerListFilters as Filters } from "../types/runner-list.types";
+import { useDebouncedValue } from "@/lib/hooks/useDebouncedValue";
+
+const SEARCH_DEBOUNCE_MS = 300;
 
 export function RunnersList() {
   const router = useRouter();
@@ -19,7 +22,14 @@ export function RunnersList() {
     sortBy: "Highest Rating",
   });
 
-  const { runners, loading, pagination } = useRunnerList(filters, currentPage);
+  const debouncedSearch = useDebouncedValue(filters.search, SEARCH_DEBOUNCE_MS);
+  const apiFilters = { ...filters, search: debouncedSearch };
+
+  const { runners, loading, pagination } = useRunnerList(apiFilters, currentPage);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters.search, filters.status]);
 
   const toggleRow = (id: string) => {
     setSelectedRows((prev) =>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Clock, CheckCircle, DollarSign, ChevronDown, Download } from "lucide-react";
 import { Pagination } from "@/components/ui/pagination";
 import {
@@ -30,6 +30,10 @@ export function PayoutRequestsList() {
 
   const { payouts, loading, pagination, refetch } = usePayoutList(filters, currentPage);
   const { stats } = usePayoutStats();
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters.search, filters.status]);
 
   const toggleRow = (id: string) => {
     setSelectedRows((prev) =>

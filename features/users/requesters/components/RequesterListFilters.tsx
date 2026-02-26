@@ -40,7 +40,7 @@ export function RequesterListFilters({ filters, onFiltersChange }: RequesterList
           {statusOptions.map((status) => (
             <DropdownMenuItem
               key={status}
-              onClick={() => onFiltersChange({ ...filters, status })}
+              onSelect={() => onFiltersChange({ ...filters, status })}
               className={filters.status === status ? "bg-primary-50 text-primary-500 font-medium" : ""}
             >
               {status}
@@ -59,7 +59,7 @@ export function RequesterListFilters({ filters, onFiltersChange }: RequesterList
           {sortOptions.map((sort) => (
             <DropdownMenuItem
               key={sort}
-              onClick={() => onFiltersChange({ ...filters, sortBy: sort })}
+              onSelect={() => onFiltersChange({ ...filters, sortBy: sort })}
               className={filters.sortBy === sort ? "bg-primary-50 text-primary-500 font-medium" : ""}
             >
               {sort}

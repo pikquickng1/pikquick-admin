@@ -1,39 +1,43 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Wallet, WalletListFilters } from "../types/wallet.types";
-import { walletApi } from "../api/walletApi";
+import { useQuery } from "@tanstack/react-query";
+import { walletsService } from "@/lib/services";
+import { queryKeys } from "@/lib/query/keys";
+import type { WalletListFilters } from "../types/wallet.types";
+import { mapAdminWalletToWallet } from "../lib/mapAdminWalletToWallet";
+
+const LIMIT = 20;
 
 export function useWalletList(
-  userType: "requester" | "runner",
+  _userType: "requester" | "runner",
   filters: WalletListFilters,
   page: number
 ) {
-  const [wallets, setWallets] = useState<Wallet[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [pagination, setPagination] = useState({
-    currentPage: 1,
-    totalPages: 1,
-    totalItems: 0,
-    itemsPerPage: 8,
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: queryKeys.wallets.list({ page, limit: LIMIT }),
+    queryFn: async () => {
+      const res = await walletsService.list({ page, limit: LIMIT });
+      return res;
+    },
   });
 
-  const fetchWallets = async () => {
-    try {
-      setLoading(true);
-      const response = await walletApi.getWalletsList(userType, filters, page);
-      setWallets(response.data);
-      setPagination(response.pagination);
-    } catch (error) {
-      console.error("Failed to fetch wallets:", error);
-    } finally {
-      setLoading(false);
-    }
+  const wallets = (data?.data ?? []).map((w) =>
+    mapAdminWalletToWallet(w, _userType)
+  );
+  const total = data?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / LIMIT));
+
+  const pagination = {
+    currentPage: data?.page ?? page,
+    totalPages,
+    totalItems: total,
+    itemsPerPage: data?.limit ?? LIMIT,
   };
 
-  useEffect(() => {
-    fetchWallets();
-  }, [userType, filters, page]);
-
-  return { wallets, loading, pagination, refetch: fetchWallets };
+  return {
+    wallets,
+    loading: isLoading,
+    pagination,
+    refetch: () => refetch(),
+  };
 }
