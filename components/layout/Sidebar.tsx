@@ -64,7 +64,12 @@ const menuItems: MenuItem[] = [
         id: "referral",
         label: "Referral Management",
         icon: "/sidebar-icons/ref.svg",
-        href: "/dashboard/referral",
+        children: [
+            { label: "Referral Overview", href: "/dashboard/referral" },
+            { label: "Referral Records", href: "/dashboard/referral/records" },
+            { label: "Elite Rewards Review", href: "/dashboard/referral/elite-rewards" },
+            { label: "Referral Settings", href: "/dashboard/referral/settings" },
+        ],
     },
     {
         id: "kyc",
