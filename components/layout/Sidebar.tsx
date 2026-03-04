@@ -95,6 +95,12 @@ const menuItems: MenuItem[] = [
         icon: "/sidebar-icons/analytics.svg",
         href: "/dashboard/analytics",
     },
+    {
+        id: "settings",
+        label: "Settings & Roles",
+        icon: "/sidebar-icons/settings.svg",
+        href: "/dashboard/settings",
+    },
 ];
 
 export function Sidebar() {
@@ -213,7 +219,7 @@ export function Sidebar() {
                     <span className="text-[15px] font-normal">Settings</span>
                 </Link>
                 <Link
-                    href="/dashboard/activity"
+                    href="/dashboard/activity-log"
                     className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-neutral-50 transition-colors"
                     style={{ color: '#070D17' }}
                 >
