@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Search, LogOut, User } from "lucide-react";
 import {
@@ -12,6 +13,8 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { cn } from "@/lib/utils";
+import { NotificationsPanel } from "@/features/notifications";
+import { useNotifications } from "@/features/notifications/hooks/useNotifications";
 
 function getInitials(fullName: string): string {
   const parts = fullName.trim().split(/\s+/).filter(Boolean);
@@ -27,6 +30,8 @@ function getInitials(fullName: string): string {
 export function Header() {
   const router = useRouter();
   const { user, logout } = useAuth();
+  const { unreadCount } = useNotifications();
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -56,6 +61,7 @@ export function Header() {
         {/* Notifications */}
         <button
           type="button"
+          onClick={() => setIsNotificationsOpen(true)}
           className="relative flex items-center justify-center hover:opacity-80 transition-opacity"
           aria-label="Notifications"
         >
@@ -66,9 +72,11 @@ export function Header() {
           >
             <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />
           </svg>
-          <span className="absolute top-0 right-0 w-3 h-3 bg-[#FF5C5C] text-white text-xs font-medium rounded-full flex items-center justify-center">
-            4
-          </span>
+          {unreadCount > 0 && (
+            <span className="absolute top-0 right-0 min-w-[18px] h-[18px] bg-[#FF5C5C] text-white text-xs font-medium rounded-full flex items-center justify-center px-1">
+              {unreadCount}
+            </span>
+          )}
         </button>
 
         {/* User profile dropdown */}
@@ -100,7 +108,10 @@ export function Header() {
                 </p>
               )}
             </div>
-            <DropdownMenuItem className="gap-2 cursor-pointer">
+            <DropdownMenuItem 
+              className="gap-2 cursor-pointer"
+              onSelect={() => router.push("/dashboard/profile")}
+            >
               <User className="h-4 w-4" />
               Profile
             </DropdownMenuItem>
@@ -114,6 +125,12 @@ export function Header() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      {/* Notifications Panel */}
+      <NotificationsPanel
+        isOpen={isNotificationsOpen}
+        onClose={() => setIsNotificationsOpen(false)}
+      />
     </header>
   );
 }
