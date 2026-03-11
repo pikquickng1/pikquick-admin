@@ -64,7 +64,12 @@ const menuItems: MenuItem[] = [
         id: "referral",
         label: "Referral Management",
         icon: "/sidebar-icons/ref.svg",
-        href: "/dashboard/referral",
+        children: [
+            { label: "Referral Overview", href: "/dashboard/referral" },
+            { label: "Referral Records", href: "/dashboard/referral/records" },
+            { label: "Elite Rewards Review", href: "/dashboard/referral/elite-rewards" },
+            { label: "Referral Settings", href: "/dashboard/referral/settings" },
+        ],
     },
     {
         id: "kyc",
@@ -89,6 +94,12 @@ const menuItems: MenuItem[] = [
         label: "Analytics & Insights",
         icon: "/sidebar-icons/analytics.svg",
         href: "/dashboard/analytics",
+    },
+    {
+        id: "settings",
+        label: "Settings & Roles",
+        icon: "/sidebar-icons/settings.svg",
+        href: "/dashboard/settings",
     },
 ];
 
@@ -208,7 +219,7 @@ export function Sidebar() {
                     <span className="text-[15px] font-normal">Settings</span>
                 </Link>
                 <Link
-                    href="/dashboard/activity"
+                    href="/dashboard/activity-log"
                     className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-neutral-50 transition-colors"
                     style={{ color: '#070D17' }}
                 >
