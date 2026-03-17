@@ -12,6 +12,7 @@ export interface AdminTaskListParams {
   page?: number;
   limit?: number;
   search?: string;
+  scope?: string;
 }
 
 // Same shape as TaskResponseDto; extend with full fields from BE as needed

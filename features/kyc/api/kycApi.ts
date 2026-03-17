@@ -1,4 +1,5 @@
 import { KYCVerification, KYCListFilters, KYCListResponse, KYCStats } from "../types/kyc.types";
+import { kycService } from "@/lib/services/kyc.service";
 
 export const kycApi = {
   getKYCList: async (
@@ -6,70 +7,50 @@ export const kycApi = {
     filters: KYCListFilters,
     page: number = 1
   ): Promise<KYCListResponse> => {
-    await new Promise((resolve) => setTimeout(resolve, 300));
-
-    const mockData: KYCVerification[] = Array.from({ length: 8 }, (_, i) => ({
-      id: `KYC${String(i + 1).padStart(3, "0")}`,
-      runnerName: "Adewale Johnson",
-      idType: "NIN",
-      email: "john.okafor@email.com",
-      phone: "+234 801 234 5678",
-      dateSubmitted: "2025-10-25T00:00:00Z",
-      status: status,
-      ...(status === "resubmission" && {
-        rejectionReason: "Blurry ID photo",
-      }),
-    }));
-
-    return {
-      data: mockData,
-      pagination: {
-        currentPage: page,
-        totalPages: 13,
-        totalItems: 100,
-        itemsPerPage: 8,
-      },
-    };
+    try {
+      const response = await kycService.getList({ ...filters, status, page });
+      return response.data;
+    } catch (error) {
+      console.error("Failed to fetch KYC list:", error);
+      throw error;
+    }
   },
 
   getKYCById: async (id: string, status?: "pending" | "resubmission"): Promise<KYCVerification> => {
-    await new Promise((resolve) => setTimeout(resolve, 300));
-
-    return {
-      id,
-      runnerName: "Adewale Johnson",
-      idType: "NIN",
-      email: "john.okafor@email.com",
-      phone: "+234 801 234 5678",
-      dateSubmitted: "2025-10-25T00:00:00Z",
-      status: status || "pending",
-      documents: {
-        idDocument: "/documents/id.pdf",
-        proofOfAddress: "/documents/address.pdf",
-        selfie: "/documents/selfie.jpg",
-      },
-      ...(status === "resubmission" && {
-        rejectionReason: "Blurry ID photo",
-      }),
-    };
+    try {
+      const response = await kycService.getById(id);
+      return response.data;
+    } catch (error) {
+      console.error("Failed to fetch KYC details:", error);
+      throw error;
+    }
   },
 
   getKYCStats: async (): Promise<KYCStats> => {
-    await new Promise((resolve) => setTimeout(resolve, 300));
-
-    return {
-      pendingVerifications: 5,
-      resubmissionRequests: 2,
-    };
+    try {
+      const response = await kycService.getStats();
+      return response.data;
+    } catch (error) {
+      console.error("Failed to fetch KYC stats:", error);
+      throw error;
+    }
   },
 
   approveKYC: async (id: string): Promise<void> => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    console.log("Approving KYC:", id);
+    try {
+      await kycService.approve(id, "");
+    } catch (error) {
+      console.error("Failed to approve KYC:", error);
+      throw error;
+    }
   },
 
   rejectKYC: async (id: string, reason: string): Promise<void> => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    console.log("Rejecting KYC:", id, "Reason:", reason);
+    try {
+      await kycService.reject(id, reason, "");
+    } catch (error) {
+      console.error("Failed to reject KYC:", error);
+      throw error;
+    }
   },
 };

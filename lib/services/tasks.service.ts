@@ -8,7 +8,7 @@ import type {
 
 export const tasksService = {
   listAll(params?: AdminTaskListParams): Promise<AdminTasksListResponse> {
-    return apiClient.get("/tasks/admin/all", { params }).then((r) => r.data);
+    return apiClient.get("/tasks", { params: { ...params, scope: "all" } }).then((r) => r.data);
   },
 
   getAllReportedIssues(): Promise<ReportedIssue[]> {

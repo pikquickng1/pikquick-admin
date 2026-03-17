@@ -17,3 +17,4 @@ export { feedbackService } from "./feedback.service";
 export { runnerDocumentsService } from "./runner-documents.service";
 export { documentTypesService } from "./document-types.service";
 export { taskCategoriesService } from "./task-categories.service";
+export { referralService } from "./referral.service";
