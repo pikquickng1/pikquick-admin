@@ -6,11 +6,29 @@ export const queryKeys = {
   dashboard: {
     all: ["dashboard"] as const,
     stats: () => [...queryKeys.dashboard.all, "stats"] as const,
+    trends: () => [...queryKeys.dashboard.all, "trends"] as const,
   },
   users: {
     all: ["admin", "users"] as const,
     list: (params?: unknown) => [...queryKeys.users.all, "list", params] as const,
     detail: (id: string) => [...queryKeys.users.all, "detail", id] as const,
+  },
+  runners: {
+    all: ["admin", "runners"] as const,
+    list: (params?: unknown) => [...queryKeys.runners.all, "list", params] as const,
+    detail: (id: string) => [...queryKeys.runners.all, "detail", id] as const,
+    wallet: (id: string) => [...queryKeys.runners.all, "wallet", id] as const,
+    tasks: (id: string) => [...queryKeys.runners.all, "tasks", id] as const,
+    subscriptionStats: () =>
+      [...queryKeys.runners.all, "subscription-stats"] as const,
+  },
+  requesters: {
+    all: ["admin", "requesters"] as const,
+    list: (params?: unknown) => [...queryKeys.requesters.all, "list", params] as const,
+    detail: (id: string) => [...queryKeys.requesters.all, "detail", id] as const,
+    wallet: (id: string) => [...queryKeys.requesters.all, "wallet", id] as const,
+    tasks: (id: string) => [...queryKeys.requesters.all, "tasks", id] as const,
+    payments: (id: string) => [...queryKeys.requesters.all, "payments", id] as const,
   },
   withdrawals: {
     all: ["admin", "withdrawals"] as const,
@@ -31,11 +49,6 @@ export const queryKeys = {
     list: (params?: unknown) => [...queryKeys.tasks.all, "list", params] as const,
     reportedIssues: () =>
       [...queryKeys.tasks.all, "reported-issues"] as const,
-  },
-  runners: {
-    all: ["admin", "runners"] as const,
-    subscriptionStats: () =>
-      [...queryKeys.runners.all, "subscription-stats"] as const,
   },
   runnerProfile: {
     all: ["runner-profile", "admin"] as const,

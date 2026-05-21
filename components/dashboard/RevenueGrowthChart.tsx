@@ -1,8 +1,13 @@
 "use client";
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
+import type { RevenueGrowthData } from "@/lib/types";
 
-const data = [
+interface RevenueGrowthChartProps {
+  data?: RevenueGrowthData[];
+}
+
+const defaultData: RevenueGrowthData[] = [
   { month: "Jan", bottom: 2.5, middle: 1.5, top: 1.5 },
   { month: "Feb", bottom: 2.5, middle: 1, top: 0 },
   { month: "Mar", bottom: 2.5, middle: 3, top: 3 },
@@ -11,38 +16,34 @@ const data = [
   { month: "Jun", bottom: 2.5, middle: 1, top: 0 },
 ];
 
-// Custom shape for middle bar that conditionally applies radius
-const MiddleBar = (props: any) => {
-  const { fill, x, y, width, height, index } = props;
+export function RevenueGrowthChart({ data = defaultData }: RevenueGrowthChartProps) {
+  const MiddleBar = (props: any) => {
+    const { fill, x, y, width, height, index } = props;
 
-  if (!data[index]) return null;
+    if (!data[index]) return null;
 
-  const hasTopSegment = data[index].top > 0;
+    const hasTopSegment = data[index].top > 0;
 
-  if (hasTopSegment) {
-    // No radius if there's a top segment
-    return <rect x={x} y={y} width={width} height={height} fill={fill} />;
-  } else {
-    // Rounded top if this is the last segment
-    const radius = 10;
-    return (
-      <path
-        d={`
-          M ${x},${y + height}
-          L ${x},${y + radius}
-          Q ${x},${y} ${x + radius},${y}
-          L ${x + width - radius},${y}
-          Q ${x + width},${y} ${x + width},${y + radius}
-          L ${x + width},${y + height}
-          Z
-        `}
-        fill={fill}
-      />
-    );
-  }
-};
-
-export function RevenueGrowthChart() {
+    if (hasTopSegment) {
+      return <rect x={x} y={y} width={width} height={height} fill={fill} />;
+    } else {
+      const radius = 10;
+      return (
+        <path
+          d={`
+            M ${x},${y + height}
+            L ${x},${y + radius}
+            Q ${x},${y} ${x + radius},${y}
+            L ${x + width - radius},${y}
+            Q ${x + width},${y} ${x + width},${y + radius}
+            L ${x + width},${y + height}
+            Z
+          `}
+          fill={fill}
+        />
+      );
+    }
+  };
   return (
     <div className="bg-white rounded-l p-6 border border-neutral-200">
       <h3 className="text-lg font-semibold text-text-primary mb-6">Revenue Growth Curve (Monthly)</h3>

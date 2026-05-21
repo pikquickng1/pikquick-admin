@@ -17,3 +17,4 @@ export * from "./document-type.types";
 export * from "./task-category.types";
 export * from "./task.types";
 export * from "./referral.types";
+export * from "./support-ticket.types";

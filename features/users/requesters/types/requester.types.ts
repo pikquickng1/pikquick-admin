@@ -5,6 +5,7 @@ export interface Requester {
   phone: string;
   address: string;
   joinedDate: string;
+  accountStatus: string;
   status: "Active" | "Suspended" | "Inactive";
   balance: number;
   tasksPosted: number;

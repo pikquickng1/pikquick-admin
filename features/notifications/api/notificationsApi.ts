@@ -5,7 +5,11 @@ export const notificationsApi = {
   getNotifications: async (): Promise<NotificationsResponse> => {
     try {
       const response = await notificationsService.getAll();
-      return response.data;
+      const nestedData = response.data?.data || response.data;
+      return {
+        notifications: nestedData?.notifications || [],
+        unreadCount: nestedData?.unreadCount || 0
+      };
     } catch (error) {
       console.error("Failed to fetch notifications:", error);
       throw error;

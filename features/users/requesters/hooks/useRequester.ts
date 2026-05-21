@@ -9,8 +9,7 @@ import {
 } from "../types/requester.types";
 import { RequesterPayment } from "../types/payment.types";
 import { requesterApi } from "../api/requesterApi";
-import { usersService } from "@/lib/services";
-import { mapAdminUserToRequester } from "../lib/mapAdminUserToRequesterDetail";
+import { requestersService } from "@/lib/services";
 
 export function useRequester(id: string) {
   const [requester, setRequester] = useState<Requester | null>(null);
@@ -28,14 +27,14 @@ export function useRequester(id: string) {
       setError(null);
       const [userRes, walletData, transactionsData, taskHistoryData, paymentsData] =
         await Promise.all([
-          usersService.getById(id).then(mapAdminUserToRequester),
+          requestersService.getRequesterById(id),
           requesterApi.getRequesterWallet(id),
           requesterApi.getRequesterTransactions(id),
           requesterApi.getRequesterTaskHistory(id),
           requesterApi.getRequesterPayments(id),
         ]);
 
-      setRequester(userRes);
+      setRequester(userRes.data);
       setWallet(walletData);
       setTransactions(transactionsData);
       setTaskHistory(taskHistoryData);

@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Clock, CheckCircle, DollarSign, ChevronDown, Download } from "lucide-react";
+import { Clock, CheckCircle, DollarSign, ChevronDown, Download, RefreshCw } from "lucide-react";
 import { Pagination } from "@/components/ui/pagination";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,6 +16,7 @@ import { PayoutListTable } from "./PayoutListTable";
 import { PayoutDetailsModal } from "./PayoutDetailsModal";
 import { PayoutListFilters as Filters, PayoutRequest } from "../types/payout.types";
 import { payoutApi } from "../api/payoutApi";
+import { escrowService } from "@/lib/services";
 
 export function PayoutRequestsList() {
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
@@ -23,17 +25,31 @@ export function PayoutRequestsList() {
   const [selectedPayout, setSelectedPayout] = useState<PayoutRequest | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [isProcessingPayouts, setIsProcessingPayouts] = useState(false);
   const [filters, setFilters] = useState<Filters>({
     search: "",
     status: "All Status",
   });
 
   const { payouts, loading, pagination, refetch } = usePayoutList(filters, currentPage);
-  const { stats } = usePayoutStats();
+  const { stats, refetch: refetchStats } = usePayoutStats();
 
   useEffect(() => {
     setCurrentPage(1);
   }, [filters.search, filters.status]);
+
+  const handleProcessPayouts = async () => {
+    setIsProcessingPayouts(true);
+    try {
+      await escrowService.processReleases();
+      await refetch();
+      await refetchStats();
+    } catch (error) {
+      console.error("Failed to process payouts:", error);
+    } finally {
+      setIsProcessingPayouts(false);
+    }
+  };
 
   const toggleRow = (id: string) => {
     setSelectedRows((prev) =>
@@ -113,7 +129,14 @@ export function PayoutRequestsList() {
         </div>
 
         <div className="flex items-center gap-3">
-         
+          <Button
+            onClick={handleProcessPayouts}
+            disabled={isProcessingPayouts}
+            className="flex items-center gap-2 bg-primary-500 hover:bg-primary-600"
+          >
+            <RefreshCw className={`w-4 h-4 ${isProcessingPayouts ? "animate-spin" : ""}`} />
+            {isProcessingPayouts ? "Processing..." : "Process Payouts"}
+          </Button>
 
           <DropdownMenu>
             <DropdownMenuTrigger className="flex items-center gap-2 px-6 py-4 bg-neutral-200 border border-neutral-200 rounded text-sm text-text-primary hover:bg-gray-50">

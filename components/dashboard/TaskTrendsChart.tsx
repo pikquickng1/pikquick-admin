@@ -1,8 +1,13 @@
 "use client";
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
+import type { TaskTrendData } from "@/lib/types";
 
-const data = [
+interface TaskTrendsChartProps {
+  data?: TaskTrendData[];
+}
+
+const defaultData: TaskTrendData[] = [
   { day: "Mon", tasks: 135 },
   { day: "Tue", tasks: 60 },
   { day: "Wed", tasks: 105 },
@@ -12,7 +17,7 @@ const data = [
   { day: "Sun", tasks: 115 },
 ];
 
-export function TaskTrendsChart() {
+export function TaskTrendsChart({ data = defaultData }: TaskTrendsChartProps) {
   return (
     <div className="bg-white rounded-l p-6 border border-neutral-200">
       <h3 className="text-lg font-semibold text-text-primary mb-6">Task Trends (Weekly)</h3>

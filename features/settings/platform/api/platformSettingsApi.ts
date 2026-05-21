@@ -1,57 +1,60 @@
 import { PlatformSettings, TaskCategory } from "../types/platform-settings.types";
+import { adminService } from "@/lib/services";
 
 export const platformSettingsApi = {
   getSettings: async (): Promise<PlatformSettings> => {
-    // Mock API call
-    return {
-      accessFee: 100,
-      platformCommission: 15,
-    };
+    try {
+      const response = await adminService.getPlatformSettings();
+      return response.data;
+    } catch (error) {
+      console.error("Failed to fetch platform settings:", error);
+      throw error;
+    }
   },
 
   updateSettings: async (settings: PlatformSettings): Promise<void> => {
-    // Mock API call
-    console.log("Updating platform settings:", settings);
+    try {
+      await adminService.updatePlatformSettings(settings as unknown as Record<string, unknown>);
+    } catch (error) {
+      console.error("Failed to update platform settings:", error);
+      throw error;
+    }
   },
 
   getTaskCategories: async (): Promise<TaskCategory[]> => {
-    // Mock API call
-    return [
-      {
-        id: "1",
-        name: "Delivery",
-        description: "Package and parcel delivery services",
-      },
-      {
-        id: "2",
-        name: "Food Delivery",
-        description: "Food and beverage delivery",
-      },
-      {
-        id: "3",
-        name: "Errand",
-        description: "General errand running tasks",
-      },
-      {
-        id: "4",
-        name: "Shopping",
-        description: "Shopping and purchase tasks",
-      },
-    ];
+    try {
+      const response = await adminService.getTaskCategories();
+      return response.data;
+    } catch (error) {
+      console.error("Failed to fetch task categories:", error);
+      throw error;
+    }
   },
 
   addTaskCategory: async (category: Omit<TaskCategory, "id">): Promise<void> => {
-    // Mock API call
-    console.log("Adding task category:", category);
+    try {
+      await adminService.addTaskCategory(category);
+    } catch (error) {
+      console.error("Failed to add task category:", error);
+      throw error;
+    }
   },
 
   updateTaskCategory: async (id: string, category: Partial<TaskCategory>): Promise<void> => {
-    // Mock API call
-    console.log("Updating task category:", id, category);
+    try {
+      await adminService.updateTaskCategory(id, category);
+    } catch (error) {
+      console.error("Failed to update task category:", error);
+      throw error;
+    }
   },
 
   deleteTaskCategory: async (id: string): Promise<void> => {
-    // Mock API call
-    console.log("Deleting task category:", id);
+    try {
+      await adminService.deleteTaskCategory(id);
+    } catch (error) {
+      console.error("Failed to delete task category:", error);
+      throw error;
+    }
   },
 };

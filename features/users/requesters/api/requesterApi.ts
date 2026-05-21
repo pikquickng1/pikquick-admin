@@ -1,211 +1,119 @@
 import { Requester, RequesterTransaction, RequesterWallet, RequesterTaskHistory } from "../types/requester.types";
 import { RequesterListFilters, RequesterListResponse } from "../types/requester-list.types";
 import { RequesterPayment } from "../types/payment.types";
-
-// Mock data - replace with actual API calls
-// In-memory store for demo purposes
-let mockRequesterStatus: "Active" | "Suspended" | "Inactive" = "Active";
+import { requestersService } from "@/lib/services";
 
 export const requesterApi = {
   getRequestersList: async (
     filters: RequesterListFilters,
     page: number = 1
   ): Promise<RequesterListResponse> => {
-    // TODO: Replace with actual API call
-    // const params = new URLSearchParams({
-    //   search: filters.search,
-    //   status: filters.status,
-    //   sortBy: filters.sortBy,
-    //   page: page.toString(),
-    // });
-    // const response = await fetch(`/api/requesters?${params}`);
-    // return response.json();
-
-    // Mock data
-    const mockData = Array.from({ length: 8 }, (_, i) => ({
-      id: `REQ${String(i + 1).padStart(3, "0")}`,
-      name: "Adewale Johnson",
-      email: "adewale.j@email.com",
-      phone: "+234 801 234 5678",
-      balance: 45000,
-      tasksPosted: 24,
-      status: i === 2 ? ("Suspended" as const) : ("Active" as const),
-    }));
-
-    return {
-      data: mockData,
-      pagination: {
-        currentPage: page,
-        totalPages: 13,
-        totalItems: 100,
-        itemsPerPage: 8,
-      },
-    };
+    try {
+      const response = await requestersService.getRequesters({
+        page,
+        limit: filters.limit || 20,
+        search: filters.search,
+        status: filters.status,
+      });
+      return response;
+    } catch (error) {
+      console.error("Failed to fetch requesters list:", error);
+      throw error;
+    }
   },
-  getRequesterById: async (id: string): Promise<Requester> => {
-    // TODO: Replace with actual API call
-    // const response = await fetch(`/api/requesters/${id}`);
-    // return response.json();
 
-    return {
-      id: "REQ001",
-      name: "Adewale Johnson",
-      email: "adewale.j@email.com",
-      phone: "+234 801 234 5678",
-      address: "23 Admiralty Way, Lekki Phase 1, Lagos",
-      joinedDate: "2025-01-15",
-      status: mockRequesterStatus,
-      balance: 45000,
-      tasksPosted: 24,
-    };
+  getRequesterById: async (id: string): Promise<Requester> => {
+    try {
+      const response = await requestersService.getRequesterById(id);
+      return response.data;
+    } catch (error) {
+      console.error("Failed to fetch requester details:", error);
+      throw error;
+    }
   },
 
   getRequesterWallet: async (id: string): Promise<RequesterWallet> => {
-    // TODO: Replace with actual API call
-    return {
-      balance: 45000,
-      totalDeposits: 150000,
-      totalWithdrawals: 105000,
-      pendingAmount: 5000,
-    };
+    try {
+      const response = await requestersService.getRequesterWallet(id);
+      return response;
+    } catch (error) {
+      console.error("Failed to fetch requester wallet:", error);
+      throw error;
+    }
   },
 
   getRequesterTransactions: async (id: string): Promise<RequesterTransaction[]> => {
-    // TODO: Replace with actual API call
-    return [
-      {
-        id: "TXN001",
-        date: "2025-10-28",
-        amount: 15000,
-        type: "debit",
-        description: "Task Payment",
-        status: "completed",
-      },
-      {
-        id: "TXN002",
-        date: "2025-10-28",
-        amount: 25000,
-        type: "credit",
-        description: "Wallet Funding",
-        status: "completed",
-      },
-    ];
+    try {
+      const wallet = await requestersService.getRequesterWallet(id);
+      return wallet.recentTransactions || [];
+    } catch (error) {
+      console.error("Failed to fetch requester transactions:", error);
+      throw error;
+    }
   },
 
   getRequesterTaskHistory: async (id: string): Promise<RequesterTaskHistory[]> => {
-    // TODO: Replace with actual API call
-    return [
-      {
-        id: "TSK001",
-        title: "Grocery Shopping",
-        status: "completed",
-        amount: 2500,
-        date: "2025-10-28",
-      },
-      {
-        id: "TSK002",
-        title: "Grocery Shopping",
-        status: "completed",
-        amount: 2500,
-        date: "2025-10-28",
-      },
-      {
-        id: "TSK003",
-        title: "Grocery Shopping",
-        status: "completed",
-        amount: 2500,
-        date: "2025-10-28",
-      },
-      {
-        id: "TSK004",
-        title: "Grocery Shopping",
-        status: "completed",
-        amount: 2500,
-        date: "2025-10-28",
-      },
-    ];
+    try {
+      const response = await requestersService.getRequesterTasks(id, { limit: 20 });
+      return response.data || [];
+    } catch (error) {
+      console.error("Failed to fetch requester task history:", error);
+      throw error;
+    }
   },
 
   getRequesterPayments: async (id: string): Promise<RequesterPayment[]> => {
-    // TODO: Replace with actual API call
-    return [
-      {
-        id: "PAY001",
-        date: "2025-10-28",
-        amount: 2500,
-        type: "Task Payment",
-        status: "completed",
-      },
-      {
-        id: "PAY002",
-        date: "2025-10-28",
-        amount: 2500,
-        type: "Task Payment",
-        status: "completed",
-      },
-      {
-        id: "PAY003",
-        date: "2025-10-28",
-        amount: 2500,
-        type: "Task Payment",
-        status: "completed",
-      },
-      {
-        id: "PAY004",
-        date: "2025-10-28",
-        amount: 2500,
-        type: "Task Payment",
-        status: "completed",
-      },
-    ];
+    try {
+      const response = await requestersService.getRequesterPayments(id, { limit: 20 });
+      return response.data || [];
+    } catch (error) {
+      console.error("Failed to fetch requester payments:", error);
+      throw error;
+    }
   },
 
   suspendRequester: async (id: string): Promise<void> => {
-    // TODO: Replace with actual API call
-    // await fetch(`/api/requesters/${id}/suspend`, { method: 'POST' });
-    
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    mockRequesterStatus = "Suspended";
-    console.log("Suspending requester:", id);
+    try {
+      await requestersService.suspendRequester(id);
+    } catch (error) {
+      console.error("Failed to suspend requester:", error);
+      throw error;
+    }
   },
 
   activateRequester: async (id: string): Promise<void> => {
-    // TODO: Replace with actual API call
-    // await fetch(`/api/requesters/${id}/activate`, { method: 'POST' });
-    
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    mockRequesterStatus = "Active";
-    console.log("Activating requester:", id);
+    try {
+      await requestersService.activateRequester(id);
+    } catch (error) {
+      console.error("Failed to activate requester:", error);
+      throw error;
+    }
   },
 
   adjustWallet: async (id: string, type: "debit" | "credit", amount: number): Promise<void> => {
-    // TODO: Replace with actual API call
-    // await fetch(`/api/requesters/${id}/wallet/adjust`, {
-    //   method: 'POST',
-    //   body: JSON.stringify({ type, amount })
-    // });
-    
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    console.log(`Adjusting wallet for ${id}: ${type} ₦${amount}`);
+    try {
+      await requestersService.adjustWallet(id, { type, amount });
+    } catch (error) {
+      console.error("Failed to adjust wallet:", error);
+      throw error;
+    }
   },
 
   resetPassword: async (id: string): Promise<void> => {
-    // TODO: Replace with actual API call
-    console.log("Resetting password for:", id);
+    try {
+      await requestersService.resetPassword(id);
+    } catch (error) {
+      console.error("Failed to reset password:", error);
+      throw error;
+    }
   },
 
   sendMessage: async (id: string, subject: string, message: string): Promise<void> => {
-    // TODO: Replace with actual API call
-    // await fetch(`/api/requesters/${id}/message`, {
-    //   method: 'POST',
-    //   body: JSON.stringify({ subject, message })
-    // });
-    
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    console.log("Sending message to:", id, "Subject:", subject, "Message:", message);
+    try {
+      await requestersService.sendMessage(id, { subject, message });
+    } catch (error) {
+      console.error("Failed to send message:", error);
+      throw error;
+    }
   },
 };

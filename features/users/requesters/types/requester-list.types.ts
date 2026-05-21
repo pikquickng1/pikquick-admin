@@ -12,6 +12,7 @@ export interface RequesterListFilters {
   search: string;
   status: "All Status" | "Active" | "Suspended" | "Inactive";
   sortBy: "Most Recent" | "Most tasks";
+  limit?: number;
 }
 
 export interface RequesterListResponse {

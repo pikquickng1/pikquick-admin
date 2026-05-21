@@ -1,10 +1,9 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { usersService } from "@/lib/services";
+import { runnersService } from "@/lib/services";
 import { queryKeys } from "@/lib/query/keys";
 import type { RunnerListFilters } from "../types/runner-list.types";
-import { mapAdminUserToRunner } from "../lib/mapAdminUserToRunner";
 
 const LIMIT = 20;
 
@@ -12,11 +11,11 @@ function statusToApi(status: string): string | undefined {
   if (!status || status === "All Status") return undefined;
   switch (status) {
     case "Available":
-      return "active";
+      return "available";
     case "Suspended":
       return "suspended";
     case "Unavailable":
-      return "inactive";
+      return "unavailable";
     default:
       return undefined;
   }
@@ -24,34 +23,34 @@ function statusToApi(status: string): string | undefined {
 
 export function useRunnerList(filters: RunnerListFilters, page: number = 1) {
   const { data, isLoading, error } = useQuery({
-    queryKey: queryKeys.users.list({
-      role: "runner",
+    queryKey: queryKeys.runners.list({
       page,
       limit: LIMIT,
       search: filters.search || undefined,
       status: statusToApi(filters.status),
+      verification: filters.verification,
     }),
     queryFn: async () => {
-      const res = await usersService.list({
+      const res = await runnersService.getRunners({
         page,
         limit: LIMIT,
-        role: "runner",
         search: filters.search || undefined,
         status: statusToApi(filters.status),
+        verification: filters.verification,
       });
       return res;
     },
   });
 
-  const runners = (data?.data ?? []).map(mapAdminUserToRunner);
-  const total = data?.total ?? 0;
+  const runners = data?.data ?? [];
+  const total = data?.pagination?.totalItems ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / LIMIT));
 
   const pagination = {
-    currentPage: data?.page ?? page,
+    currentPage: data?.pagination?.currentPage ?? page,
     totalPages,
     totalItems: total,
-    itemsPerPage: data?.limit ?? LIMIT,
+    itemsPerPage: data?.pagination?.itemsPerPage ?? LIMIT,
   };
 
   return {

@@ -25,7 +25,6 @@ export function mapAdminUserToRunner(user: AdminUser): RunnerListItem {
     phone: user.phone ?? "",
     verification: "Verified",
     balance: 0,
-    dailyFee: 0,
     rating: 0,
     totalReviews: 0,
     status: mapStatus(user.status),

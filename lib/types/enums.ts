@@ -48,3 +48,19 @@ export const WalletStatus = {
   INACTIVE: "INACTIVE",
 } as const;
 export type WalletStatus = (typeof WalletStatus)[keyof typeof WalletStatus];
+
+export const SupportTicketStatus = {
+  OPEN: "open",
+  IN_PROGRESS: "in_progress",
+  RESOLVED: "resolved",
+  CLOSED: "closed",
+} as const;
+export type SupportTicketStatus = (typeof SupportTicketStatus)[keyof typeof SupportTicketStatus];
+
+export const SupportTicketPriority = {
+  LOW: "low",
+  MEDIUM: "medium",
+  HIGH: "high",
+  URGENT: "urgent",
+} as const;
+export type SupportTicketPriority = (typeof SupportTicketPriority)[keyof typeof SupportTicketPriority];

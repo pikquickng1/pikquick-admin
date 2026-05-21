@@ -8,8 +8,7 @@ import {
   RunnerTaskHistory,
 } from "../types/runner.types";
 import { runnerApi } from "../api/runnerApi";
-import { usersService } from "@/lib/services";
-import { mapAdminUserToRunner } from "../lib/mapAdminUserToRunnerDetail";
+import { runnersService } from "@/lib/services";
 
 export function useRunner(id: string) {
   const [runner, setRunner] = useState<Runner | null>(null);
@@ -26,13 +25,13 @@ export function useRunner(id: string) {
       setError(null);
       const [userRes, walletData, transactionsData, taskHistoryData] =
         await Promise.all([
-          usersService.getById(id).then(mapAdminUserToRunner),
+          runnersService.getRunnerById(id),
           runnerApi.getRunnerWallet(id),
           runnerApi.getRunnerTransactions(id),
           runnerApi.getRunnerTaskHistory(id),
         ]);
 
-      setRunner(userRes);
+      setRunner(userRes.data);
       setWallet(walletData);
       setTransactions(transactionsData);
       setTaskHistory(taskHistoryData);

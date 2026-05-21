@@ -33,6 +33,7 @@ export function mapAdminUserToRequester(user: AdminUser): Requester {
     phone: user.phone ?? "",
     address: "—",
     joinedDate: formatDate(user.created_at as string | undefined),
+    accountStatus: user.status,
     status: mapStatus(user.status),
     balance: 0,
     tasksPosted: 0,

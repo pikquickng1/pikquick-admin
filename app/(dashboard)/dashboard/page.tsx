@@ -22,16 +22,21 @@ import { formatNgnFromKobo } from "@/lib/utils/money";
 import Link from "next/link";
 
 export default function DashboardPage() {
-  const { data: stats, isLoading, isError, error } = useQuery({
+  const { data: stats, isLoading: statsLoading, isError: statsError, error } = useQuery({
     queryKey: queryKeys.dashboard.stats(),
     queryFn: () => dashboardService.getStats(),
   });
 
-  if (isLoading) {
+  const { data: trends } = useQuery({
+    queryKey: queryKeys.dashboard.trends(),
+    queryFn: () => dashboardService.getTrends(),
+  });
+
+  if (statsLoading) {
     return <DashboardSkeleton />;
   }
 
-  if (isError || !stats) {
+  if (statsError || !stats) {
     return (
       <div className="space-y-6">
         <h1 className="text-2xl font-semibold text-text-primary">Dashboard</h1>
@@ -181,10 +186,12 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Top City - placeholder (not from API) */}
+        {/* Top City - from API */}
         <div className="bg-white rounded-l p-6 border border-neutral-200 flex items-center justify-between">
           <div>
-            <div className="text-2xl font-semibold text-text-primary">—</div>
+            <div className="text-2xl font-semibold text-text-primary">
+              {trends?.topCity ?? "—"}
+            </div>
             <p className="text-sm text-text-secondary mt-1">Top City</p>
           </div>
           <div className="w-12 h-12 rounded-xl bg-red-100 flex items-center justify-center">
@@ -195,12 +202,12 @@ export default function DashboardPage() {
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <TaskTrendsChart />
-        <RevenueGrowthChart />
+        <TaskTrendsChart data={trends?.taskTrends} />
+        <RevenueGrowthChart data={trends?.revenueGrowth} />
       </div>
 
       {/* Top Active Areas */}
-      <TopActiveAreas />
+      <TopActiveAreas data={trends?.topAreas} />
     </div>
   );
 }

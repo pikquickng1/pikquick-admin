@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { CheckSquare, DollarSign, UserCheck, ChevronDown } from "lucide-react";
+import { CheckSquare, DollarSign, UserCheck, ChevronDown, Plus } from "lucide-react";
 import { Pagination } from "@/components/ui/pagination";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,6 +16,7 @@ import { useTaskList } from "../hooks/useTaskList";
 import { TaskListFilters } from "./TaskListFilters";
 import { TaskListTable } from "./TaskListTable";
 import { TaskListSkeleton } from "./TaskListSkeleton";
+import { CreateTaskModal } from "./CreateTaskModal";
 import { TaskListFilters as Filters } from "../types/task.types";
 import { dashboardService } from "@/lib/services";
 import { queryKeys } from "@/lib/query/keys";
@@ -26,6 +28,7 @@ export function TasksList() {
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [dateFilter, setDateFilter] = useState("Today");
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [filters, setFilters] = useState<Filters>({
     search: "",
     status: "All Status",
@@ -90,19 +93,29 @@ export function TasksList() {
           </p>
         </div>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger className="flex items-center gap-2 px-6 py-3 bg-white border border-light rounded-lg text-sm text-text-primary hover:bg-gray-50">
-            {dateFilter}
-            <ChevronDown className="w-4 h-4" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            {dateFilterOptions.map((option) => (
-              <DropdownMenuItem key={option} onClick={() => setDateFilter(option)}>
-                {option}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex items-center gap-3">
+          <Button
+            onClick={() => setShowCreateModal(true)}
+            className="flex items-center gap-2 bg-primary-500 hover:bg-primary-600"
+          >
+            <Plus className="w-4 h-4" />
+            Create Task
+          </Button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger className="flex items-center gap-2 px-6 py-3 bg-white border border-light rounded-lg text-sm text-text-primary hover:bg-gray-50">
+              {dateFilter}
+              <ChevronDown className="w-4 h-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              {dateFilterOptions.map((option) => (
+                <DropdownMenuItem key={option} onClick={() => setDateFilter(option)}>
+                  {option}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -158,6 +171,14 @@ export function TasksList() {
           pagination.totalItems
         )}
         totalItems={pagination.totalItems}
+      />
+
+      <CreateTaskModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSuccess={() => {
+          // Refresh tasks list
+        }}
       />
     </div>
   );

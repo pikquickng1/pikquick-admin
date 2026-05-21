@@ -4,6 +4,52 @@
 
 import type { PaginatedResponse } from "./common.types";
 
+export interface AddressDto {
+  address: string;
+  city: string;
+  state: string;
+  country?: string;
+  latitude?: number;
+  longitude?: number;
+}
+
+export type PaymentType = "card" | "wallet";
+
+export interface CreateTaskDto {
+  runner_id?: string | null;
+  task_type: string;
+  pickup_address: AddressDto;
+  dropoff_address: AddressDto;
+  description?: string;
+  budget: number;
+  payment_method: PaymentType;
+  special_instructions?: string;
+  additional_notes?: string;
+  category_id: string;
+  require_proof_of_completion?: boolean;
+  preferred_transport_mode?: string;
+  client_id?: string;
+  starting_price?: number;
+  bidding_end_time: string;
+}
+
+export interface UpdateTaskDto {
+  description?: string;
+  budget?: number;
+  task_type?: string;
+  special_instructions?: string;
+  additional_notes?: string;
+}
+
+export interface CancelTaskDto {
+  reason: string;
+}
+
+export interface TaskReassignDto {
+  runner_id: string;
+  reason?: string;
+}
+
 export interface AdminTaskListParams {
   status?: string;
   runner_id?: string;
@@ -28,6 +74,14 @@ export interface AdminTask {
   runner_name?: string;
   created_at?: string;
   updated_at?: string;
+  pickup_address?: AddressDto;
+  dropoff_address?: AddressDto;
+  category_id?: string;
+  category_name?: string;
+  payment_method?: string;
+  special_instructions?: string;
+  additional_notes?: string;
+  require_proof_of_completion?: boolean;
   [key: string]: unknown;
 }
 

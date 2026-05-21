@@ -5,10 +5,11 @@ export interface Runner {
   phone: string;
   address: string;
   joinedDate: string;
-  verification: "Verified" | "Pending" | "Failed";
+  accountStatus: string;
+  verification: "Verified" | "Pending" | "Failed" | "unverified";
+  transportMode: string;
   status: "Available" | "Unavailable" | "Suspended";
   balance: number;
-  dailyFee: number;
   rating: number;
   totalReviews: number;
   tasksCompleted: number;

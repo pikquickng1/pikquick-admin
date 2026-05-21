@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowLeft, Mail, Phone, Calendar, MapPin, Star, User } from "lucide-react";
+import { ArrowLeft, Mail, Phone, Calendar, MapPin, Star, User, MoreVertical, Play, XCircle, RefreshCw, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useTask } from "../hooks/useTask";
+import { tasksService } from "@/lib/services";
 import { TaskBudgetBids } from "./TaskBudgetBids";
 import { TaskTimelineStatus } from "./TaskTimelineStatus";
 import { TaskChatLog } from "./TaskChatLog";
@@ -18,9 +19,11 @@ interface TaskDetailsProps {
 }
 
 export function TaskDetails({ taskId, onBack }: TaskDetailsProps) {
-  const { task, loading, error } = useTask(taskId);
+  const { task, loading, error, refetch } = useTask(taskId);
   const [isRefundModalOpen, setIsRefundModalOpen] = useState(false);
   const [isRefundLoading, setIsRefundLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [showActionsMenu, setShowActionsMenu] = useState(false);
 
   console.log("TaskDetails - task data:", task);
   console.log("TaskDetails - chatMessages:", task?.chatMessages);
@@ -29,15 +32,78 @@ export function TaskDetails({ taskId, onBack }: TaskDetailsProps) {
   const handleIssueRefund = async (amount: number) => {
     setIsRefundLoading(true);
     try {
-      // TODO: Implement actual refund API call
       console.log("Issuing refund:", amount);
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       setIsRefundModalOpen(false);
-      // Show success message
     } catch (error) {
       console.error("Failed to issue refund:", error);
     } finally {
       setIsRefundLoading(false);
+    }
+  };
+
+  const handleStartTask = async () => {
+    setActionLoading("start");
+    try {
+      await tasksService.startTask(taskId);
+      await refetch();
+      setShowActionsMenu(false);
+    } catch (error) {
+      console.error("Failed to start task:", error);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleCompleteTask = async () => {
+    setActionLoading("complete");
+    try {
+      await tasksService.completeTask(taskId);
+      await refetch();
+      setShowActionsMenu(false);
+    } catch (error) {
+      console.error("Failed to complete task:", error);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleCancelTask = async () => {
+    setActionLoading("cancel");
+    try {
+      await tasksService.cancelTask([taskId], { reason: "Cancelled by admin" });
+      await refetch();
+      setShowActionsMenu(false);
+    } catch (error) {
+      console.error("Failed to cancel task:", error);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleApproveCompletion = async () => {
+    setActionLoading("approve");
+    try {
+      await tasksService.approveCompletion(taskId);
+      await refetch();
+      setShowActionsMenu(false);
+    } catch (error) {
+      console.error("Failed to approve completion:", error);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleRestartTask = async () => {
+    setActionLoading("restart");
+    try {
+      await tasksService.restartTask(taskId);
+      await refetch();
+      setShowActionsMenu(false);
+    } catch (error) {
+      console.error("Failed to restart task:", error);
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -96,12 +162,81 @@ export function TaskDetails({ taskId, onBack }: TaskDetailsProps) {
           <h1 className="text-2xl font-semibold text-text-primary">Task Details</h1>
         </div>
 
-        <Button 
-          onClick={() => setIsRefundModalOpen(true)}
-          className="bg-primary-500 hover:bg-primary-600 text-white"
-        >
-          Issue Refund
-        </Button>
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <Button
+              onClick={() => setShowActionsMenu(!showActionsMenu)}
+              className="bg-primary-500 hover:bg-primary-600 text-white flex items-center gap-2"
+            >
+              <MoreVertical className="w-4 h-4" />
+              Actions
+            </Button>
+            
+            {showActionsMenu && (
+              <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-neutral-200 z-10">
+                <div className="py-1">
+                  {task.status === "Pending" && (
+                    <button
+                      onClick={handleStartTask}
+                      disabled={actionLoading === "start"}
+                      className="w-full px-4 py-2 text-left text-sm text-text-primary hover:bg-neutral-50 flex items-center gap-2"
+                    >
+                      <Play className="w-4 h-4" />
+                      {actionLoading === "start" ? "Starting..." : "Start Task"}
+                    </button>
+                  )}
+                  {task.status === "In Progress" && (
+                    <button
+                      onClick={handleCompleteTask}
+                      disabled={actionLoading === "complete"}
+                      className="w-full px-4 py-2 text-left text-sm text-text-primary hover:bg-neutral-50 flex items-center gap-2"
+                    >
+                      <CheckCircle className="w-4 h-4" />
+                      {actionLoading === "complete" ? "Completing..." : "Mark as Completed"}
+                    </button>
+                  )}
+                  {task.status === "Completed" && (
+                    <button
+                      onClick={handleApproveCompletion}
+                      disabled={actionLoading === "approve"}
+                      className="w-full px-4 py-2 text-left text-sm text-text-primary hover:bg-neutral-50 flex items-center gap-2"
+                    >
+                      <CheckCircle className="w-4 h-4" />
+                      {actionLoading === "approve" ? "Approving..." : "Approve Completion"}
+                    </button>
+                  )}
+                  {task.status !== "Cancelled" && task.status !== "Completed" && (
+                    <button
+                      onClick={handleCancelTask}
+                      disabled={actionLoading === "cancel"}
+                      className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-neutral-50 flex items-center gap-2"
+                    >
+                      <XCircle className="w-4 h-4" />
+                      {actionLoading === "cancel" ? "Cancelling..." : "Cancel Task"}
+                    </button>
+                  )}
+                  {(task.status === "Completed" || task.status === "Cancelled") && (
+                    <button
+                      onClick={handleRestartTask}
+                      disabled={actionLoading === "restart"}
+                      className="w-full px-4 py-2 text-left text-sm text-text-primary hover:bg-neutral-50 flex items-center gap-2"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                      {actionLoading === "restart" ? "Restarting..." : "Restart Task"}
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <Button 
+            onClick={() => setIsRefundModalOpen(true)}
+            variant="outline"
+          >
+            Issue Refund
+          </Button>
+        </div>
       </div>
 
       {/* Task Info Card */}

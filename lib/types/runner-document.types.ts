@@ -8,11 +8,15 @@ export interface RunnerDocument {
   id: string;
   runner_id: string;
   document_type_id: string;
+  document_type_name?: string;
+  document_name?: string;
+  document_number?: string;
   document_url: string;
   verification_status: DocumentVerificationStatus;
   rejection_reason?: string;
   submitted_at: string;
   verified_at?: string;
+  expiry_date?: string;
   [key: string]: unknown;
 }
 
@@ -21,6 +25,15 @@ export interface RunnerDocumentFilterParams {
   document_type_id?: string;
   verification_status?: string;
   search?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface RunnerDocumentsListResponse {
+  data: RunnerDocument[];
+  total: number;
+  page: number;
+  limit: number;
 }
 
 export interface RunnerVerificationSummary {

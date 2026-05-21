@@ -94,13 +94,6 @@ export function RunnerListTable({
       ),
     },
     {
-      key: "dailyFee",
-      header: "Daily Fee",
-      render: (runner: RunnerListItem) => (
-        <span className="text-sm text-text-primary">{formatCurrency(runner.dailyFee)}</span>
-      ),
-    },
-    {
       key: "rating",
       header: "Rating",
       render: (runner: RunnerListItem) => (

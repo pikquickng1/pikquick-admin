@@ -13,9 +13,9 @@ interface RequesterTaskHistoryTabProps {
 export function RequesterTaskHistoryTab({ tasks = [] }: RequesterTaskHistoryTabProps) {
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredTasks = tasks.filter((task) =>
-    task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    task.id.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredTasks = (tasks || []).filter((task) =>
+    task.title?.toLowerCase().includes(searchQuery?.toLowerCase() || "") ||
+    task.id?.toLowerCase().includes(searchQuery?.toLowerCase() || "")
   );
 
   return (

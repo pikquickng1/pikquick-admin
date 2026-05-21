@@ -5,103 +5,79 @@ import {
   TransactionStats,
   TransactionDetails,
 } from "../types/transaction.types";
+import { transactionService } from "@/lib/services";
 
 export const transactionApi = {
   getTransactionsList: async (
     filters: TransactionListFilters,
     page: number = 1
   ): Promise<TransactionListResponse> => {
-
-    await new Promise((resolve) => setTimeout(resolve, 300));
-
-    // Mock data
-    const mockData: Transaction[] = Array.from({ length: 8 }, (_, i) => ({
-      id: `TXN${String(i + 1).padStart(3, "0")}`,
-      userId: `USR${String(i + 1).padStart(3, "0")}`,
-      userName: "Adewale Johnson",
-      userType: i % 2 === 0 ? ("Requester" as const) : ("Runner" as const),
-      type:
-        i === 0 || i === 2 || i === 4
-          ? ("Task Payment" as const)
-          : i === 1 || i === 3
-            ? ("Daily Access" as const)
-            : ("Wallet Top-up" as const),
-      amount: 2500,
-      date: "2025-10-30T14:30:00Z",
-      status:
-        i === 1
-          ? ("Pending" as const)
-          : i === 3
-            ? ("Failed" as const)
-            : ("Completed" as const),
-    }));
-
-    return {
-      data: mockData,
-      pagination: {
-        currentPage: page,
-        totalPages: 13,
-        totalItems: 100,
-        itemsPerPage: 8,
-      },
-    };
+    try {
+      const response = await transactionService.getTransactions({
+        page,
+        pageSize: 10,
+        search: filters.search,
+        type: filters.type,
+        status: filters.status,
+        dateFrom: filters.dateRange?.from.toISOString(),
+        dateTo: filters.dateRange?.to.toISOString(),
+      });
+      return response;
+    } catch (error) {
+      console.error("Failed to fetch transactions:", error);
+      throw error;
+    }
   },
 
   getTransactionById: async (id: string): Promise<TransactionDetails> => {
-
-    await new Promise((resolve) => setTimeout(resolve, 300));
-
-    // Mock detailed transaction data
-    return {
-      id: id,
-      userId: "USR001",
-      userName: "Adewale Johnson",
-      userType: "Requester",
-      type: "Task Payment",
-      amount: 2500,
-      date: "2025-10-30T14:30:00Z",
-      status: "Failed",
-      paymentGateway: "Paystack",
-      gatewayResponse: {
-        reference: "PSK-2025-001",
-        gatewayStatus: "Failed",
-        processingFee: "-",
-        errorMessage: "Insufficient funds",
-      },
-    };
+    try {
+      const response = await transactionService.getTransactionById(id);
+      return response.data;
+    } catch (error) {
+      console.error("Failed to fetch transaction detail:", error);
+      throw error;
+    }
   },
 
   getTransactionStats: async (): Promise<TransactionStats> => {
-
-    await new Promise((resolve) => setTimeout(resolve, 300));
-
-    return {
-      totalPlatformEarnings: 125800,
-      dailyAccessPayments: 45000,
-      taskPayments: 68500,
-      refunds: 12300,
-    };
+    try {
+      const response = await transactionService.getTransactionStats();
+      return response.data;
+    } catch (error) {
+      console.error("Failed to fetch transaction stats:", error);
+      throw error;
+    }
   },
 
   downloadReceipt: async (transactionId: string): Promise<Blob> => {
-    
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    console.log("Downloading receipt for transaction:", transactionId);
-
-    return new Blob(["Mock receipt content"], { type: "application/pdf" });
+    try {
+      const response = await transactionService.downloadReceipt(transactionId);
+      return response;
+    } catch (error) {
+      console.error("Failed to download receipt:", error);
+      throw error;
+    }
   },
 
   exportTransactions: async (
     filters: TransactionListFilters,
     format: "csv" | "excel" = "csv"
   ): Promise<Blob> => {
-    
-    await new Promise((resolve) => setTimeout(resolve, 800));
-
-    console.log("Exporting transactions with filters:", filters, "Format:", format);
-
-    const mimeType = format === "csv" ? "text/csv" : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-    return new Blob(["Mock export content"], { type: mimeType });
+    try {
+      const response = await transactionService.exportTransactions(
+        {
+          search: filters.search,
+          type: filters.type,
+          status: filters.status,
+          dateFrom: filters.dateRange?.from.toISOString(),
+          dateTo: filters.dateRange?.to.toISOString(),
+        },
+        format
+      );
+      return response;
+    } catch (error) {
+      console.error("Failed to export transactions:", error);
+      throw error;
+    }
   },
 };

@@ -32,3 +32,27 @@ export interface DashboardStatsResponse {
   pending_document_verifications: number;
   feedback_total: number;
 }
+
+export interface TaskTrendData {
+  day: string;
+  tasks: number;
+}
+
+export interface RevenueGrowthData {
+  month: string;
+  bottom: number;
+  middle: number;
+  top: number;
+}
+
+export interface TopAreaData {
+  name: string;
+  tasks: number;
+}
+
+export interface DashboardTrendsResponse {
+  taskTrends: TaskTrendData[];
+  revenueGrowth: RevenueGrowthData[];
+  topAreas: TopAreaData[];
+  topCity: string;
+}

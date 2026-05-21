@@ -5,7 +5,6 @@ export interface RunnerListItem {
   phone: string;
   verification: "Verified" | "Pending" | "Failed";
   balance: number;
-  dailyFee: number;
   rating: number;
   totalReviews: number;
   status: "Available" | "Unavailable" | "Suspended";
@@ -15,6 +14,8 @@ export interface RunnerListFilters {
   search: string;
   status: string;
   sortBy: string;
+  limit?: number;
+  verification?: string;
 }
 
 export interface RunnerListResponse {

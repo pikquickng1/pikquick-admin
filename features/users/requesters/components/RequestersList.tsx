@@ -41,7 +41,7 @@ export function RequestersList() {
     if (selectedRows.length === requesters.length) {
       setSelectedRows([]);
     } else {
-      setSelectedRows(requesters.map((r) => r.id));
+      setSelectedRows(requesters.map((r: { id: string }) => r.id));
     }
   };
 

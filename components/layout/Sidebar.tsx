@@ -78,6 +78,12 @@ const menuItems: MenuItem[] = [
         href: "/dashboard/kyc",
     },
     {
+        id: "runner-documents",
+        label: "Runner Documents",
+        icon: "/sidebar-icons/kyc.svg",
+        href: "/dashboard/runner-documents",
+    },
+    {
         id: "compliance",
         label: "Compliance Management",
         icon: "/sidebar-icons/com.svg",
@@ -88,6 +94,12 @@ const menuItems: MenuItem[] = [
         label: "Disputes & Support",
         icon: "/sidebar-icons/headset.svg",
         href: "/dashboard/disputes",
+    },
+    {
+        id: "support",
+        label: "Support Tickets",
+        icon: "/sidebar-icons/headset.svg",
+        href: "/dashboard/support",
     },
     {
         id: "analytics",

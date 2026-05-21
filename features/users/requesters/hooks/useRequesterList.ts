@@ -1,27 +1,24 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { usersService } from "@/lib/services";
+import { requestersService } from "@/lib/services";
 import { queryKeys } from "@/lib/query/keys";
 import type { RequesterListFilters } from "../types/requester-list.types";
-import { mapAdminUserToRequester } from "../lib/mapAdminUserToRequester";
 
 const LIMIT = 20;
 
 export function useRequesterList(filters: RequesterListFilters, page: number = 1) {
   const { data, isLoading, error } = useQuery({
-    queryKey: queryKeys.users.list({
-      role: "client",
+    queryKey: queryKeys.requesters.list({
       page,
       limit: LIMIT,
       search: filters.search || undefined,
       status: filters.status !== "All Status" ? filters.status?.toLowerCase() : undefined,
     }),
     queryFn: async () => {
-      const res = await usersService.list({
+      const res = await requestersService.getRequesters({
         page,
         limit: LIMIT,
-        role: "client",
         search: filters.search || undefined,
         status: filters.status !== "All Status" ? filters.status?.toLowerCase() : undefined,
       });
@@ -29,15 +26,15 @@ export function useRequesterList(filters: RequesterListFilters, page: number = 1
     },
   });
 
-  const requesters = (data?.data ?? []).map(mapAdminUserToRequester);
-  const total = data?.total ?? 0;
+  const requesters = data?.data ?? [];
+  const total = data?.pagination?.totalItems ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / LIMIT));
 
   const pagination = {
-    currentPage: data?.page ?? page,
+    currentPage: data?.pagination?.currentPage ?? page,
     totalPages,
     totalItems: total,
-    itemsPerPage: data?.limit ?? LIMIT,
+    itemsPerPage: data?.pagination?.itemsPerPage ?? LIMIT,
   };
 
   return {

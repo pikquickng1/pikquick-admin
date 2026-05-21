@@ -41,7 +41,7 @@ export function RunnersList() {
     if (selectedRows.length === runners.length) {
       setSelectedRows([]);
     } else {
-      setSelectedRows(runners.map((r) => r.id));
+      setSelectedRows(runners.map((r: { id: string }) => r.id));
     }
   };
 
