@@ -24,7 +24,7 @@ export function RequesterListFilters({ filters, onFiltersChange }: RequesterList
         <Input
           type="text"
           placeholder="Search by name, email or phone number"
-          className="pl-10 py-7 rounded w-[480px] border-neutral-200"
+          className="pl-10 py-7 rounded w-[480px] border-neutral-200 text-black"
           value={filters.search}
           onChange={(e) => onFiltersChange({ ...filters, search: e.target.value })}
         />

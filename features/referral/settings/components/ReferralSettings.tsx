@@ -145,7 +145,7 @@ export function ReferralSettings() {
             <div className="space-y-4">
               <div>
                 <p className="text-sm font-medium text-text-primary mb-3">
-                  Definition of "Active Referral"
+                  Definition of Active Referral
                 </p>
                 <div className="space-y-2">
                   {settings.activeReferralDefinitions.map((def) => (

@@ -31,7 +31,7 @@ export function RequesterPaymentsTab({ payments = [] }: RequesterPaymentsTabProp
               <Input
                 type="text"
                 placeholder="Search..."
-                className="pl-10 py-7 rounded border-neutral-200 bg-white"
+                className="pl-10 py-7 rounded border-neutral-200 text-black bg-white"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />

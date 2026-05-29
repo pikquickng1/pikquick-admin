@@ -24,7 +24,7 @@ export function ProfilePage() {
   };
 
   const handleChangePassword = (data: { currentPassword: string; newPassword: string; confirmPassword: string }) => {
-    console.log("Changing password");
+    console.log("Changing password:", data);
     // TODO: Implement API call to change password
   };
 

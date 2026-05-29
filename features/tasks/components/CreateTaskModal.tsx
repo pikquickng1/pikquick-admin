@@ -42,9 +42,10 @@ export function CreateTaskModal({ isOpen, onClose, onSuccess }: CreateTaskModalP
 
   const loadInitialData = async () => {
     try {
+      const role = "client" as const;
       const [catsData, usersData] = await Promise.all([
         taskCategoriesService.list(),
-        usersService.list({ role: "client" as any, limit: 100 }),
+        usersService.list({ role, limit: 100 }),
       ]);
       setCategories(catsData as unknown as TaskCategory[]);
       if (usersData && 'data' in usersData) {

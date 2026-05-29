@@ -1,4 +1,4 @@
-import { Ticket, TicketListFilters, TicketListResponse, TicketStats } from "../types/dispute.types";
+import { TicketListFilters, TicketListResponse, TicketStats } from "../types/dispute.types";
 import { disputesService } from "@/lib/services/disputes.service";
 
 export const disputeApi = {

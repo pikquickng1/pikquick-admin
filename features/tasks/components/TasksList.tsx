@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { CheckSquare, DollarSign, UserCheck, ChevronDown, Plus } from "lucide-react";
@@ -13,7 +13,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useTaskList } from "../hooks/useTaskList";
-import { TaskListFilters } from "./TaskListFilters";
 import { TaskListTable } from "./TaskListTable";
 import { TaskListSkeleton } from "./TaskListSkeleton";
 import { CreateTaskModal } from "./CreateTaskModal";
@@ -45,9 +44,10 @@ export function TasksList() {
 
   const { tasks, loading, pagination } = useTaskList(apiFilters, currentPage);
 
-  useEffect(() => {
+  const handleFiltersChange = (nextFilters: Filters) => {
+    setFilters(nextFilters);
     setCurrentPage(1);
-  }, [filters.search, filters.status]);
+  };
 
   const stats = {
     activeTasks: dashboardStats?.tasks?.total ?? 0,
@@ -158,7 +158,7 @@ export function TasksList() {
         onSelectAll={toggleAll}
         onViewDetails={handleViewDetails}
         filters={filters}
-        onFiltersChange={setFilters}
+        onFiltersChange={handleFiltersChange}
       />
 
       <Pagination

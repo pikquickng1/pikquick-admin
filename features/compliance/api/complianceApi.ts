@@ -1,5 +1,4 @@
 import {
-  FlaggedActivity,
   FlaggedActivityDetails,
   ComplianceListFilters,
   ComplianceListResponse,

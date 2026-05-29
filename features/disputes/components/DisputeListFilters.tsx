@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Calendar as CalendarIcon, ChevronDown } from "lucide-react";
+import { Search, Calendar as CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";

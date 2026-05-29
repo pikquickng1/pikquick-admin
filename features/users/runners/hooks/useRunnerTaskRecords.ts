@@ -43,8 +43,12 @@ export function useRunnerTaskRecords(runnerId: string, initialPage = 1): UseRunn
           setData(response.data);
           setPagination(response.pagination);
         }
-      } catch (err: any) {
-        if (!cancelled) setError(err?.message || "Failed to fetch task records");
+      } catch (err: unknown) {
+        if (!cancelled) {
+          const message =
+            err instanceof Error ? err.message : String(err) || "Failed to fetch task records";
+          setError(message);
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }

@@ -7,27 +7,32 @@ import type { RunnerDocument, RunnerDocumentFilterParams } from "@/lib/types";
 export function useRunnerDocumentsList(
   filters: RunnerDocumentFilterParams = {},
   page = 1,
-  pageSize = 10
+  pageSize = 10,
 ) {
   const [documents, setDocuments] = useState<RunnerDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
   const [error, setError] = useState<Error | null>(null);
 
+  const { verification_status, document_type_id, search = "" } = filters;
+
   useEffect(() => {
     const fetchDocuments = async () => {
       try {
         setLoading(true);
-        const response = await runnerDocumentsService.list({
-          ...filters,
-          page,
-          limit: pageSize,
-        });
-        
+        // Only include defined filter parameters
+        const params: Partial<RunnerDocumentFilterParams>  = {};
+        if (verification_status)
+          params.verification_status = verification_status;
+        if (document_type_id) params.document_type_id = document_type_id;
+        if (search) params.search = search;
+
+        const response = await runnerDocumentsService.list(params);
+
         if (Array.isArray(response)) {
           setDocuments(response);
           setTotal(response.length);
-        } else if (response && 'data' in response) {
+        } else if (response && "data" in response) {
           setDocuments((response as { data: RunnerDocument[] }).data);
           setTotal((response as { total: number }).total);
         }
@@ -41,7 +46,6 @@ export function useRunnerDocumentsList(
     };
 
     fetchDocuments();
-  }, [filters.verification_status, filters.document_type_id, filters.search, page, pageSize]);
-
+  }, [verification_status, document_type_id, search, page, pageSize]);
   return { documents, loading, total, error };
 }

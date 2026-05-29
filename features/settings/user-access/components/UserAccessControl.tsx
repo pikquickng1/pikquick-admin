@@ -64,7 +64,7 @@ export function UserAccessControl() {
       try {
         await deleteUser(selectedAdmin.id);
       } catch (error) {
-        alert("Failed to remove admin");
+        alert({"Failed to remove admin": error});
       }
     }
   };

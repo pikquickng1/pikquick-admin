@@ -47,13 +47,7 @@ export function TaskListTable({
   };
 
   const columns = [
-    {
-      key: "id",
-      header: "Task ID",
-      render: (task: TaskListItem) => (
-        <span className="text-sm text-text-primary">{task.id}</span>
-      ),
-    },
+    
     {
       key: "title",
       header: "Task Title",

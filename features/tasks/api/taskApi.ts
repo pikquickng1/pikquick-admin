@@ -33,7 +33,7 @@ export const taskApi = {
     };
   },
 
-  getTaskById: async (id: string): Promise<Task> => {
+  getTaskById: async (): Promise<Task> => {
     // TODO: Replace with actual API call
     return {
       id: "TSK001",

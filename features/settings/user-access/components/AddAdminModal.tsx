@@ -71,7 +71,7 @@ export function AddAdminModal({ isOpen, onClose, onSave }: AddAdminModalProps) {
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               required
-              className="w-full"
+              className="w-full text-black"
             />
           </div>
 
@@ -86,7 +86,7 @@ export function AddAdminModal({ isOpen, onClose, onSave }: AddAdminModalProps) {
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               required
-              className="w-full"
+              className="w-full text-black"
             />
           </div>
 
@@ -101,7 +101,7 @@ export function AddAdminModal({ isOpen, onClose, onSave }: AddAdminModalProps) {
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               required
-              className="w-full"
+              className="w-full text-black"
             />
           </div>
 

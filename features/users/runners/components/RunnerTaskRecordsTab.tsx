@@ -1,6 +1,4 @@
 "use client";
-
-import { useState } from "react";
 import { useRunnerTaskRecords } from "../hooks/useRunnerTaskRecords";
 import { DataTable } from "@/components/ui/data-table";
 import { Pagination } from "@/components/ui/pagination";
@@ -8,10 +6,21 @@ import { RunnerTaskHistory } from "../types/runner.types";
 
 interface RunnerTaskRecordsTabProps {
   runnerId: string;
+  tasks?: RunnerTaskHistory[];
 }
 
-export function RunnerTaskRecordsTab({ runnerId }: RunnerTaskRecordsTabProps) {
-  const { data: tasks, pagination, loading, error, setPage } = useRunnerTaskRecords(runnerId);
+export function RunnerTaskRecordsTab({
+  runnerId,
+  tasks: tasksProp,
+}: RunnerTaskRecordsTabProps) {
+  const {
+    data: fetchedTasks,
+    pagination,
+    loading,
+    error,
+    setPage,
+  } = useRunnerTaskRecords(runnerId);
+  const tasks = tasksProp ?? fetchedTasks;
   // Optionally, you can fetch completed/total tasks from another endpoint if needed
   // For now, just sum from tasks
   const completedTasks = tasks.filter((t) => t.status === "completed").length;
@@ -59,7 +68,7 @@ export function RunnerTaskRecordsTab({ runnerId }: RunnerTaskRecordsTabProps) {
       render: (task: RunnerTaskHistory) => (
         <span
           className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-            task.status
+            task.status,
           )}`}
         >
           {task.status.charAt(0).toUpperCase() + task.status.slice(1)}
@@ -77,7 +86,9 @@ export function RunnerTaskRecordsTab({ runnerId }: RunnerTaskRecordsTabProps) {
       key: "amount",
       header: "Payment Earned",
       render: (task: RunnerTaskHistory) => (
-        <span className="text-sm text-text-primary">{formatCurrency(task.amount)}</span>
+        <span className="text-sm text-text-primary">
+          {formatCurrency(task.amount)}
+        </span>
       ),
     },
   ];
@@ -86,7 +97,9 @@ export function RunnerTaskRecordsTab({ runnerId }: RunnerTaskRecordsTabProps) {
     <div className="space-y-6">
       <div className="bg-white rounded border border-neutral-200 p-6">
         <div className="mb-6">
-          <h2 className="text-xl font-semibold text-text-primary mb-2">Task Records</h2>
+          <h2 className="text-xl font-semibold text-text-primary mb-2">
+            Task Records
+          </h2>
           <p className="text-sm text-text-secondary">
             {completedTasks} completed out of {totalTasks} total tasks
           </p>
@@ -111,7 +124,10 @@ export function RunnerTaskRecordsTab({ runnerId }: RunnerTaskRecordsTabProps) {
         totalPages={pagination.totalPages}
         onPageChange={setPage}
         showingFrom={(pagination.currentPage - 1) * pagination.itemsPerPage + 1}
-        showingTo={Math.min(pagination.currentPage * pagination.itemsPerPage, pagination.totalItems)}
+        showingTo={Math.min(
+          pagination.currentPage * pagination.itemsPerPage,
+          pagination.totalItems,
+        )}
         totalItems={pagination.totalItems}
       />
     </div>
