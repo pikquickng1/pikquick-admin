@@ -34,9 +34,9 @@ export function RunnerListTable({
 
   const getVerificationColor = (verification: string) => {
     switch (verification) {
-      case "Verified":
+      case "verified":
         return "bg-green-100 text-green-700";
-      case "Pending":
+      case "unverified":
         return "bg-yellow-100 text-yellow-700";
       case "Failed":
         return "bg-red-100 text-red-700";
@@ -60,17 +60,12 @@ export function RunnerListTable({
 
   const columns = [
     {
-      key: "id",
-      header: "Runner ID",
-      render: (runner: RunnerListItem) => (
-        <span className="text-sm text-text-primary">{runner.id}</span>
-      ),
-    },
-    {
       key: "name",
       header: "Name",
       render: (runner: RunnerListItem) => (
-        <span className="text-sm text-text-primary font-medium">{runner.name}</span>
+        <span className="text-sm text-text-primary font-medium">
+          {runner.name}
+        </span>
       ),
     },
     {
@@ -79,7 +74,7 @@ export function RunnerListTable({
       render: (runner: RunnerListItem) => (
         <span
           className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getVerificationColor(
-            runner.verification
+            runner.verification,
           )}`}
         >
           {runner.verification}
@@ -90,7 +85,9 @@ export function RunnerListTable({
       key: "balance",
       header: "Balance",
       render: (runner: RunnerListItem) => (
-        <span className="text-sm text-text-primary">{formatCurrency(runner.balance)}</span>
+        <span className="text-sm text-text-primary">
+          {formatCurrency(runner.balance)}
+        </span>
       ),
     },
     {
@@ -111,7 +108,7 @@ export function RunnerListTable({
       render: (runner: RunnerListItem) => (
         <span
           className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-            runner.status
+            runner.status,
           )}`}
         >
           {runner.status}
@@ -143,7 +140,12 @@ export function RunnerListTable({
       onRowSelect={onRowSelect}
       onSelectAll={onSelectAll}
       emptyMessage="No runners found"
-      filters={<RunnerListFilters filters={filters} onFiltersChange={onFiltersChange} />}
+      filters={
+        <RunnerListFilters
+          filters={filters}
+          onFiltersChange={onFiltersChange}
+        />
+      }
     />
   );
 }

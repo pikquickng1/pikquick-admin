@@ -16,7 +16,6 @@ interface EliteRewardTableProps {
 
 export function EliteRewardTable({
   rewards,
-  selectedRows,
   onRowSelect,
   onSelectAll,
   filters,

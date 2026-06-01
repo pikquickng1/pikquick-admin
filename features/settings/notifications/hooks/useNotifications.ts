@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Notification, NotificationListResponse } from "../types/notifications.types";
+import { Notification } from "../types/notifications.types";
 import { notificationsApi } from "../api/notificationsApi";
 
 export function useNotifications() {

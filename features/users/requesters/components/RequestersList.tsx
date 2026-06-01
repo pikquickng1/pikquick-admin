@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Pagination } from "@/components/ui/pagination";
 import { useRequesterList } from "../hooks/useRequesterList";
-import { RequesterListFilters } from "./RequesterListFilters";
 import { RequesterListTable } from "./RequesterListTable";
 import { RequesterListSkeleton } from "./RequesterListSkeleton";
 import { RequesterListFilters as Filters } from "../types/requester-list.types";
@@ -27,9 +26,10 @@ export function RequestersList() {
 
   const { requesters, loading, pagination } = useRequesterList(apiFilters, currentPage);
 
-  useEffect(() => {
+  const handleFiltersChange = (nextFilters: Filters) => {
+    setFilters(nextFilters);
     setCurrentPage(1);
-  }, [filters.search, filters.status]);
+  };
 
   const toggleRow = (id: string) => {
     setSelectedRows((prev) =>
@@ -68,7 +68,7 @@ export function RequestersList() {
           onSelectAll={toggleAll}
           onViewDetails={handleViewDetails}
           filters={filters}
-          onFiltersChange={setFilters}
+          onFiltersChange={handleFiltersChange}
         />
       </div>
 

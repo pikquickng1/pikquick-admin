@@ -1,4 +1,12 @@
-import { Mail, Phone, MapPin, Bike, Languages, Briefcase, Calendar } from "lucide-react";
+import {
+  Mail,
+  Phone,
+  MapPin,
+  Bike,
+  Languages,
+  Briefcase,
+  Calendar,
+} from "lucide-react";
 import { Runner } from "../types/runner.types";
 
 interface RunnerPersonalInfoProps {
@@ -8,7 +16,9 @@ interface RunnerPersonalInfoProps {
 export function RunnerPersonalInfo({ runner }: RunnerPersonalInfoProps) {
   return (
     <div>
-      <h3 className="text-lg font-semibold text-text-primary mb-6">Personal Information</h3>
+      <h3 className="text-lg font-semibold text-text-primary mb-6">
+        Personal Information
+      </h3>
 
       <div className="space-y-4">
         <div className="bg-neutral-50 rounded-lg p-4 text-text-primary">
@@ -16,7 +26,9 @@ export function RunnerPersonalInfo({ runner }: RunnerPersonalInfoProps) {
             <Mail className="w-5 h-5" />
             <p className="text-sm">Email Address</p>
           </div>
-          <p className="text-base text-text-primary font-medium ml-8">{runner.email}</p>
+          <p className="text-base text-text-primary font-medium ml-8">
+            {runner.email}
+          </p>
         </div>
 
         <div className="bg-neutral-50 rounded-lg p-4 text-text-primary">
@@ -24,7 +36,9 @@ export function RunnerPersonalInfo({ runner }: RunnerPersonalInfoProps) {
             <Phone className="w-5 h-5" />
             <p className="text-sm">Phone Number</p>
           </div>
-          <p className="text-base text-text-primary font-medium ml-8">{runner.phone}</p>
+          <p className="text-base text-text-primary font-medium ml-8">
+            {runner.phone}
+          </p>
         </div>
 
         <div className="bg-neutral-50 rounded-lg p-4 text-text-primary">
@@ -32,7 +46,9 @@ export function RunnerPersonalInfo({ runner }: RunnerPersonalInfoProps) {
             <MapPin className="w-5 h-5" />
             <p className="text-sm">Address</p>
           </div>
-          <p className="text-base text-text-primary font-medium ml-8">{runner.address}</p>
+          <p className="text-base text-text-primary font-medium ml-8">
+            {runner.address}
+          </p>
         </div>
 
         <div className="bg-neutral-50 rounded-lg p-4 text-text-primary">
@@ -40,7 +56,9 @@ export function RunnerPersonalInfo({ runner }: RunnerPersonalInfoProps) {
             <Bike className="w-5 h-5" />
             <p className="text-sm">Transport Mode</p>
           </div>
-          <p className="text-base text-text-primary font-medium ml-8">Motorcycle</p>
+          <p className="text-base text-text-primary font-medium ml-8">
+            {runner.transportMode}
+          </p>
         </div>
 
         <div className="bg-neutral-50 rounded-lg p-4 text-text-primary">
@@ -48,7 +66,9 @@ export function RunnerPersonalInfo({ runner }: RunnerPersonalInfoProps) {
             <Languages className="w-5 h-5" />
             <p className="text-sm">Languages</p>
           </div>
-          <p className="text-base text-text-primary font-medium ml-8">English, Yoruba</p>
+          <p className="text-base text-text-primary font-medium ml-8">
+            English, Yoruba
+          </p>
         </div>
 
         <div className="bg-neutral-50 rounded-lg p-4 text-text-primary">
@@ -56,7 +76,9 @@ export function RunnerPersonalInfo({ runner }: RunnerPersonalInfoProps) {
             <Briefcase className="w-5 h-5" />
             <p className="text-sm">Specialization</p>
           </div>
-          <p className="text-base text-text-primary font-medium ml-8">Express Delivery</p>
+          <p className="text-base text-text-primary font-medium ml-8">
+            Express Delivery
+          </p>
         </div>
 
         <div className="bg-neutral-50 rounded-lg p-4 text-text-primary">

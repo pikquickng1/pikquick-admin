@@ -12,12 +12,13 @@ function TokenSync() {
   const refreshTokenRef = useRef<string | null>(null);
   const setTokensRef = useRef<((access: string, refresh: string) => void) | null>(null);
 
-  refreshTokenRef.current = auth?.refreshToken ?? null;
-  setTokensRef.current = auth?.setTokens ?? null;
+  
 
   useEffect(() => {
     setTokenGetter(() => auth?.accessToken ?? null);
-  }, [auth?.accessToken]);
+    refreshTokenRef.current = auth?.refreshToken ?? null;
+  setTokensRef.current = auth?.setTokens ?? null;
+  }, [auth, auth?.accessToken, auth?.refreshToken,auth?.setTokens]);
 
   useEffect(() => {
     setRefreshHandler(async () => {
@@ -44,7 +45,7 @@ function TokenSync() {
     };
     window.addEventListener("auth:unauthorized", handleUnauthorized);
     return () => window.removeEventListener("auth:unauthorized", handleUnauthorized);
-  }, [auth?.logout]);
+  }, [auth, auth?.logout]);
 
   return null;
 }

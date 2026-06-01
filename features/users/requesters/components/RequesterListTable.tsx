@@ -33,13 +33,6 @@ export function RequesterListTable({
 
   const columns = [
     {
-      key: "id",
-      header: "User ID",
-      render: (requester: RequesterListItem) => (
-        <span className="text-sm text-text-primary">{requester.id}</span>
-      ),
-    },
-    {
       key: "name",
       header: "Name",
       render: (requester: RequesterListItem) => (
@@ -65,13 +58,6 @@ export function RequesterListTable({
       header: "Balance",
       render: (requester: RequesterListItem) => (
         <span className="text-sm text-text-primary">{formatCurrency(requester.balance)}</span>
-      ),
-    },
-    {
-      key: "tasksPosted",
-      header: "Tasks Posted",
-      render: (requester: RequesterListItem) => (
-        <span className="text-sm text-text-primary">{requester.tasksPosted}</span>
       ),
     },
     {

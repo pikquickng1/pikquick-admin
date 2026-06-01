@@ -465,7 +465,7 @@ export function ReferralDetailsPage({ referralId }: ReferralDetailsPageProps) {
             <h3 className="text-lg font-semibold text-text-primary mb-2">Approve Referral?</h3>
             <p className="text-sm text-text-secondary mb-6">
               This will mark the referral as successfully verified and release any pending rewards
-              to the referrer's wallet.
+              to the referrer&apos;s wallet.
             </p>
             <div className="flex items-center justify-end gap-3">
               <button

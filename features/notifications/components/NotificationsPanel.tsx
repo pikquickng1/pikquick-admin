@@ -84,7 +84,7 @@ export function NotificationsPanel({ isOpen, onClose }: NotificationsPanelProps)
                 placeholder="Search notifications.."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                className="w-full pl-10 pr-4 py-2 border border-neutral-200 text-black rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
               />
             </div>
           </div>

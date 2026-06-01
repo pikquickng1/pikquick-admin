@@ -91,7 +91,7 @@ export interface EliteReward {
   month: string;
 }
 
-export interface EliteReviewListParams extends PaginationParams {}
+export type EliteReviewListParams = PaginationParams;
 
 export interface EliteReviewListResponse {
   data: EliteReward[];

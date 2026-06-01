@@ -54,7 +54,7 @@ export function AdjustWalletModal({
                 Adjust Wallet Balance
               </DialogTitle>
               <p className="text-sm text-gray-600 mt-1">
-                Add or deduct amount from the requester's wallet
+                Add or deduct amount from the requester&apos;s wallet
               </p>
             </div>
             <button

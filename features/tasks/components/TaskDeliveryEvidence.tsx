@@ -1,6 +1,6 @@
 "use client";
 
-import { Image, Download } from "lucide-react";
+import { Image as ImageIcon, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface DeliveryFile {
@@ -37,7 +37,7 @@ export function TaskDeliveryEvidence({ files }: TaskDeliveryEvidenceProps) {
             >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-gray-200 flex items-center justify-center">
-                  <Image className="w-5 h-5 text-gray-500" />
+                  <ImageIcon className="w-5 h-5 text-gray-500" />
                 </div>
                 <span className="text-sm text-text-secondary">{file.label}</span>
               </div>

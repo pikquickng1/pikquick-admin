@@ -32,15 +32,6 @@ export function EditAdminModal({
     status: admin?.status || "Active",
   });
 
-  useEffect(() => {
-    if (admin) {
-      setFormData({
-        role: admin.role,
-        status: admin.status,
-      });
-    }
-  }, [admin]);
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onUpdate(formData);

@@ -1,7 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -20,15 +20,8 @@ interface EditCategoryModalProps {
 }
 
 export function EditCategoryModal({ isOpen, onClose, onSave, category }: EditCategoryModalProps) {
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-
-  useEffect(() => {
-    if (category) {
-      setName(category.name);
-      setDescription(category.description);
-    }
-  }, [category]);
+  const [name, setName] = useState(() => category?.name ?? "");
+  const [description, setDescription] = useState(() => category?.description ?? "");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { DataTable } from "@/components/ui/data-table";
 import { Pagination } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
@@ -118,11 +119,15 @@ function DocumentPreviewModal({ document, isOpen, onClose, onVerify }: DocumentP
           <div>
             <label className="text-sm text-text-secondary mb-2 block">Document Preview</label>
             <div className="border border-neutral-200 rounded-lg overflow-hidden">
-              <img
-                src={document.document_url}
-                alt="Document"
-                className="w-full h-auto max-h-[400px] object-contain"
-              />
+              <div className="relative w-full h-[400px]">
+                <Image
+                  src={document.document_url}
+                  alt="Document"
+                  fill
+                  unoptimized
+                  className="object-contain"
+                />
+              </div>
             </div>
           </div>
 

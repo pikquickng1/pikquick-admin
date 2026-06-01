@@ -13,7 +13,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
 } from "recharts";
 import {
   DropdownMenu,
@@ -22,6 +21,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useRevenueData } from "../hooks/useRevenueData";
+interface PieLabelProps {
+  name?: string;
+  percent?: number;
+  payload?: {
+    name?: string;
+    percentage?: number;
+  };
+}
 
 export function RevenueReports() {
   const { data, loading } = useRevenueData();
@@ -175,7 +182,9 @@ export function RevenueReports() {
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={(entry: any) => `${entry.name}: ${entry.percentage}%`}
+                label={(props: PieLabelProps) =>
+                  `${props.name ?? props.payload?.name}: ${props.payload?.percentage ?? Math.round((props.percent ?? 0) * 100)}%`
+                }
                 outerRadius={100}
                 fill="#8884d8"
                 dataKey="amount"

@@ -42,9 +42,10 @@ export function CreateTaskModal({ isOpen, onClose, onSuccess }: CreateTaskModalP
 
   const loadInitialData = async () => {
     try {
+      const role = "client" as const;
       const [catsData, usersData] = await Promise.all([
         taskCategoriesService.list(),
-        usersService.list({ role: "client" as any, limit: 100 }),
+        usersService.list({ role, limit: 100 }),
       ]);
       setCategories(catsData as unknown as TaskCategory[]);
       if (usersData && 'data' in usersData) {
@@ -113,7 +114,7 @@ export function CreateTaskModal({ isOpen, onClose, onSuccess }: CreateTaskModalP
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 text-black">
       <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="p-6 border-b border-neutral-200">
           <div className="flex items-center justify-between">
@@ -133,6 +134,7 @@ export function CreateTaskModal({ isOpen, onClose, onSuccess }: CreateTaskModalP
                 value={formData.task_type}
                 onChange={(e) => setFormData({ ...formData, task_type: e.target.value })}
                 placeholder="e.g., delivery, errand"
+                className="mt-2"
                 required
               />
             </div>
@@ -142,7 +144,7 @@ export function CreateTaskModal({ isOpen, onClose, onSuccess }: CreateTaskModalP
                 id="category_id"
                 value={formData.category_id}
                 onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
-                className="w-full px-3 py-2 border border-neutral-200 rounded"
+                className="w-full px-3 py-2 border border-neutral-200 rounded mt-2"
                 required
               >
                 <option value="">Select category</option>
@@ -162,7 +164,7 @@ export function CreateTaskModal({ isOpen, onClose, onSuccess }: CreateTaskModalP
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               rows={3}
-              className="w-full px-3 py-2 border border-neutral-200 rounded"
+              className="w-full px-3 py-2 mt-2 border border-neutral-200 rounded"
               required
             />
           </div>
@@ -177,6 +179,7 @@ export function CreateTaskModal({ isOpen, onClose, onSuccess }: CreateTaskModalP
                 onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
                 placeholder="5000"
                 min="500"
+                className="mt-2"
                 required
               />
             </div>
@@ -186,7 +189,7 @@ export function CreateTaskModal({ isOpen, onClose, onSuccess }: CreateTaskModalP
                 id="client_id"
                 value={formData.client_id}
                 onChange={(e) => setFormData({ ...formData, client_id: e.target.value })}
-                className="w-full px-3 py-2 border border-neutral-200 rounded"
+                className="w-full px-3 py-2 border border-neutral-200 rounded mt-2"
                 required
               >
                 <option value="">Select requester</option>
@@ -253,7 +256,7 @@ export function CreateTaskModal({ isOpen, onClose, onSuccess }: CreateTaskModalP
               id="payment_method"
               value={formData.payment_method}
               onChange={(e) => setFormData({ ...formData, payment_method: e.target.value as "card" | "wallet" })}
-              className="w-full px-3 py-2 border border-neutral-200 rounded"
+              className="w-full px-3 py-2 border border-neutral-200 rounded mt-2"
             >
               <option value="card">Card</option>
               <option value="wallet">Wallet</option>
@@ -267,11 +270,11 @@ export function CreateTaskModal({ isOpen, onClose, onSuccess }: CreateTaskModalP
               value={formData.special_instructions}
               onChange={(e) => setFormData({ ...formData, special_instructions: e.target.value })}
               rows={2}
-              className="w-full px-3 py-2 border border-neutral-200 rounded"
+              className="w-full  px-3 py-2 border border-neutral-200 rounded mt-2"
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-4">
+          <div className="flex justify-end gap-3 pt-4 text-white">
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>

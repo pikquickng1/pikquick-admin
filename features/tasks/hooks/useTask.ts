@@ -12,7 +12,7 @@ export function useTask(id: string) {
   const fetchTaskData = async () => {
     try {
       setLoading(true);
-      const taskData = await taskApi.getTaskById(id);
+      const taskData = await taskApi.getTaskById();
       setTask(taskData);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch task data");

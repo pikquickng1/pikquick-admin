@@ -13,7 +13,7 @@ export function useWalletList(
   filters: WalletListFilters,
   page: number
 ) {
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, isLoading, refetch } = useQuery({
     queryKey: queryKeys.wallets.list({ page, limit: LIMIT }),
     queryFn: async () => {
       const res = await walletsService.list({ page, limit: LIMIT });
