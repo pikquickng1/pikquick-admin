@@ -21,6 +21,11 @@ export function RunnerTaskRecordsTab({
     setPage,
   } = useRunnerTaskRecords(runnerId);
   const tasks = tasksProp ?? fetchedTasks;
+  const formatDate = (value?: string | Date) => {
+    if (!value) return "-";
+    const date = new Date(value);
+    return date.toLocaleDateString();
+  }
   // Optionally, you can fetch completed/total tasks from another endpoint if needed
   // For now, just sum from tasks
   const completedTasks = tasks.filter((t) => t.status === "completed").length;
@@ -49,13 +54,6 @@ export function RunnerTaskRecordsTab({
 
   const columns = [
     {
-      key: "id",
-      header: "Task ID",
-      render: (task: RunnerTaskHistory) => (
-        <span className="text-sm text-text-primary">{task.id}</span>
-      ),
-    },
-    {
       key: "title",
       header: "Task Type",
       render: (task: RunnerTaskHistory) => (
@@ -79,7 +77,7 @@ export function RunnerTaskRecordsTab({
       key: "date",
       header: "Date",
       render: (task: RunnerTaskHistory) => (
-        <span className="text-sm text-text-primary">{task.date}</span>
+        <span className="text-sm text-text-primary">{formatDate(task.date)}</span>
       ),
     },
     {
