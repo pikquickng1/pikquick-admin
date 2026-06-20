@@ -1,41 +1,22 @@
 import type { AdminTask } from "@/lib/types";
+import { TaskStatus } from "@/lib/types/enums";
+import { formatDate } from "@/lib/utils/date";
 import type { TaskListItem } from "../types/task.types";
 
-function mapStatus(
-  status: string
-): "In Progress" | "Completed" | "Pending" | "Cancelled" {
-  const s = status?.toLowerCase();
-  switch (s) {
-    case "task_assigned":
-    case "in_progress":
-      return "In Progress";
-    case "completed":
-      return "Completed";
-    case "pending":
-      return "Pending";
-    case "cancelled":
-    case "canceled":
-      return "Cancelled";
-    default:
-      return "Pending";
-  }
-}
-
-function formatDate(iso: string | undefined): string {
-  if (!iso) return "—";
-  try {
-    const d = new Date(iso);
-    return d.toLocaleDateString("en-NG", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  } catch {
-    return "—";
-  }
-}
+const STATUS_MAP: Record<string, TaskListItem["status"]> = {
+  [TaskStatus.TASK_ASSIGNED]: "In Progress",
+  [TaskStatus.TASK_STARTED]: "In Progress",
+  [TaskStatus.EN_ROUTE_TO_DROPOFF]: "In Progress",
+  [TaskStatus.AWAITING_CLIENT_APPROVAL]: "In Progress",
+  [TaskStatus.TASK_COMPLETED]: "Completed",
+  [TaskStatus.PENDING]: "Pending",
+  [TaskStatus.BIDDING]: "Pending",
+  [TaskStatus.BID_ACCEPTED]: "Pending",
+  [TaskStatus.CANCELLED]: "Cancelled",
+};
 
 export function mapAdminTaskToListItem(task: AdminTask): TaskListItem {
+  const raw = (task.status as string | undefined)?.toLowerCase() ?? TaskStatus.PENDING;
   return {
     id: task.id,
     title: (task.description as string) ?? `Task ${task.id}`,
@@ -43,6 +24,6 @@ export function mapAdminTaskToListItem(task: AdminTask): TaskListItem {
     runnerName: (task.runner_name as string) ?? null,
     budget: (task.budget as number) ?? 0,
     datePosted: formatDate(task.created_at as string | undefined),
-    status: mapStatus((task.status as string) ?? "pending"),
+    status: STATUS_MAP[raw] ?? "Pending",
   };
 }

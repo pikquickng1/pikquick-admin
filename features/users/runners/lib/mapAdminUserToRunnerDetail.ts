@@ -1,29 +1,7 @@
 import type { AdminUser } from "@/lib/types";
+import { UserStatus } from "@/lib/types/enums";
 import type { Runner } from "../types/runner.types";
-
-function mapStatus(s: string): "Available" | "Unavailable" | "Suspended" {
-  switch (s) {
-    case "active":
-      return "Available";
-    case "suspended":
-      return "Suspended";
-    default:
-      return "Unavailable";
-  }
-}
-
-function formatDate(iso: string | undefined): string {
-  if (!iso) return "—";
-  try {
-    return new Date(iso).toLocaleDateString("en-NG", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  } catch {
-    return "—";
-  }
-}
+import { formatDate } from "@/lib/utils/date";
 
 export function mapAdminUserToRunner(user: AdminUser): Runner {
   return {
@@ -32,11 +10,11 @@ export function mapAdminUserToRunner(user: AdminUser): Runner {
     email: user.email,
     phone: user.phone ?? "",
     address: "—",
-    joinedDate: formatDate(user.created_at as string | undefined),
+    joinedDate: formatDate(user.created_at),
     accountStatus: user.status,
-    verification: "Verified",
-    transportMode: "motorcycle",
-    status: mapStatus(user.status),
+    verification: "unverified",
+    transportMode: "—",
+    status: (user.status as UserStatus) ?? UserStatus.INACTIVE,
     balance: 0,
     rating: 0,
     totalReviews: 0,

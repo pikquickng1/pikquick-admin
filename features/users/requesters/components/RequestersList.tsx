@@ -3,13 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Pagination } from "@/components/ui/pagination";
+import { DEFAULT_SEARCH_DEBOUNCE_MS } from "@/lib/config/pagination";
+import { ALL_FILTER } from "@/lib/types/enums";
+import { useDebouncedValue } from "@/lib/hooks/useDebouncedValue";
 import { useRequesterList } from "../hooks/useRequesterList";
 import { RequesterListTable } from "./RequesterListTable";
 import { RequesterListSkeleton } from "./RequesterListSkeleton";
-import { RequesterListFilters as Filters } from "../types/requester-list.types";
-import { useDebouncedValue } from "@/lib/hooks/useDebouncedValue";
-
-const SEARCH_DEBOUNCE_MS = 300;
+import type { RequesterListFilters as Filters } from "../types/requester-list.types";
 
 export function RequestersList() {
   const router = useRouter();
@@ -17,11 +17,11 @@ export function RequestersList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState<Filters>({
     search: "",
-    status: "All Status",
-    sortBy: "Most Recent",
+    status: ALL_FILTER,
+    sortBy: "most_recent",
   });
 
-  const debouncedSearch = useDebouncedValue(filters.search, SEARCH_DEBOUNCE_MS);
+  const debouncedSearch = useDebouncedValue(filters.search, DEFAULT_SEARCH_DEBOUNCE_MS);
   const apiFilters = { ...filters, search: debouncedSearch };
 
   const { requesters, loading, pagination } = useRequesterList(apiFilters, currentPage);
@@ -33,7 +33,7 @@ export function RequestersList() {
 
   const toggleRow = (id: string) => {
     setSelectedRows((prev) =>
-      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id],
     );
   };
 

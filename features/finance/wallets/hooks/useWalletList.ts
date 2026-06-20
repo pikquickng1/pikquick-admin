@@ -3,27 +3,24 @@
 import { useQuery } from "@tanstack/react-query";
 import { walletsService } from "@/lib/services";
 import { queryKeys } from "@/lib/query/keys";
-import type { WalletListFilters } from "../types/wallet.types";
+import { DEFAULT_PAGE_SIZE } from "@/lib/config/pagination";
+import { UserType } from "@/lib/types/enums";
 import { mapAdminWalletToWallet } from "../lib/mapAdminWalletToWallet";
+import type { WalletListFilters } from "../types/wallet.types";
 
-const LIMIT = 20;
+const LIMIT = DEFAULT_PAGE_SIZE;
 
 export function useWalletList(
-  _userType: "requester" | "runner",
-  filters: WalletListFilters,
+  userType: UserType,
+  _filters: WalletListFilters,
   page: number
 ) {
-  const { data, isLoading, refetch } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: queryKeys.wallets.list({ page, limit: LIMIT }),
-    queryFn: async () => {
-      const res = await walletsService.list({ page, limit: LIMIT });
-      return res;
-    },
+    queryFn: async () => walletsService.list({ page, limit: LIMIT }),
   });
 
-  const wallets = (data?.data ?? []).map((w) =>
-    mapAdminWalletToWallet(w, _userType)
-  );
+  const wallets = (data?.data ?? []).map((w) => mapAdminWalletToWallet(w, userType));
   const total = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / LIMIT));
 
@@ -37,7 +34,10 @@ export function useWalletList(
   return {
     wallets,
     loading: isLoading,
+    error: error instanceof Error ? error.message : null,
     pagination,
-    refetch: () => refetch(),
+    refetch: () => {
+      void refetch();
+    },
   };
 }

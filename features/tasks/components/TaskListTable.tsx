@@ -1,8 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
-import { TaskListItem } from "../types/task.types";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { formatNgn } from "@/lib/utils/money";
+import {
+  TASK_STATUS_OPTIONS,
+  TASK_SORT_OPTIONS,
+} from "@/lib/constants/filters";
+import type { TaskListItem } from "../types/task.types";
+import type { TaskListFilters as Filters } from "../types/task.types";
 import { TaskListFilters } from "./TaskListFilters";
-import { TaskListFilters as Filters } from "../types/task.types";
 
 interface TaskListTableProps {
   tasks: TaskListItem[];
@@ -14,6 +20,8 @@ interface TaskListTableProps {
   onFiltersChange: (filters: Filters) => void;
 }
 
+const UNASSIGNED_LABEL = "Unassigned";
+
 export function TaskListTable({
   tasks,
   selectedRows,
@@ -23,29 +31,6 @@ export function TaskListTable({
   filters,
   onFiltersChange,
 }: TaskListTableProps) {
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN",
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "In Progress":
-        return "bg-blue-100 text-blue-700";
-      case "Completed":
-        return "bg-green-100 text-green-700";
-      case "Pending":
-        return "bg-yellow-100 text-yellow-700";
-      case "Cancelled":
-        return "bg-red-100 text-red-700";
-      default:
-        return "bg-gray-100 text-gray-700";
-    }
-  };
-
   const columns = [
     
     {
@@ -67,7 +52,7 @@ export function TaskListTable({
       header: "Runner",
       render: (task: TaskListItem) => (
         <span className="text-sm text-text-secondary">
-          {task.runnerName || "Unassigned"}
+          {task.runnerName || UNASSIGNED_LABEL}
         </span>
       ),
     },
@@ -75,7 +60,7 @@ export function TaskListTable({
       key: "budget",
       header: "Budget",
       render: (task: TaskListItem) => (
-        <span className="text-sm text-text-primary">{formatCurrency(task.budget)}</span>
+        <span className="text-sm text-text-primary">{formatNgn(task.budget)}</span>
       ),
     },
     {
@@ -89,13 +74,7 @@ export function TaskListTable({
       key: "status",
       header: "Status",
       render: (task: TaskListItem) => (
-        <span
-          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-            task.status
-          )}`}
-        >
-          {task.status}
-        </span>
+        <StatusBadge status={task.status === "In Progress" ? "task_assigned" : task.status.toLowerCase()} />
       ),
     },
     {
@@ -123,7 +102,14 @@ export function TaskListTable({
       onRowSelect={onRowSelect}
       onSelectAll={onSelectAll}
       emptyMessage="No tasks found"
-      filters={<TaskListFilters filters={filters} onFiltersChange={onFiltersChange} />}
+      filters={
+        <TaskListFilters
+          filters={filters}
+          onFiltersChange={onFiltersChange}
+          statusOptions={TASK_STATUS_OPTIONS}
+          sortOptions={TASK_SORT_OPTIONS}
+        />
+      }
     />
   );
 }

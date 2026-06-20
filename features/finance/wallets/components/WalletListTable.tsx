@@ -1,7 +1,11 @@
 "use client";
 
 import { DataTable } from "@/components/ui/data-table";
-import { Wallet, WalletListFilters as Filters } from "../types/wallet.types";
+import { formatNgn } from "@/lib/utils/money";
+import { formatDate, formatTime } from "@/lib/utils/date";
+import { UserType } from "@/lib/types/enums";
+import { statusLabel } from "@/lib/utils/status";
+import type { Wallet, WalletListFilters as Filters } from "../types/wallet.types";
 import { WalletListFilters } from "./WalletListFilters";
 
 interface WalletListTableProps {
@@ -12,8 +16,8 @@ interface WalletListTableProps {
   onViewHistory: (id: string) => void;
   filters: Filters;
   onFiltersChange: (filters: Filters) => void;
-  activeTab: "requester" | "runner";
-  onTabChange: (tab: "requester" | "runner") => void;
+  activeTab: UserType;
+  onTabChange: (tab: UserType) => void;
 }
 
 export function WalletListTable({
@@ -27,31 +31,6 @@ export function WalletListTable({
   activeTab,
   onTabChange,
 }: WalletListTableProps) {
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN",
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return "Invalid Date";
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  };
-
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return "";
-    const hours = String(date.getHours()).padStart(2, "0");
-    const minutes = String(date.getMinutes()).padStart(2, "0");
-    return `${hours}:${minutes}`;
-  };
-
   const columns = [
     {
       key: "userId",
@@ -72,7 +51,7 @@ export function WalletListTable({
       header: "Current Balance",
       render: (wallet: Wallet) => (
         <span className="text-sm font-medium text-text-primary">
-          {formatCurrency(wallet.currentBalance)}
+          {formatNgn(wallet.currentBalance)}
         </span>
       ),
     },
@@ -109,31 +88,30 @@ export function WalletListTable({
 
   return (
     <div className="bg-white rounded border border-light overflow-hidden">
-      {/* Tabs */}
       <div className="grid grid-cols-2 gap-3 bg-neutral-200 p-1 m-4">
         <button
-          onClick={() => onTabChange("requester")}
+          onClick={() => onTabChange(UserType.CLIENT)}
           className={`py-4 text-center text-base font-medium transition-colors rounded ${
-            activeTab === "requester"
+            activeTab === UserType.CLIENT
               ? "bg-neutral-200 text-text-primary"
               : "bg-white text-text-primary hover:bg-neutral-50"
           }`}
         >
-          Requester Wallets
+          {statusLabel(UserType.CLIENT)} Wallets
         </button>
         <button
-          onClick={() => onTabChange("runner")}
+          onClick={() => onTabChange(UserType.RUNNER)}
           className={`py-4 text-center text-base font-medium transition-colors rounded ${
-            activeTab === "runner"
+            activeTab === UserType.RUNNER
               ? "bg-neutral-200 text-text-primary"
               : "bg-white text-text-primary hover:bg-neutral-50"
           }`}
         >
-          Runner Wallets
+          {statusLabel(UserType.RUNNER)} Wallets
         </button>
       </div>
 
-      <div className="">
+      <div>
         <DataTable
           columns={columns}
           data={wallets}
@@ -143,7 +121,9 @@ export function WalletListTable({
           onRowSelect={onRowSelect}
           onSelectAll={onSelectAll}
           emptyMessage="No wallets found"
-          filters={<WalletListFilters filters={filters} onFiltersChange={onFiltersChange} />}
+          filters={
+            <WalletListFilters filters={filters} onFiltersChange={onFiltersChange} />
+          }
         />
       </div>
     </div>

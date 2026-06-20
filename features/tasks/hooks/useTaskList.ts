@@ -3,44 +3,30 @@
 import { useQuery } from "@tanstack/react-query";
 import { tasksService } from "@/lib/services";
 import { queryKeys } from "@/lib/query/keys";
-import type { TaskListFilters } from "../types/task.types";
+import { DEFAULT_PAGE_SIZE } from "@/lib/config/pagination";
+import { statusToApi } from "@/lib/utils/status";
 import { mapAdminTaskToListItem } from "../lib/mapAdminTaskToListItem";
+import type { TaskListFilters } from "../types/task.types";
 
-const LIMIT = 20;
-
-function statusToApi(status: string): string | undefined {
-  if (!status || status === "All Status") return undefined;
-  switch (status) {
-    case "In Progress":
-      return "task_assigned";
-    case "Completed":
-      return "completed";
-    case "Pending":
-      return "pending";
-    case "Cancelled":
-      return "cancelled";
-    default:
-      return undefined;
-  }
-}
+const LIMIT = DEFAULT_PAGE_SIZE;
 
 export function useTaskList(filters: TaskListFilters, page: number = 1) {
+  const status = statusToApi(filters.status);
+
   const { data, isLoading, error } = useQuery({
     queryKey: queryKeys.tasks.list({
       page,
       limit: LIMIT,
-      status: statusToApi(filters.status),
+      status,
       search: filters.search || undefined,
     }),
-    queryFn: async () => {
-      const res = await tasksService.listAll({
+    queryFn: async () =>
+      tasksService.listAll({
         page,
         limit: LIMIT,
-        status: statusToApi(filters.status),
+        status,
         search: filters.search || undefined,
-      });
-      return res;
-    },
+      }),
   });
 
   const tasks = (data?.data ?? []).map(mapAdminTaskToListItem);

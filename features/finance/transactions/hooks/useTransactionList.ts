@@ -1,35 +1,29 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Transaction, TransactionListFilters } from "../types/transaction.types";
+import { useQuery } from "@tanstack/react-query";
 import { transactionApi } from "../api/transactionApi";
+import { TRANSACTION_PAGE_SIZE } from "@/lib/config/pagination";
+import { DEFAULT_PAGE } from "@/lib/config/pagination";
+import type { TransactionListFilters } from "../types/transaction.types";
 
-export function useTransactionList(filters: TransactionListFilters, page: number) {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [pagination, setPagination] = useState({
-    currentPage: 1,
-    totalPages: 1,
-    totalItems: 0,
-    itemsPerPage: 8,
+export function useTransactionList(filters: TransactionListFilters, page: number = DEFAULT_PAGE) {
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ["transactions", filters, page],
+    queryFn: () => transactionApi.getTransactionsList(filters, page),
   });
 
-  const fetchTransactions = async () => {
-    try {
-      setLoading(true);
-      const response = await transactionApi.getTransactionsList(filters, page);
-      setTransactions(response.data);
-      setPagination(response.pagination);
-    } catch (error) {
-      console.error("Failed to fetch transactions:", error);
-    } finally {
-      setLoading(false);
-    }
+  return {
+    transactions: data?.data ?? [],
+    loading: isLoading,
+    error: error instanceof Error ? error.message : null,
+    pagination: data?.pagination ?? {
+      currentPage: page,
+      totalPages: 1,
+      totalItems: 0,
+      itemsPerPage: TRANSACTION_PAGE_SIZE,
+    },
+    refetch: () => {
+      void refetch();
+    },
   };
-
-  useEffect(() => {
-    fetchTransactions();
-  }, [filters, page]);
-
-  return { transactions, loading, pagination, refetch: fetchTransactions };
 }

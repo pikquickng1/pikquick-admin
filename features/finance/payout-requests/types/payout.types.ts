@@ -1,3 +1,7 @@
+import { ALL_FILTER, WithdrawalStatus } from "@/lib/types/enums";
+
+export type PayoutDisplayStatus = "Pending" | "Completed" | "Rejected";
+
 export interface PayoutRequest {
   id: string;
   runnerId: string;
@@ -8,7 +12,7 @@ export interface PayoutRequest {
   bankName: string;
   accountNumber: string;
   date: string;
-  status: "Pending" | "Completed" | "Rejected";
+  status: PayoutDisplayStatus;
 }
 
 export interface PayoutRequestDetails extends PayoutRequest {
@@ -20,7 +24,7 @@ export interface PayoutRequestDetails extends PayoutRequest {
 
 export interface PayoutListFilters {
   search: string;
-  status: string;
+  status: WithdrawalStatus | typeof ALL_FILTER;
   dateRange?: {
     from: Date;
     to: Date;

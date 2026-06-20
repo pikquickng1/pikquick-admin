@@ -1,51 +1,36 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { TransactionDetails } from "../types/transaction.types";
+import { useQuery } from "@tanstack/react-query";
 import { transactionApi } from "../api/transactionApi";
+import type { TransactionDetails } from "../types/transaction.types";
 
 export function useTransaction(transactionId: string | null) {
-  const [transaction, setTransaction] = useState<TransactionDetails | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchTransaction = async () => {
-    if (!transactionId) return;
-
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await transactionApi.getTransactionById(transactionId);
-      setTransaction(data);
-    } catch (err) {
-      console.error("Failed to fetch transaction:", err);
-      setError("Failed to load transaction details");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchTransaction();
-  }, [transactionId]);
+  const query = useQuery({
+    queryKey: ["transaction", transactionId],
+    queryFn: () => transactionApi.getTransactionById(transactionId!),
+    enabled: !!transactionId,
+  });
 
   const downloadReceipt = async () => {
     if (!transactionId) return;
-
-    try {
-      const blob = await transactionApi.downloadReceipt(transactionId);
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `receipt-${transactionId}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (err) {
-      console.error("Failed to download receipt:", err);
-    }
+    const blob = await transactionApi.downloadReceipt(transactionId);
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `receipt-${transactionId}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
   };
 
-  return { transaction, loading, error, refetch: fetchTransaction, downloadReceipt };
+  return {
+    transaction: (query.data ?? null) as TransactionDetails | null,
+    loading: query.isLoading,
+    error: query.error instanceof Error ? query.error.message : null,
+    refetch: () => {
+      void query.refetch();
+    },
+    downloadReceipt,
+  };
 }

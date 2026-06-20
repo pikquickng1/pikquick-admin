@@ -28,5 +28,7 @@ export type {
   DeliveryFile,
 } from "./types/task.types";
 
+export { PaymentType } from "@/lib/types/enums";
+
 // API
 export { taskApi } from "./api/taskApi";

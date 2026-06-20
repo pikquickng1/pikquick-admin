@@ -1,21 +1,27 @@
+import {
+  ALL_FILTER,
+  UserStatus,
+  VerificationStatus,
+} from "@/lib/types/enums";
+
 export interface RunnerListItem {
   id: string;
   name: string;
   email: string;
   phone: string;
-  verification: "Verified" | "Pending" | "Failed";
+  verification: VerificationStatus;
   balance: number;
   rating: number;
   totalReviews: number;
-  status: "Available" | "Unavailable" | "Suspended";
+  status: UserStatus;
 }
 
 export interface RunnerListFilters {
   search: string;
-  status: string;
+  status: UserStatus | typeof ALL_FILTER;
   sortBy: string;
   limit?: number;
-  verification?: string;
+  verification?: VerificationStatus | typeof ALL_FILTER;
 }
 
 export interface RunnerListResponse {

@@ -1,119 +1,67 @@
+import { DEFAULT_PAGE_SIZE } from "@/lib/config/pagination";
 import { Requester, RequesterTransaction, RequesterWallet, RequesterTaskHistory } from "../types/requester.types";
 import { RequesterListFilters, RequesterListResponse } from "../types/requester-list.types";
 import { RequesterPayment } from "../types/payment.types";
 import { requestersService } from "@/lib/services";
+
+const LIMIT = DEFAULT_PAGE_SIZE;
 
 export const requesterApi = {
   getRequestersList: async (
     filters: RequesterListFilters,
     page: number = 1
   ): Promise<RequesterListResponse> => {
-    try {
-      const response = await requestersService.getRequesters({
-        page,
-        limit: filters.limit || 20,
-        search: filters.search,
-        status: filters.status,
-      });
-      return response;
-    } catch (error) {
-      console.error("Failed to fetch requesters list:", error);
-      throw error;
-    }
+    const response = await requestersService.getRequesters({
+      page,
+      limit: filters.limit ?? LIMIT,
+      search: filters.search,
+      status: filters.status,
+    });
+    return response;
   },
 
   getRequesterById: async (id: string): Promise<Requester> => {
-    try {
-      const response = await requestersService.getRequesterById(id);
-      return response.data;
-    } catch (error) {
-      console.error("Failed to fetch requester details:", error);
-      throw error;
-    }
+    const response = await requestersService.getRequesterById(id);
+    return response.data;
   },
 
   getRequesterWallet: async (id: string): Promise<RequesterWallet> => {
-    try {
-      const response = await requestersService.getRequesterWallet(id);
-      return response;
-    } catch (error) {
-      console.error("Failed to fetch requester wallet:", error);
-      throw error;
-    }
+    const response = await requestersService.getRequesterWallet(id);
+    return response;
   },
 
   getRequesterTransactions: async (id: string): Promise<RequesterTransaction[]> => {
-    try {
-      const wallet = await requestersService.getRequesterWallet(id);
-      return wallet.recentTransactions || [];
-    } catch (error) {
-      console.error("Failed to fetch requester transactions:", error);
-      throw error;
-    }
+    const wallet = await requestersService.getRequesterWallet(id);
+    return wallet.recentTransactions ?? [];
   },
 
   getRequesterTaskHistory: async (id: string): Promise<RequesterTaskHistory[]> => {
-    try {
-      const response = await requestersService.getRequesterTasks(id, { limit: 20 });
-      return response.data || [];
-    } catch (error) {
-      console.error("Failed to fetch requester task history:", error);
-      throw error;
-    }
+    const response = await requestersService.getRequesterTasks(id, { limit: LIMIT });
+    return response.data ?? [];
   },
 
   getRequesterPayments: async (id: string): Promise<RequesterPayment[]> => {
-    try {
-      const response = await requestersService.getRequesterPayments(id, { limit: 20 });
-      return response.data || [];
-    } catch (error) {
-      console.error("Failed to fetch requester payments:", error);
-      throw error;
-    }
+    const response = await requestersService.getRequesterPayments(id, { limit: LIMIT });
+    return response.data ?? [];
   },
 
   suspendRequester: async (id: string): Promise<void> => {
-    try {
-      await requestersService.suspendRequester(id);
-    } catch (error) {
-      console.error("Failed to suspend requester:", error);
-      throw error;
-    }
+    await requestersService.suspendRequester(id);
   },
 
   activateRequester: async (id: string): Promise<void> => {
-    try {
-      await requestersService.activateRequester(id);
-    } catch (error) {
-      console.error("Failed to activate requester:", error);
-      throw error;
-    }
+    await requestersService.activateRequester(id);
   },
 
   adjustWallet: async (id: string, type: "debit" | "credit", amount: number): Promise<void> => {
-    try {
-      await requestersService.adjustWallet(id, { type, amount });
-    } catch (error) {
-      console.error("Failed to adjust wallet:", error);
-      throw error;
-    }
+    await requestersService.adjustWallet(id, { type, amount });
   },
 
   resetPassword: async (id: string): Promise<void> => {
-    try {
-      await requestersService.resetPassword(id);
-    } catch (error) {
-      console.error("Failed to reset password:", error);
-      throw error;
-    }
+    await requestersService.resetPassword(id);
   },
 
   sendMessage: async (id: string, subject: string, message: string): Promise<void> => {
-    try {
-      await requestersService.sendMessage(id, { subject, message });
-    } catch (error) {
-      console.error("Failed to send message:", error);
-      throw error;
-    }
+    await requestersService.sendMessage(id, { subject, message });
   },
 };

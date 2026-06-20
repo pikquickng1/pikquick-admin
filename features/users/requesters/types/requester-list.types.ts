@@ -1,3 +1,5 @@
+import { ALL_FILTER, UserStatus } from "@/lib/types/enums";
+
 export interface RequesterListItem {
   id: string;
   name: string;
@@ -5,13 +7,13 @@ export interface RequesterListItem {
   phone: string;
   balance: number;
   tasksPosted: number;
-  status: "Active" | "Suspended" | "Inactive";
+  status: UserStatus;
 }
 
 export interface RequesterListFilters {
   search: string;
-  status: "All Status" | "Active" | "Suspended" | "Inactive";
-  sortBy: "Most Recent" | "Most tasks";
+  status: UserStatus | typeof ALL_FILTER;
+  sortBy: string;
   limit?: number;
 }
 

@@ -5,7 +5,8 @@ import { Search, Calendar as CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { WalletListFilters as Filters } from "../types/wallet.types";
+import { SEARCH_PLACEHOLDER_WALLET } from "@/lib/constants/filters";
+import type { WalletListFilters as Filters } from "../types/wallet.types";
 
 interface WalletListFiltersProps {
   filters: Filters;
@@ -20,10 +21,7 @@ export function WalletListFilters({ filters, onFiltersChange }: WalletListFilter
     if (selectedDate) {
       onFiltersChange({
         ...filters,
-        dateRange: {
-          from: selectedDate,
-          to: selectedDate,
-        },
+        dateRange: { from: selectedDate, to: selectedDate },
       });
     }
   };
@@ -34,7 +32,7 @@ export function WalletListFilters({ filters, onFiltersChange }: WalletListFilter
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         <input
           type="text"
-          placeholder="Search by name or ID"
+          placeholder={SEARCH_PLACEHOLDER_WALLET}
           value={filters.search}
           onChange={(e) => onFiltersChange({ ...filters, search: e.target.value })}
           className="w-full pl-10 py-4 text-text-primary bg-white border border-neutral-200 rounded text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"

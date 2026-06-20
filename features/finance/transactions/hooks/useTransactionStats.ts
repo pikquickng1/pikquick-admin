@@ -1,36 +1,25 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { TransactionStats } from "../types/transaction.types";
+import { useQuery } from "@tanstack/react-query";
 import { transactionApi } from "../api/transactionApi";
 
 export function useTransactionStats() {
-  const [stats, setStats] = useState<TransactionStats>({
-    totalPlatformEarnings: 0,
-    dailyAccessPayments: 0,
-    taskPayments: 0,
-    refunds: 0,
+  const query = useQuery({
+    queryKey: ["transaction-stats"],
+    queryFn: () => transactionApi.getTransactionStats(),
   });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  const fetchStats = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await transactionApi.getTransactionStats();
-      setStats(data);
-    } catch (err) {
-      console.error("Failed to fetch transaction stats:", err);
-      setError("Failed to load transaction statistics");
-    } finally {
-      setLoading(false);
-    }
+  return {
+    stats: query.data ?? {
+      totalPlatformEarnings: 0,
+      dailyAccessPayments: 0,
+      taskPayments: 0,
+      refunds: 0,
+    },
+    loading: query.isLoading,
+    error: query.error instanceof Error ? query.error.message : null,
+    refetch: () => {
+      void query.refetch();
+    },
   };
-
-  useEffect(() => {
-    fetchStats();
-  }, []);
-
-  return { stats, loading, error, refetch: fetchStats };
 }

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Ban, Send, KeyRound, CheckCircle } from "lucide-react";
+import { UserStatus } from "@/lib/types/enums";
 import { useRunnerActions } from "../hooks/useRunnerActions";
 import {
   SuspendAccountModal,
@@ -12,7 +13,7 @@ import {
 
 interface RunnerAdminActionsProps {
   runnerId: string;
-  accountStatus: "Available" | "Unavailable" | "Suspended";
+  accountStatus: UserStatus | string;
   userName: string;
   userEmail: string;
   onActionComplete?: () => void;
@@ -32,21 +33,11 @@ export function RunnerAdminActions({
   const [showNotificationModal, setShowNotificationModal] = useState(false);
   const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
 
-  const handleSuspendClick = () => {
-    setShowSuspendModal(true);
-  };
-
-  const handleActivateClick = () => {
-    setShowActivateModal(true);
-  };
-
   const handleSuspendConfirm = async () => {
     const success = await suspendAccount(runnerId);
     if (success) {
       setShowSuspendModal(false);
-      if (onActionComplete) {
-        onActionComplete();
-      }
+      onActionComplete?.();
     }
   };
 
@@ -54,39 +45,27 @@ export function RunnerAdminActions({
     const success = await activateAccount(runnerId);
     if (success) {
       setShowActivateModal(false);
-      if (onActionComplete) {
-        onActionComplete();
-      }
+      onActionComplete?.();
     }
-  };
-
-  const handleResetPasswordClick = () => {
-    setShowResetPasswordModal(true);
   };
 
   const handleResetPasswordConfirm = async () => {
     const success = await resetPassword(runnerId);
     if (success) {
       setShowResetPasswordModal(false);
-      if (onActionComplete) {
-        onActionComplete();
-      }
+      onActionComplete?.();
     }
-  };
-
-  const handleSendMessage = () => {
-    setShowNotificationModal(true);
   };
 
   const handleSendMessageConfirm = async (subject: string, message: string) => {
     const success = await sendMessage(runnerId, subject, message);
     if (success) {
       setShowNotificationModal(false);
-      if (onActionComplete) {
-        onActionComplete();
-      }
+      onActionComplete?.();
     }
   };
+
+  const isSuspended = accountStatus === UserStatus.SUSPENDED;
 
   return (
     <>
@@ -94,9 +73,9 @@ export function RunnerAdminActions({
         <h3 className="text-lg font-semibold text-text-primary mb-6">Admin Actions</h3>
 
         <div className="space-y-3">
-          {accountStatus === "Suspended" ? (
+          {isSuspended ? (
             <button
-              onClick={handleActivateClick}
+              onClick={() => setShowActivateModal(true)}
               disabled={loading}
               className="w-full flex items-center gap-3 p-3 rounded-lg border border-neutral-200 hover:bg-neutral-50 transition-colors disabled:opacity-50 text-left"
             >
@@ -105,7 +84,7 @@ export function RunnerAdminActions({
             </button>
           ) : (
             <button
-              onClick={handleSuspendClick}
+              onClick={() => setShowSuspendModal(true)}
               disabled={loading}
               className="w-full flex items-center gap-3 p-3 rounded-lg border border-neutral-200 hover:bg-neutral-50 transition-colors disabled:opacity-50 text-left"
             >
@@ -115,7 +94,7 @@ export function RunnerAdminActions({
           )}
 
           <button
-            onClick={handleSendMessage}
+            onClick={() => setShowNotificationModal(true)}
             disabled={loading}
             className="w-full flex items-center gap-3 p-3 rounded-lg border border-neutral-200 hover:bg-neutral-50 transition-colors disabled:opacity-50 text-left"
           >
@@ -124,7 +103,7 @@ export function RunnerAdminActions({
           </button>
 
           <button
-            onClick={handleResetPasswordClick}
+            onClick={() => setShowResetPasswordModal(true)}
             disabled={loading}
             className="w-full flex items-center gap-3 p-3 rounded-lg border border-neutral-200 hover:bg-neutral-50 transition-colors disabled:opacity-50 text-left"
           >
@@ -140,14 +119,12 @@ export function RunnerAdminActions({
         onConfirm={handleSuspendConfirm}
         loading={loading}
       />
-
       <ActivateAccountModal
         open={showActivateModal}
         onOpenChange={setShowActivateModal}
         onConfirm={handleActivateConfirm}
         loading={loading}
       />
-
       <SendNotificationModal
         open={showNotificationModal}
         onOpenChange={setShowNotificationModal}
@@ -155,7 +132,6 @@ export function RunnerAdminActions({
         userName={userName}
         loading={loading}
       />
-
       <ResetPasswordModal
         open={showResetPasswordModal}
         onOpenChange={setShowResetPasswordModal}

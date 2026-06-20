@@ -3,6 +3,11 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { X } from "lucide-react";
+import { CURRENCY_SYMBOL } from "@/lib/config/feature-flags";
+
+const DEFAULT_REFUND_PLACEHOLDER = "2500";
+const AMOUNT_STEP = 0.01;
+const MIN_AMOUNT = 0;
 
 interface IssueRefundModalProps {
   open: boolean;
@@ -21,10 +26,15 @@ export function IssueRefundModal({
 }: IssueRefundModalProps) {
   const [amount, setAmount] = useState("");
 
+  const numericAmount = parseFloat(amount);
+  const isValid =
+    !Number.isNaN(numericAmount) &&
+    numericAmount > MIN_AMOUNT &&
+    numericAmount <= taskBudget;
+
   const handleSubmit = () => {
-    const numAmount = parseFloat(amount);
-    if (numAmount > 0 && numAmount <= taskBudget) {
-      onConfirm(numAmount);
+    if (isValid) {
+      onConfirm(numericAmount);
       setAmount("");
     }
   };
@@ -47,10 +57,7 @@ export function IssueRefundModal({
                 Enter the refund amount for this task
               </p>
             </div>
-            <button
-              onClick={handleClose}
-              className="text-gray-400 hover:text-gray-600"
-            >
+            <button onClick={handleClose} className="text-gray-400 hover:text-gray-600">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -58,16 +65,16 @@ export function IssueRefundModal({
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-900 mb-2">
-                Refund Amount (₦)
+                Refund Amount ({CURRENCY_SYMBOL})
               </label>
               <input
                 type="number"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                placeholder="2500"
-                min="0"
+                placeholder={DEFAULT_REFUND_PLACEHOLDER}
+                min={MIN_AMOUNT}
                 max={taskBudget}
-                step="0.01"
+                step={AMOUNT_STEP}
                 className="w-full px-4 py-2.5 bg-gray-50 border-0 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 disabled={loading}
               />
@@ -84,7 +91,7 @@ export function IssueRefundModal({
             </button>
             <button
               onClick={handleSubmit}
-              disabled={loading || !amount || parseFloat(amount) <= 0 || parseFloat(amount) > taskBudget}
+              disabled={loading || !isValid}
               className="px-6 py-2.5 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "Processing..." : "Approve Refund"}

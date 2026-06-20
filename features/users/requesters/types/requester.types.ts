@@ -1,3 +1,7 @@
+import { UserStatus } from "@/lib/types/enums";
+
+export type RequesterAccountStatus = UserStatus;
+
 export interface Requester {
   id: string;
   name: string;
@@ -6,7 +10,7 @@ export interface Requester {
   address: string;
   joinedDate: string;
   accountStatus: string;
-  status: "Active" | "Suspended" | "Inactive";
+  status: RequesterAccountStatus;
   balance: number;
   tasksPosted: number;
 }
@@ -25,6 +29,7 @@ export interface RequesterWallet {
   totalDeposits: number;
   totalWithdrawals: number;
   pendingAmount: number;
+  recentTransactions?: RequesterTransaction[];
 }
 
 export interface RequesterTaskHistory {

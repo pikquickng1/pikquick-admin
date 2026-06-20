@@ -1,18 +1,6 @@
 import type { AdminUser } from "@/lib/types";
+import { UserStatus } from "@/lib/types/enums";
 import type { RequesterListItem } from "../types/requester-list.types";
-
-function mapStatus(status: string): "Active" | "Suspended" | "Inactive" {
-  switch (status) {
-    case "active":
-      return "Active";
-    case "suspended":
-      return "Suspended";
-    case "inactive":
-    case "deleted":
-    default:
-      return "Inactive";
-  }
-}
 
 export function mapAdminUserToRequester(user: AdminUser): RequesterListItem {
   return {
@@ -22,6 +10,6 @@ export function mapAdminUserToRequester(user: AdminUser): RequesterListItem {
     phone: user.phone ?? "",
     balance: 0,
     tasksPosted: 0,
-    status: mapStatus(user.status),
+    status: (user.status as UserStatus) ?? UserStatus.INACTIVE,
   };
 }

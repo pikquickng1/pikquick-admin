@@ -9,24 +9,27 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { formatNgn } from "@/lib/utils/money";
+import { ALL_FILTER } from "@/lib/types/enums";
+import { DATE_FILTER_OPTIONS, EXPORT_FORMATS } from "@/lib/constants/filters";
+import { DEFAULT_DATE_FILTER } from "@/lib/config/pagination";
 import { useTransactionList } from "../hooks/useTransactionList";
 import { useTransactionStats } from "../hooks/useTransactionStats";
 import { TransactionListTable } from "./TransactionListTable";
 import { TransactionDetailsModal } from "./TransactionDetailsModal";
 import { TransactionListFilters as Filters, Transaction } from "../types/transaction.types";
-import { transactionApi } from "../api/transactionApi";
 
 export function TransactionsList() {
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [dateFilter, setDateFilter] = useState("November 2025");
+  const [dateFilter, setDateFilter] = useState<string>(DEFAULT_DATE_FILTER);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [filters, setFilters] = useState<Filters>({
     search: "",
-    type: "All Types",
-    status: "All Status",
+    type: ALL_FILTER,
+    status: ALL_FILTER,
   });
 
   const { transactions, loading, pagination } = useTransactionList(filters, currentPage);
@@ -34,7 +37,7 @@ export function TransactionsList() {
 
   const toggleRow = (id: string) => {
     setSelectedRows((prev) =>
-      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id],
     );
   };
 
@@ -53,41 +56,6 @@ export function TransactionsList() {
       setIsDetailsModalOpen(true);
     }
   };
-
-  const handleExport = async (format: "csv" | "excel") => {
-    try {
-      setIsExporting(true);
-      const blob = await transactionApi.exportTransactions(filters, format);
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `transactions-${new Date().toISOString().split("T")[0]}.${format === "csv" ? "csv" : "xlsx"}`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (error) {
-      console.error("Failed to export transactions:", error);
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN",
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
-
-  const dateFilterOptions = [
-    "November 2025",
-    "October 2025",
-    "September 2025",
-    "This Year",
-    "All Time",
-  ];
 
   if (loading) {
     return (
@@ -117,24 +85,26 @@ export function TransactionsList() {
               {isExporting ? "Exporting..." : "Export"}
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => handleExport("csv")}>
-                Export as CSV
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleExport("excel")}>
-                Export as Excel
-              </DropdownMenuItem>
+              {EXPORT_FORMATS.map((f) => (
+                <DropdownMenuItem
+                  key={f.value}
+                  onClick={() => setIsExporting(true)}
+                >
+                  {f.label}
+                </DropdownMenuItem>
+              ))}
             </DropdownMenuContent>
           </DropdownMenu>
 
           <DropdownMenu>
             <DropdownMenuTrigger className="flex items-center gap-2 px-6 py-4 bg-neutral-200 border border-neutral-200 rounded text-sm text-text-primary hover:bg-gray-50">
-              {dateFilter}
+              {DATE_FILTER_OPTIONS.find((o) => o.value === dateFilter)?.label ?? dateFilter}
               <ChevronDown className="w-4 h-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              {dateFilterOptions.map((option) => (
-                <DropdownMenuItem key={option} onClick={() => setDateFilter(option)}>
-                  {option}
+              {DATE_FILTER_OPTIONS.map((option) => (
+                <DropdownMenuItem key={option.value} onClick={() => setDateFilter(option.value)}>
+                  {option.label}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -142,24 +112,23 @@ export function TransactionsList() {
         </div>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white rounded-lg border border-neutral-200 p-6">
           <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center mb-4">
             <DollarSign className="w-6 h-6 text-blue-600" />
           </div>
           <p className="text-xl font-semibold text-text-primary mb-1">
-            {formatCurrency(stats.totalPlatformEarnings)}
+            {formatNgn(stats.totalPlatformEarnings)}
           </p>
           <p className="text-sm text-text-primary">Total Platform Earnings</p>
         </div>
 
-        <div className="bg-white rounded- border border-neutral-200 p-6">
+        <div className="bg-white rounded border border-neutral-200 p-6">
           <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center mb-4">
             <RefreshCw className="w-6 h-6 text-green-600" />
           </div>
           <p className="text-xl font-semibold text-text-primary mb-1">
-            {formatCurrency(stats.dailyAccessPayments)}
+            {formatNgn(stats.dailyAccessPayments)}
           </p>
           <p className="text-sm text-text-primary">Daily Access Payments</p>
         </div>
@@ -169,7 +138,7 @@ export function TransactionsList() {
             <Wallet className="w-6 h-6 text-purple-600" />
           </div>
           <p className="text-xl font-semibold text-text-primary mb-1">
-            {formatCurrency(stats.taskPayments)}
+            {formatNgn(stats.taskPayments)}
           </p>
           <p className="text-sm text-text-primary">Task Payments</p>
         </div>
@@ -179,13 +148,12 @@ export function TransactionsList() {
             <TrendingDown className="w-6 h-6 text-orange-600" />
           </div>
           <p className="text-xl font-semibold text-text-primary mb-1">
-            {formatCurrency(stats.refunds)}
+            {formatNgn(stats.refunds)}
           </p>
           <p className="text-sm text-text-primary">Refunds</p>
         </div>
       </div>
 
-      {/* All Transactions Section */}
       <div>
         <h2 className="text-xl font-semibold text-text-primary mb-4">All Transactions</h2>
         <TransactionListTable
@@ -204,14 +172,10 @@ export function TransactionsList() {
         totalPages={pagination.totalPages}
         onPageChange={setCurrentPage}
         showingFrom={(pagination.currentPage - 1) * pagination.itemsPerPage + 1}
-        showingTo={Math.min(
-          pagination.currentPage * pagination.itemsPerPage,
-          pagination.totalItems
-        )}
+        showingTo={Math.min(pagination.currentPage * pagination.itemsPerPage, pagination.totalItems)}
         totalItems={pagination.totalItems}
       />
 
-      {/* Transaction Details Modal */}
       <TransactionDetailsModal
         open={isDetailsModalOpen}
         onOpenChange={setIsDetailsModalOpen}

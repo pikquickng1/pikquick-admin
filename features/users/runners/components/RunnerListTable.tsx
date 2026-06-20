@@ -1,6 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import { Star } from "lucide-react";
+import {
+  RUNNER_AVAILABILITY_OPTIONS,
+  RUNNER_VERIFICATION_OPTIONS,
+  USER_SORT_OPTIONS,
+} from "@/lib/constants/filters";
 import { RunnerListItem } from "../types/runner-list.types";
 import { RunnerListFilters } from "./RunnerListFilters";
 import { RunnerListFilters as Filters } from "../types/runner-list.types";
@@ -144,6 +149,9 @@ export function RunnerListTable({
         <RunnerListFilters
           filters={filters}
           onFiltersChange={onFiltersChange}
+          statusOptions={RUNNER_AVAILABILITY_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
+          verificationOptions={RUNNER_VERIFICATION_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
+          sortOptions={USER_SORT_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
         />
       }
     />

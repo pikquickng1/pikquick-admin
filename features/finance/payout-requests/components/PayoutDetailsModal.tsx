@@ -4,7 +4,10 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { X, Loader2, Star } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { PayoutRequest } from "../types/payout.types";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { formatNgn } from "@/lib/utils/money";
+import { formatDate } from "@/lib/utils/date";
+import type { PayoutRequest } from "../types/payout.types";
 import { usePayout } from "../hooks/usePayout";
 import { usePayoutActions } from "../hooks/usePayoutActions";
 
@@ -29,36 +32,6 @@ export function PayoutDetailsModal({
 
   if (!basicPayout) return null;
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN",
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    });
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Completed":
-        return "bg-green-100 text-green-700";
-      case "Pending":
-        return "bg-yellow-100 text-yellow-700";
-      case "Rejected":
-        return "bg-red-100 text-red-700";
-      default:
-        return "bg-gray-100 text-gray-700";
-    }
-  };
-
   const handleApprove = async () => {
     const success = await approvePayout(basicPayout.id);
     if (success) {
@@ -79,24 +52,21 @@ export function PayoutDetailsModal({
     }
   };
 
-  const getInitials = (name: string) => {
-    return name
+  const getInitials = (name: string) =>
+    name
       .split(" ")
       .map((n) => n[0])
       .join("")
       .toUpperCase();
-  };
 
-  const displayPayout = payout || basicPayout;
+  const displayPayout = payout ?? basicPayout;
   const isPending = displayPayout.status === "Pending";
 
   return (
     <>
-      {/* Main Details Modal */}
       <Dialog open={open && !showDeclineModal && !showApproveModal} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-lg p-6 [&>button]:hidden">
           <div className="space-y-6">
-            {/* Header */}
             <div className="flex items-start justify-between">
               <div>
                 <DialogTitle className="text-xl font-semibold text-gray-900">
@@ -120,22 +90,14 @@ export function PayoutDetailsModal({
               </div>
             ) : (
               <>
-                {/* Request ID with Status Badge */}
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Request ID</p>
                     <p className="text-lg font-semibold text-gray-900">{displayPayout.id}</p>
                   </div>
-                  <span
-                    className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                      displayPayout.status
-                    )}`}
-                  >
-                    {displayPayout.status}
-                  </span>
+                  <StatusBadge status={displayPayout.status} />
                 </div>
 
-                {/* Runner Information with Avatar */}
                 <div className="border-t border-gray-200 pt-4">
                   <h3 className="text-base font-semibold text-gray-900 mb-3">
                     Runner Information
@@ -163,14 +125,13 @@ export function PayoutDetailsModal({
                   </div>
                 </div>
 
-                {/* Payout Details */}
                 <div className="border-t border-gray-200 pt-4">
                   <h3 className="text-base font-semibold text-gray-900 mb-3">Payout Details</h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-sm text-gray-600 mb-1">Requested Amount</p>
                       <p className="text-base font-semibold text-gray-900">
-                        {formatCurrency(displayPayout.amount)}
+                        {formatNgn(displayPayout.amount)}
                       </p>
                     </div>
                     <div>
@@ -194,7 +155,6 @@ export function PayoutDetailsModal({
                   </div>
                 </div>
 
-                {/* Actions */}
                 <div className="flex items-center justify-center gap-3 pt-4">
                   <button
                     onClick={() => onOpenChange(false)}
@@ -225,7 +185,6 @@ export function PayoutDetailsModal({
         </DialogContent>
       </Dialog>
 
-      {/* Decline Modal */}
       <Dialog open={showDeclineModal} onOpenChange={setShowDeclineModal}>
         <DialogContent className="sm:max-w-md p-6 [&>button]:hidden">
           <div className="space-y-6">
@@ -283,7 +242,6 @@ export function PayoutDetailsModal({
         </DialogContent>
       </Dialog>
 
-      {/* Approve Confirmation Modal */}
       <Dialog open={showApproveModal} onOpenChange={setShowApproveModal}>
         <DialogContent className="sm:max-w-md p-6 [&>button]:hidden">
           <div className="space-y-6">
@@ -293,9 +251,9 @@ export function PayoutDetailsModal({
               </DialogTitle>
               <p className="text-sm text-gray-600 mt-2">
                 Are you sure you want to approve the payout of{" "}
-                <span className="font-semibold">{formatCurrency(displayPayout.amount)}</span> for{" "}
-                <span className="font-semibold">{displayPayout.runnerName}</span>? This action will
-                process the payment.
+                <span className="font-semibold">{formatNgn(displayPayout.amount)}</span> for{" "}
+                <span className="font-semibold">{displayPayout.runnerName}</span>? This action
+                will process the payment.
               </p>
             </div>
 

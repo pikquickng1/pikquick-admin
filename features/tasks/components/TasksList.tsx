@@ -12,29 +12,34 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { formatNgn } from "@/lib/utils/money";
+import { DEFAULT_SEARCH_DEBOUNCE_MS } from "@/lib/config/pagination";
+import { ALL_FILTER } from "@/lib/types/enums";
+import { DATE_FILTER_OPTIONS } from "@/lib/constants/filters";
+import { useDebouncedValue } from "@/lib/hooks/useDebouncedValue";
+import { dashboardService } from "@/lib/services";
+import { queryKeys } from "@/lib/query/keys";
 import { useTaskList } from "../hooks/useTaskList";
 import { TaskListTable } from "./TaskListTable";
 import { TaskListSkeleton } from "./TaskListSkeleton";
 import { CreateTaskModal } from "./CreateTaskModal";
-import { TaskListFilters as Filters } from "../types/task.types";
-import { dashboardService } from "@/lib/services";
-import { queryKeys } from "@/lib/query/keys";
-import { formatNgn } from "@/lib/utils/money";
-import { useDebouncedValue } from "@/lib/hooks/useDebouncedValue";
+import type { TaskListFilters as Filters } from "../types/task.types";
+
+const DEFAULT_DATE_FILTER = "today";
 
 export function TasksList() {
   const router = useRouter();
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [dateFilter, setDateFilter] = useState("Today");
+  const [dateFilter, setDateFilter] = useState<string>(DEFAULT_DATE_FILTER);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [filters, setFilters] = useState<Filters>({
     search: "",
-    status: "All Status",
-    sortBy: "Highest Rating",
+    status: ALL_FILTER,
+    sortBy: "highest_rating",
   });
 
-  const debouncedSearch = useDebouncedValue(filters.search, 300);
+  const debouncedSearch = useDebouncedValue(filters.search, DEFAULT_SEARCH_DEBOUNCE_MS);
   const apiFilters = { ...filters, search: debouncedSearch };
 
   const { data: dashboardStats } = useQuery({
@@ -57,7 +62,7 @@ export function TasksList() {
 
   const toggleRow = (id: string) => {
     setSelectedRows((prev) =>
-      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id],
     );
   };
 
@@ -73,11 +78,10 @@ export function TasksList() {
     router.push(`/dashboard/tasks/${id}`);
   };
 
-  const formatCurrency = (amount: number) => {
-    return amount === 0 ? "—" : formatNgn(amount);
-  };
+  const formatCurrency = (amount: number) =>
+    amount === 0 ? "—" : formatNgn(amount);
 
-  const dateFilterOptions = ["Today", "This Week", "This Month", "All Time"];
+  const dateFilterOptions = DATE_FILTER_OPTIONS;
 
   if (loading) {
     return <TaskListSkeleton />;
@@ -104,13 +108,13 @@ export function TasksList() {
 
           <DropdownMenu>
             <DropdownMenuTrigger className="flex items-center gap-2 px-6 py-3 bg-white border border-light rounded-lg text-sm text-text-primary hover:bg-gray-50">
-              {dateFilter}
+              {dateFilterOptions.find((o) => o.value === dateFilter)?.label ?? dateFilter}
               <ChevronDown className="w-4 h-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               {dateFilterOptions.map((option) => (
-                <DropdownMenuItem key={option} onClick={() => setDateFilter(option)}>
-                  {option}
+                <DropdownMenuItem key={option.value} onClick={() => setDateFilter(option.value)}>
+                  {option.label}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -118,7 +122,6 @@ export function TasksList() {
         </div>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white rounded border border-neutral-200 p-6">
           <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center mb-4">
@@ -166,10 +169,7 @@ export function TasksList() {
         totalPages={pagination.totalPages}
         onPageChange={setCurrentPage}
         showingFrom={(pagination.currentPage - 1) * pagination.itemsPerPage + 1}
-        showingTo={Math.min(
-          pagination.currentPage * pagination.itemsPerPage,
-          pagination.totalItems
-        )}
+        showingTo={Math.min(pagination.currentPage * pagination.itemsPerPage, pagination.totalItems)}
         totalItems={pagination.totalItems}
       />
 
@@ -177,7 +177,7 @@ export function TasksList() {
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         onSuccess={() => {
-          // Refresh tasks list
+          /* refresh handled by react-query invalidation in caller */
         }}
       />
     </div>

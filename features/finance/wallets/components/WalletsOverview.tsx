@@ -3,19 +3,19 @@
 import { useState } from "react";
 import { Wallet as WalletIcon, Users } from "lucide-react";
 import { Pagination } from "@/components/ui/pagination";
+import { formatNgn } from "@/lib/utils/money";
+import { UserType } from "@/lib/types/enums";
 import { useWalletList } from "../hooks/useWalletList";
 import { useWalletStats } from "../hooks/useWalletStats";
 import { WalletListTable } from "./WalletListTable";
 import { WalletHistorySlideOver } from "./WalletHistorySlideOver";
-import { WalletListFilters as Filters } from "../types/wallet.types";
+import type { WalletListFilters as Filters } from "../types/wallet.types";
 
 export function WalletsOverview() {
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [activeTab, setActiveTab] = useState<"requester" | "runner">("requester");
-  const [filters, setFilters] = useState<Filters>({
-    search: "",
-  });
+  const [activeTab, setActiveTab] = useState<UserType>(UserType.CLIENT);
+  const [filters, setFilters] = useState<Filters>({ search: "" });
   const [selectedWalletId, setSelectedWalletId] = useState<string | null>(null);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
@@ -24,7 +24,7 @@ export function WalletsOverview() {
 
   const toggleRow = (id: string) => {
     setSelectedRows((prev) =>
-      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id],
     );
   };
 
@@ -39,14 +39,6 @@ export function WalletsOverview() {
   const handleViewHistory = (id: string) => {
     setSelectedWalletId(id);
     setIsHistoryOpen(true);
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN",
-      minimumFractionDigits: 0,
-    }).format(amount);
   };
 
   if (loading) {
@@ -66,13 +58,12 @@ export function WalletsOverview() {
         <h1 className="text-2xl font-semibold text-text-primary">Wallets Overview</h1>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white rounded border border-neutral-200 p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-2xl font-semibold text-text-primary mb-1">
-                {formatCurrency(stats.totalRequesterBalance)}
+                {formatNgn(stats.totalRequesterBalance)}
               </p>
               <p className="text-sm text-text-secondary">Total Requester Balance</p>
             </div>
@@ -86,7 +77,7 @@ export function WalletsOverview() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-2xl font-semibold text-text-primary mb-1">
-                {formatCurrency(stats.totalRunnerBalance)}
+                {formatNgn(stats.totalRunnerBalance)}
               </p>
               <p className="text-sm text-text-secondary">Total Runner Balance</p>
             </div>
@@ -99,7 +90,9 @@ export function WalletsOverview() {
         <div className="bg-white rounded border border-neutral-200 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-2xl font-semibold text-text-primary mb-1">{stats.totalWallets}</p>
+              <p className="text-2xl font-semibold text-text-primary mb-1">
+                {stats.totalWallets}
+              </p>
               <p className="text-sm text-text-secondary">Total Wallets</p>
             </div>
             <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
@@ -109,7 +102,6 @@ export function WalletsOverview() {
         </div>
       </div>
 
-      {/* Wallets Table with Tabs */}
       <WalletListTable
         wallets={wallets}
         selectedRows={selectedRows}
@@ -131,14 +123,10 @@ export function WalletsOverview() {
         totalPages={pagination.totalPages}
         onPageChange={setCurrentPage}
         showingFrom={(pagination.currentPage - 1) * pagination.itemsPerPage + 1}
-        showingTo={Math.min(
-          pagination.currentPage * pagination.itemsPerPage,
-          pagination.totalItems
-        )}
+        showingTo={Math.min(pagination.currentPage * pagination.itemsPerPage, pagination.totalItems)}
         totalItems={pagination.totalItems}
       />
 
-      {/* Transaction History Slide Over */}
       <WalletHistorySlideOver
         open={isHistoryOpen}
         onClose={() => setIsHistoryOpen(false)}

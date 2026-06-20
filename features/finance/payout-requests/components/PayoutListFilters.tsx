@@ -11,30 +11,38 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { PayoutListFilters as Filters } from "../types/payout.types";
+import { ALL_FILTER } from "@/lib/types/enums";
+import { SEARCH_PLACEHOLDER_USER } from "@/lib/constants/filters";
+import { statusLabel } from "@/lib/utils/status";
+import type { PayoutListFilters as Filters } from "../types/payout.types";
 
 interface PayoutListFiltersProps {
   filters: Filters;
   onFiltersChange: (filters: Filters) => void;
+  statusOptions: ReadonlyArray<{ value: string; label: string }>;
 }
 
-export function PayoutListFilters({ filters, onFiltersChange }: PayoutListFiltersProps) {
+export function PayoutListFilters({
+  filters,
+  onFiltersChange,
+  statusOptions,
+}: PayoutListFiltersProps) {
   const [date, setDate] = useState<Date>();
-
-  const statusOptions = ["All Status", "Pending", "Completed", "Rejected"];
 
   const handleDateSelect = (selectedDate: Date | undefined) => {
     setDate(selectedDate);
     if (selectedDate) {
       onFiltersChange({
         ...filters,
-        dateRange: {
-          from: selectedDate,
-          to: selectedDate,
-        },
+        dateRange: { from: selectedDate, to: selectedDate },
       });
     }
   };
+
+  const statusLabelOf = (value: string) =>
+    value === ALL_FILTER
+      ? statusOptions[0]?.label ?? "All Status"
+      : statusOptions.find((o) => o.value === value)?.label ?? statusLabel(value);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
@@ -42,34 +50,37 @@ export function PayoutListFilters({ filters, onFiltersChange }: PayoutListFilter
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         <input
           type="text"
-          placeholder="Search by name, email or phone number"
+          placeholder={SEARCH_PLACEHOLDER_USER}
           value={filters.search}
           onChange={(e) => onFiltersChange({ ...filters, search: e.target.value })}
           className="w-full pl-10 py-4 text-text-primary bg-white border border-neutral-200 rounded text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
         />
       </div>
 
-      {/* Status Filter */}
       <div className="md:col-span-2">
         <DropdownMenu>
           <DropdownMenuTrigger className="flex items-center justify-between w-full px-4 py-4 bg-white border border-neutral-200 rounded text-sm text-gray-900 hover:bg-gray-50">
-            {filters.status}
+            {statusLabelOf(filters.status)}
             <ChevronDown className="w-4 h-4 text-gray-600" />
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-full">
             {statusOptions.map((option) => (
               <DropdownMenuItem
-                key={option}
-                onSelect={() => onFiltersChange({ ...filters, status: option })}
+                key={option.value}
+                onSelect={() =>
+                  onFiltersChange({
+                    ...filters,
+                    status: option.value as Filters["status"],
+                  })
+                }
               >
-                {option}
+                {option.label}
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
 
-      {/* Date Filter */}
       <div className="md:col-span-2">
         <Popover>
           <PopoverTrigger asChild>

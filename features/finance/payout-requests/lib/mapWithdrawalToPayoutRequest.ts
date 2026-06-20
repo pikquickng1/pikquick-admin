@@ -1,42 +1,29 @@
 import type { AdminWithdrawal } from "@/lib/types";
-import type { PayoutRequest } from "../types/payout.types";
+import { WithdrawalStatus } from "@/lib/types/enums";
 import { koboToNgn } from "@/lib/utils/money";
+import { formatDate } from "@/lib/utils/date";
+import type { PayoutRequest } from "../types/payout.types";
 
-function mapStatus(
-  status: string
-): "Pending" | "Completed" | "Rejected" {
-  switch (status) {
-    case "pending":
-      return "Pending";
-    case "successful":
-      return "Completed";
-    case "failed":
-    case "reversed":
-    default:
-      return "Rejected";
-  }
-}
+const STATUS_MAP: Record<string, PayoutRequest["status"]> = {
+  [WithdrawalStatus.PENDING]: "Pending",
+  [WithdrawalStatus.SUCCESSFUL]: "Completed",
+  [WithdrawalStatus.FAILED]: "Rejected",
+  [WithdrawalStatus.REVERSED]: "Rejected",
+};
 
-function formatDate(iso: string | undefined): string {
-  if (!iso) return "—";
-  try {
-    return new Date(iso).toISOString().split("T")[0];
-  } catch {
-    return "—";
-  }
-}
+const PLACEHOLDER = "—";
 
 export function mapWithdrawalToPayoutRequest(w: AdminWithdrawal): PayoutRequest {
   return {
     id: w.id,
     runnerId: w.user_id,
-    runnerName: "—",
+    runnerName: PLACEHOLDER,
     runnerRating: 0,
     runnerTasks: 0,
     amount: koboToNgn(w.amount),
-    bankName: "—",
-    accountNumber: "—",
+    bankName: PLACEHOLDER,
+    accountNumber: PLACEHOLDER,
     date: formatDate(w.created_at),
-    status: mapStatus(w.status),
+    status: STATUS_MAP[w.status?.toLowerCase() ?? ""] ?? "Pending",
   };
 }

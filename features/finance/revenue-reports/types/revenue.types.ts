@@ -1,3 +1,5 @@
+import { colors } from "@/lib/design-tokens";
+
 export interface RevenueStats {
   totalInflow: number;
   totalOutflow: number;
@@ -31,6 +33,18 @@ export interface RevenueData {
 }
 
 export interface RevenueFilters {
-  period: string;
-  location: string;
+  period: "last_7_days" | "last_30_days" | "last_3_months";
+  location: "all" | "lagos" | "abuja";
 }
+
+export const REVENUE_CHART_COLORS = {
+  line: colors.primary[500],
+  gridStroke: colors.border.light,
+  axisStroke: colors.neutral[600],
+  pieDefaults: {
+    taskPayments: colors.primary[500],
+    dailyAccess: colors.semantic.success,
+    walletTopups: colors.semantic.warning,
+    platformFees: "#8B5CF6",
+  },
+} as const;

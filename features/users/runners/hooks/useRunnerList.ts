@@ -3,43 +3,32 @@
 import { useQuery } from "@tanstack/react-query";
 import { runnersService } from "@/lib/services";
 import { queryKeys } from "@/lib/query/keys";
+import { DEFAULT_PAGE_SIZE } from "@/lib/config/pagination";
+import { statusToApi } from "@/lib/utils/status";
 import type { RunnerListFilters } from "../types/runner-list.types";
 
-const LIMIT = 20;
-
-function statusToApi(status: string): string | undefined {
-  if (!status || status === "All Status") return undefined;
-  switch (status) {
-    case "Available":
-      return "available";
-    case "Suspended":
-      return "suspended";
-    case "Unavailable":
-      return "unavailable";
-    default:
-      return undefined;
-  }
-}
+const LIMIT = DEFAULT_PAGE_SIZE;
 
 export function useRunnerList(filters: RunnerListFilters, page: number = 1) {
+  const status = statusToApi(filters.status);
+  const verification = statusToApi(filters.verification);
+
   const { data, isLoading, error } = useQuery({
     queryKey: queryKeys.runners.list({
       page,
       limit: LIMIT,
       search: filters.search || undefined,
-      status: statusToApi(filters.status),
-      verification: filters.verification,
+      status,
+      verification,
     }),
-    queryFn: async () => {
-      const res = await runnersService.getRunners({
+    queryFn: async () =>
+      runnersService.getRunners({
         page,
         limit: LIMIT,
         search: filters.search || undefined,
-        status: statusToApi(filters.status),
-        verification: filters.verification,
-      });
-      return res;
-    },
+        status,
+        verification,
+      }),
   });
 
   const runners = data?.data ?? [];

@@ -16,12 +16,12 @@ export function RunnerAvailabilityPerformance({ runner }: RunnerAvailabilityPerf
         <h3 className="text-lg font-semibold text-text-primary mb-4">Availability</h3>
         <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
           <span className="text-sm font-medium text-text-primary">
-            {runner.status === "Available" ? "Available" : "Unavailable"}
+            {String(runner.status) === "available" ? "Available" : "Unavailable"}
           </span>
           <label className="relative inline-flex items-center cursor-pointer">
             <input
               type="checkbox"
-              checked={runner.status === "Available"}
+              checked={String(runner.status) === "available"}
               readOnly
               className="sr-only peer"
             />

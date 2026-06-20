@@ -1,6 +1,8 @@
+import { WalletTxType } from "@/lib/types/enums";
+
 export interface WalletTransaction {
   id: string;
-  type: "credit" | "debit";
+  type: WalletTxType;
   description: string;
   amount: number;
   balance: number;

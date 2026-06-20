@@ -1,31 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { RevenueData } from "../types/revenue.types";
+import { useQuery } from "@tanstack/react-query";
 import { revenueApi } from "../api/revenueApi";
 
 export function useRevenueData() {
-  const [data, setData] = useState<RevenueData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const query = useQuery({
+    queryKey: ["revenue"],
+    queryFn: () => revenueApi.getRevenueData(),
+  });
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const revenueData = await revenueApi.getRevenueData();
-      setData(revenueData);
-    } catch (err) {
-      console.error("Failed to fetch revenue data:", err);
-      setError("Failed to load revenue data");
-    } finally {
-      setLoading(false);
-    }
+  return {
+    data: query.data ?? null,
+    loading: query.isLoading,
+    error: query.error instanceof Error ? query.error.message : null,
+    refetch: () => {
+      void query.refetch();
+    },
   };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  return { data, loading, error, refetch: fetchData };
 }

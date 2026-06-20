@@ -1,9 +1,18 @@
+import {
+  ALL_FILTER,
+  BidStatus,
+  DeliveryFileType,
+  TaskStatus,
+} from "@/lib/types/enums";
+
+export type TaskDisplayStatus = "In Progress" | "Completed" | "Pending" | "Cancelled";
+
 export interface Bid {
   id: string;
   runnerName: string;
   rating: number;
   amount: number;
-  status: "Accepted" | "Declined" | "Pending";
+  status: BidStatus;
 }
 
 export interface TimelineEvent {
@@ -22,7 +31,7 @@ export interface ChatMessage {
 
 export interface DeliveryFile {
   id: string;
-  type: "receipt" | "photo";
+  type: DeliveryFileType;
   label: string;
   url: string;
 }
@@ -37,7 +46,7 @@ export interface Task {
   runnerEmail: string | null;
   budget: number;
   datePosted: string;
-  status: "In Progress" | "Completed" | "Pending" | "Cancelled";
+  status: TaskDisplayStatus;
   category: string;
   location: string;
   bids?: Bid[];
@@ -54,12 +63,12 @@ export interface TaskListItem {
   runnerName: string | null;
   budget: number;
   datePosted: string;
-  status: "In Progress" | "Completed" | "Pending" | "Cancelled";
+  status: TaskDisplayStatus;
 }
 
 export interface TaskListFilters {
   search: string;
-  status: string;
+  status: TaskStatus | typeof ALL_FILTER;
   sortBy: string;
 }
 

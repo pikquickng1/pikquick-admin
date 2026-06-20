@@ -10,25 +10,27 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { formatNgn } from "@/lib/utils/money";
+import { ALL_FILTER } from "@/lib/types/enums";
+import { DATE_FILTER_OPTIONS } from "@/lib/constants/filters";
+import { DEFAULT_DATE_FILTER } from "@/lib/config/pagination";
+import { escrowService } from "@/lib/services";
 import { usePayoutList } from "../hooks/usePayoutList";
 import { usePayoutStats } from "../hooks/usePayoutStats";
 import { PayoutListTable } from "./PayoutListTable";
 import { PayoutDetailsModal } from "./PayoutDetailsModal";
 import { PayoutListFilters as Filters, PayoutRequest } from "../types/payout.types";
-import { payoutApi } from "../api/payoutApi";
-import { escrowService } from "@/lib/services";
 
 export function PayoutRequestsList() {
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [dateFilter, setDateFilter] = useState("November 2025");
+  const [dateFilter, setDateFilter] = useState<string>(DEFAULT_DATE_FILTER);
   const [selectedPayout, setSelectedPayout] = useState<PayoutRequest | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-  const [isExporting, setIsExporting] = useState(false);
   const [isProcessingPayouts, setIsProcessingPayouts] = useState(false);
   const [filters, setFilters] = useState<Filters>({
     search: "",
-    status: "All Status",
+    status: ALL_FILTER,
   });
 
   const { payouts, loading, pagination, refetch } = usePayoutList(filters, currentPage);
@@ -42,10 +44,8 @@ export function PayoutRequestsList() {
     setIsProcessingPayouts(true);
     try {
       await escrowService.processReleases();
-      await refetch();
-      await refetchStats();
-    } catch (error) {
-      console.error("Failed to process payouts:", error);
+      refetch();
+      refetchStats();
     } finally {
       setIsProcessingPayouts(false);
     }
@@ -53,7 +53,7 @@ export function PayoutRequestsList() {
 
   const toggleRow = (id: string) => {
     setSelectedRows((prev) =>
-      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id],
     );
   };
 
@@ -72,43 +72,6 @@ export function PayoutRequestsList() {
       setIsDetailsModalOpen(true);
     }
   };
-
-  const handleExport = async (format: "csv" | "excel") => {
-    try {
-      setIsExporting(true);
-      const blob = await payoutApi.exportPayouts(filters, format);
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `payout-requests-${new Date().toISOString().split("T")[0]}.${
-        format === "csv" ? "csv" : "xlsx"
-      }`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (error) {
-      console.error("Failed to export payout requests:", error);
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN",
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
-
-  const dateFilterOptions = [
-    "November 2025",
-    "October 2025",
-    "September 2025",
-    "This Year",
-    "All Time",
-  ];
 
   if (loading) {
     return (
@@ -140,13 +103,13 @@ export function PayoutRequestsList() {
 
           <DropdownMenu>
             <DropdownMenuTrigger className="flex items-center gap-2 px-6 py-4 bg-neutral-200 border border-neutral-200 rounded text-sm text-text-primary hover:bg-gray-50">
-              {dateFilter}
+              {DATE_FILTER_OPTIONS.find((o) => o.value === dateFilter)?.label ?? dateFilter}
               <ChevronDown className="w-4 h-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              {dateFilterOptions.map((option) => (
-                <DropdownMenuItem key={option} onClick={() => setDateFilter(option)}>
-                  {option}
+              {DATE_FILTER_OPTIONS.map((option) => (
+                <DropdownMenuItem key={option.value} onClick={() => setDateFilter(option.value)}>
+                  {option.label}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -154,46 +117,29 @@ export function PayoutRequestsList() {
         </div>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white rounded border border-neutral-200 p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-2xl font-semibold text-text-primary mb-1">
-                {stats.pendingRequests}
-              </p>
-              <p className="text-sm text-text-secondary">Pending Requests</p>
-            </div>
-            
-          </div>
+          <p className="text-2xl font-semibold text-text-primary mb-1">
+            {stats.pendingRequests}
+          </p>
+          <p className="text-sm text-text-secondary">Pending Requests</p>
         </div>
 
         <div className="bg-white rounded border border-neutral-200 p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-2xl font-semibold text-text-primary mb-1">
-                {stats.approvedThisWeek}
-              </p>
-              <p className="text-sm text-text-secondary">Approved This Week</p>
-            </div>
-           
-          </div>
+          <p className="text-2xl font-semibold text-text-primary mb-1">
+            {stats.approvedThisWeek}
+          </p>
+          <p className="text-sm text-text-secondary">Approved This Week</p>
         </div>
 
         <div className="bg-white rounded border border-neutral-200 p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xl font-semibold text-text-primary mb-1">
-                {formatCurrency(stats.totalPendingAmount)}
-              </p>
-              <p className="text-sm text-text-secondary">Total Pending Amount</p>
-            </div>
-            
-          </div>
+          <p className="text-xl font-semibold text-text-primary mb-1">
+            {formatNgn(stats.totalPendingAmount)}
+          </p>
+          <p className="text-sm text-text-secondary">Total Pending Amount</p>
         </div>
       </div>
 
-      {/* Payout Requests Table */}
       <div>
         <h2 className="text-xl font-semibold text-text-primary mb-4">Payout Requests</h2>
         <PayoutListTable
@@ -212,19 +158,15 @@ export function PayoutRequestsList() {
         totalPages={pagination.totalPages}
         onPageChange={setCurrentPage}
         showingFrom={(pagination.currentPage - 1) * pagination.itemsPerPage + 1}
-        showingTo={Math.min(
-          pagination.currentPage * pagination.itemsPerPage,
-          pagination.totalItems
-        )}
+        showingTo={Math.min(pagination.currentPage * pagination.itemsPerPage, pagination.totalItems)}
         totalItems={pagination.totalItems}
       />
 
-      {/* Payout Details Modal */}
       <PayoutDetailsModal
         open={isDetailsModalOpen}
         onOpenChange={setIsDetailsModalOpen}
         payout={selectedPayout}
-        onActionComplete={refetch}
+        onActionComplete={() => refetch()}
       />
     </div>
   );

@@ -1,29 +1,7 @@
 import type { AdminUser } from "@/lib/types";
+import { UserStatus } from "@/lib/types/enums";
 import type { Requester } from "../types/requester.types";
-
-function mapStatus(s: string): "Active" | "Suspended" | "Inactive" {
-  switch (s) {
-    case "active":
-      return "Active";
-    case "suspended":
-      return "Suspended";
-    default:
-      return "Inactive";
-  }
-}
-
-function formatDate(iso: string | undefined): string {
-  if (!iso) return "—";
-  try {
-    return new Date(iso).toLocaleDateString("en-NG", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  } catch {
-    return "—";
-  }
-}
+import { formatDate } from "@/lib/utils/date";
 
 export function mapAdminUserToRequester(user: AdminUser): Requester {
   return {
@@ -32,9 +10,9 @@ export function mapAdminUserToRequester(user: AdminUser): Requester {
     email: user.email,
     phone: user.phone ?? "",
     address: "—",
-    joinedDate: formatDate(user.created_at as string | undefined),
+    joinedDate: formatDate(user.created_at),
     accountStatus: user.status,
-    status: mapStatus(user.status),
+    status: (user.status as UserStatus) ?? UserStatus.INACTIVE,
     balance: 0,
     tasksPosted: 0,
   };

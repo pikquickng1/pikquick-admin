@@ -2,13 +2,14 @@
 
 import { Star, User } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { BidStatus } from "@/lib/types/enums";
 
 interface Bid {
   id: string;
   runnerName: string;
   rating: number;
   amount: number;
-  status: "Accepted" | "Declined" | "Pending";
+  status: BidStatus;
 }
 
 interface TaskBudgetBidsProps {

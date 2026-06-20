@@ -2,7 +2,13 @@
 
 import { Star } from "lucide-react";
 import { DataTable } from "@/components/ui/data-table";
-import { PayoutRequest, PayoutListFilters as Filters } from "../types/payout.types";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { formatNgn } from "@/lib/utils/money";
+import { formatDate } from "@/lib/utils/date";
+import {
+  PAYOUT_STATUS_OPTIONS,
+} from "@/lib/constants/filters";
+import type { PayoutRequest, PayoutListFilters as Filters } from "../types/payout.types";
 import { PayoutListFilters } from "./PayoutListFilters";
 
 interface PayoutListTableProps {
@@ -24,36 +30,6 @@ export function PayoutListTable({
   filters,
   onFiltersChange,
 }: PayoutListTableProps) {
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN",
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    });
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Completed":
-        return "bg-green-100 text-green-700";
-      case "Pending":
-        return "bg-yellow-100 text-yellow-700";
-      case "Rejected":
-        return "bg-red-100 text-red-700";
-      default:
-        return "bg-gray-100 text-gray-700";
-    }
-  };
-
   const columns = [
     {
       key: "id",
@@ -81,9 +57,7 @@ export function PayoutListTable({
       key: "amount",
       header: "Amount",
       render: (payout: PayoutRequest) => (
-        <span className="text-sm font-medium text-text-primary">
-          {formatCurrency(payout.amount)}
-        </span>
+        <span className="text-sm font-medium text-text-primary">{formatNgn(payout.amount)}</span>
       ),
     },
     {
@@ -106,15 +80,7 @@ export function PayoutListTable({
     {
       key: "status",
       header: "Status",
-      render: (payout: PayoutRequest) => (
-        <span
-          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-            payout.status
-          )}`}
-        >
-          {payout.status}
-        </span>
-      ),
+      render: (payout: PayoutRequest) => <StatusBadge status={payout.status} />,
     },
     {
       key: "action",
@@ -140,7 +106,13 @@ export function PayoutListTable({
       onRowSelect={onRowSelect}
       onSelectAll={onSelectAll}
       emptyMessage="No payout requests found"
-      filters={<PayoutListFilters filters={filters} onFiltersChange={onFiltersChange} />}
+      filters={
+        <PayoutListFilters
+          filters={filters}
+          onFiltersChange={onFiltersChange}
+          statusOptions={PAYOUT_STATUS_OPTIONS}
+        />
+      }
     />
   );
 }

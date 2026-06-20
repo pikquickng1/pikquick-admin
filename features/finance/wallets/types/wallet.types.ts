@@ -1,8 +1,10 @@
+import { UserType } from "@/lib/types/enums";
+
 export interface Wallet {
   id: string;
   userId: string;
   userName: string;
-  userType: "requester" | "runner";
+  userType: UserType;
   currentBalance: number;
   lastTransaction: string;
   totalTransactions: number;

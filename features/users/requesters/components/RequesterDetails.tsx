@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ArrowLeft, Mail, Phone, Calendar } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { useRequester } from "../hooks/useRequester";
 import { RequesterPersonalInfo } from "./RequesterPersonalInfo";
 import { RequesterAdminActions } from "./RequesterAdminActions";
@@ -90,14 +91,7 @@ export function RequesterDetails({ requesterId, onBack }: RequesterDetailsProps)
               <h1 className="text-2xl font-semibold text-text-primary">{requester.name}</h1>
               <div className="flex items-center gap-3 mt-2">
                
-                <span
-                  className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${requester.status === "Active"
-                    ? "bg-green-100 text-[#01AF01]"
-                    : "bg-red-100 text-red-700"
-                    }`}
-                >
-                  {requester.status}
-                </span>
+                <StatusBadge status={requester.status} />
               </div>
               <div className="flex items-center gap-4 mt-2 text-sm text-text-secondary">
                 <span className="flex items-center gap-1.5">

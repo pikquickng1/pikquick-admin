@@ -1,12 +1,27 @@
+import {
+  ALL_FILTER,
+  TransactionStatus,
+  TransactionType,
+  UserType,
+} from "@/lib/types/enums";
+
+export type TransactionDisplayStatus = "Completed" | "Pending" | "Failed";
+export type TransactionDisplayType =
+  | "Task Payment"
+  | "Daily Access"
+  | "Wallet Top-up"
+  | "Refund"
+  | "Withdrawal";
+
 export interface Transaction {
   id: string;
   userId: string;
   userName: string;
-  userType: "Requester" | "Runner";
-  type: "Task Payment" | "Daily Access" | "Wallet Top-up" | "Refund" | "Withdrawal";
+  userType: UserType;
+  type: TransactionDisplayType;
   amount: number;
   date: string;
-  status: "Completed" | "Pending" | "Failed";
+  status: TransactionDisplayStatus;
 }
 
 export interface TransactionDetails extends Transaction {
@@ -21,8 +36,8 @@ export interface TransactionDetails extends Transaction {
 
 export interface TransactionListFilters {
   search: string;
-  type: string;
-  status: string;
+  type: TransactionType | typeof ALL_FILTER;
+  status: TransactionStatus | typeof ALL_FILTER;
   dateRange?: {
     from: Date;
     to: Date;

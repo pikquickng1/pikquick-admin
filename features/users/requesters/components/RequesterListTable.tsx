@@ -1,8 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
-import { RequesterListItem } from "../types/requester-list.types";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { formatNgn } from "@/lib/utils/money";
+import type { RequesterListItem } from "../types/requester-list.types";
 import { RequesterListFilters } from "./RequesterListFilters";
-import { RequesterListFilters as Filters } from "../types/requester-list.types";
+import type { RequesterListFilters as Filters } from "../types/requester-list.types";
 
 interface RequesterListTableProps {
   requesters: RequesterListItem[];
@@ -23,14 +25,6 @@ export function RequesterListTable({
   filters,
   onFiltersChange,
 }: RequesterListTableProps) {
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN",
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
-
   const columns = [
     {
       key: "name",
@@ -57,21 +51,14 @@ export function RequesterListTable({
       key: "balance",
       header: "Balance",
       render: (requester: RequesterListItem) => (
-        <span className="text-sm text-text-primary">{formatCurrency(requester.balance)}</span>
+        <span className="text-sm text-text-primary">{formatNgn(requester.balance)}</span>
       ),
     },
     {
       key: "status",
       header: "Status",
       render: (requester: RequesterListItem) => (
-        <span
-          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${requester.status === "Active"
-              ? "bg-green-100 text-green-700"
-              : "bg-red-100 text-red-700"
-            }`}
-        >
-          {requester.status}
-        </span>
+        <StatusBadge status={requester.status} />
       ),
     },
     {
@@ -99,7 +86,12 @@ export function RequesterListTable({
       onRowSelect={onRowSelect}
       onSelectAll={onSelectAll}
       emptyMessage="No requesters found"
-      filters={<RequesterListFilters filters={filters} onFiltersChange={onFiltersChange} />}
+      filters={
+        <RequesterListFilters
+          filters={filters}
+          onFiltersChange={onFiltersChange}
+        />
+      }
     />
   );
 }

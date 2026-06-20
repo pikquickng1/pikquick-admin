@@ -3,27 +3,29 @@
 import { useQuery } from "@tanstack/react-query";
 import { requestersService } from "@/lib/services";
 import { queryKeys } from "@/lib/query/keys";
+import { DEFAULT_PAGE_SIZE } from "@/lib/config/pagination";
+import { statusToApi } from "@/lib/utils/status";
 import type { RequesterListFilters } from "../types/requester-list.types";
 
-const LIMIT = 20;
+const LIMIT = DEFAULT_PAGE_SIZE;
 
 export function useRequesterList(filters: RequesterListFilters, page: number = 1) {
+  const status = statusToApi(filters.status);
+
   const { data, isLoading, error } = useQuery({
     queryKey: queryKeys.requesters.list({
       page,
       limit: LIMIT,
       search: filters.search || undefined,
-      status: filters.status !== "All Status" ? filters.status?.toLowerCase() : undefined,
+      status,
     }),
-    queryFn: async () => {
-      const res = await requestersService.getRequesters({
+    queryFn: async () =>
+      requestersService.getRequesters({
         page,
         limit: LIMIT,
         search: filters.search || undefined,
-        status: filters.status !== "All Status" ? filters.status?.toLowerCase() : undefined,
-      });
-      return res;
-    },
+        status,
+      }),
   });
 
   const requesters = data?.data ?? [];

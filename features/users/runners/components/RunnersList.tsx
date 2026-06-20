@@ -8,6 +8,7 @@ import { RunnerListTable } from "./RunnerListTable";
 import { RunnerListSkeleton } from "./RunnerListSkeleton";
 import { RunnerListFilters as Filters } from "../types/runner-list.types";
 import { useDebouncedValue } from "@/lib/hooks/useDebouncedValue";
+import { ALL_FILTER } from "@/lib/types/enums";
 
 const SEARCH_DEBOUNCE_MS = 300;
 
@@ -17,8 +18,8 @@ export function RunnersList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState<Filters>({
     search: "",
-    status: "All Status",
-    sortBy: "Highest Rating",
+    status: ALL_FILTER,
+    sortBy: "highest_rating",
   });
 
   const debouncedSearch = useDebouncedValue(filters.search, SEARCH_DEBOUNCE_MS);

@@ -1,3 +1,8 @@
+import {
+  UserStatus,
+  VerificationStatus,
+} from "@/lib/types/enums";
+
 export interface Runner {
   id: string;
   name: string;
@@ -6,9 +11,9 @@ export interface Runner {
   address: string;
   joinedDate: string;
   accountStatus: string;
-  verification: "Verified" | "Pending" | "Failed" | "unverified";
+  verification: VerificationStatus;
   transportMode: string;
-  status: "Available" | "Unavailable" | "Suspended";
+  status: UserStatus;
   balance: number;
   rating: number;
   totalReviews: number;

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Ban, Send, KeyRound, CheckCircle } from "lucide-react";
+import { UserStatus } from "@/lib/types/enums";
 import { useRequesterActions } from "../hooks/useRequesterActions";
 import { SuspendAccountModal } from "./SuspendAccountModal";
 import { ActivateAccountModal } from "./ActivateAccountModal";
@@ -10,7 +11,7 @@ import { ResetPasswordModal } from "./ResetPasswordModal";
 
 interface RequesterAdminActionsProps {
   requesterId: string;
-  accountStatus: "Active" | "Suspended" | "Inactive";
+  accountStatus: UserStatus | string;
   userName: string;
   userEmail: string;
   onActionComplete?: () => void;
@@ -30,21 +31,11 @@ export function RequesterAdminActions({
   const [showNotificationModal, setShowNotificationModal] = useState(false);
   const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
 
-  const handleSuspendClick = () => {
-    setShowSuspendModal(true);
-  };
-
-  const handleActivateClick = () => {
-    setShowActivateModal(true);
-  };
-
   const handleSuspendConfirm = async () => {
     const success = await suspendAccount(requesterId);
     if (success) {
       setShowSuspendModal(false);
-      if (onActionComplete) {
-        onActionComplete();
-      }
+      onActionComplete?.();
     }
   };
 
@@ -52,39 +43,27 @@ export function RequesterAdminActions({
     const success = await activateAccount(requesterId);
     if (success) {
       setShowActivateModal(false);
-      if (onActionComplete) {
-        onActionComplete();
-      }
+      onActionComplete?.();
     }
-  };
-
-  const handleResetPasswordClick = () => {
-    setShowResetPasswordModal(true);
   };
 
   const handleResetPasswordConfirm = async () => {
     const success = await resetPassword(requesterId);
     if (success) {
       setShowResetPasswordModal(false);
-      if (onActionComplete) {
-        onActionComplete();
-      }
+      onActionComplete?.();
     }
-  };
-
-  const handleSendMessage = () => {
-    setShowNotificationModal(true);
   };
 
   const handleSendMessageConfirm = async (subject: string, message: string) => {
     const success = await sendMessage(requesterId, subject, message);
     if (success) {
       setShowNotificationModal(false);
-      if (onActionComplete) {
-        onActionComplete();
-      }
+      onActionComplete?.();
     }
   };
+
+  const isSuspended = accountStatus === UserStatus.SUSPENDED;
 
   return (
     <>
@@ -92,9 +71,9 @@ export function RequesterAdminActions({
         <h3 className="text-lg font-semibold text-text-primary mb-6">Admin Actions</h3>
 
         <div className="space-y-3">
-          {accountStatus === "Suspended" ? (
+          {isSuspended ? (
             <button
-              onClick={handleActivateClick}
+              onClick={() => setShowActivateModal(true)}
               disabled={loading}
               className="w-full flex items-center gap-3 p-3 rounded-lg border border-neutral-200 hover:bg-neutral-50 transition-colors disabled:opacity-50 text-left"
             >
@@ -103,7 +82,7 @@ export function RequesterAdminActions({
             </button>
           ) : (
             <button
-              onClick={handleSuspendClick}
+              onClick={() => setShowSuspendModal(true)}
               disabled={loading}
               className="w-full flex items-center gap-3 p-3 rounded-lg border border-neutral-200 hover:bg-neutral-50 transition-colors disabled:opacity-50 text-left"
             >
@@ -113,7 +92,7 @@ export function RequesterAdminActions({
           )}
 
           <button
-            onClick={handleSendMessage}
+            onClick={() => setShowNotificationModal(true)}
             disabled={loading}
             className="w-full flex items-center gap-3 p-3 rounded-lg border border-neutral-200 hover:bg-neutral-50 transition-colors disabled:opacity-50 text-left"
           >
@@ -122,7 +101,7 @@ export function RequesterAdminActions({
           </button>
 
           <button
-            onClick={handleResetPasswordClick}
+            onClick={() => setShowResetPasswordModal(true)}
             disabled={loading}
             className="w-full flex items-center gap-3 p-3 rounded-lg border border-neutral-200 hover:bg-neutral-50 transition-colors disabled:opacity-50 text-left"
           >

@@ -1,8 +1,15 @@
 "use client";
 
 import { DataTable } from "@/components/ui/data-table";
-import { Transaction, TransactionListFilters } from "../types/transaction.types";
-import { TransactionListFilters as Filters } from "./TransactionListFilters";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { formatNgn } from "@/lib/utils/money";
+import { formatDate, formatTime } from "@/lib/utils/date";
+import { statusLabel } from "@/lib/utils/status";
+import type {
+  Transaction,
+  TransactionListFilters as Filters,
+} from "../types/transaction.types";
+import { TransactionListFilters } from "./TransactionListFilters";
 
 interface TransactionListTableProps {
   transactions: Transaction[];
@@ -10,8 +17,8 @@ interface TransactionListTableProps {
   onRowSelect: (id: string) => void;
   onSelectAll: () => void;
   onViewDetails: (id: string) => void;
-  filters: TransactionListFilters;
-  onFiltersChange: (filters: TransactionListFilters) => void;
+  filters: Filters;
+  onFiltersChange: (filters: Filters) => void;
 }
 
 export function TransactionListTable({
@@ -23,46 +30,6 @@ export function TransactionListTable({
   filters,
   onFiltersChange,
 }: TransactionListTableProps) {
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN",
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
-
-  const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
-};
-
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Completed":
-        return "bg-green-100 text-green-700";
-      case "Pending":
-        return "bg-yellow-100 text-yellow-700";
-      case "Failed":
-        return "bg-red-100 text-red-700";
-      default:
-        return "bg-gray-100 text-gray-700";
-    }
-  };
-
   const columns = [
     {
       key: "id",
@@ -77,7 +44,7 @@ export function TransactionListTable({
       render: (transaction: Transaction) => (
         <div>
           <p className="text-sm text-text-primary font-medium">{transaction.userName}</p>
-          <p className="text-xs text-text-secondary">{transaction.userType}</p>
+          <p className="text-xs text-text-secondary">{statusLabel(transaction.userType)}</p>
         </div>
       ),
     },
@@ -93,7 +60,7 @@ export function TransactionListTable({
       header: "Amount",
       render: (transaction: Transaction) => (
         <span className="text-sm text-text-primary font-medium">
-          {formatCurrency(transaction.amount)}
+          {formatNgn(transaction.amount)}
         </span>
       ),
     },
@@ -110,15 +77,7 @@ export function TransactionListTable({
     {
       key: "status",
       header: "Status",
-      render: (transaction: Transaction) => (
-        <span
-          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-            transaction.status
-          )}`}
-        >
-          {transaction.status}
-        </span>
-      ),
+      render: (transaction: Transaction) => <StatusBadge status={transaction.status} />,
     },
     {
       key: "action",
@@ -144,7 +103,9 @@ export function TransactionListTable({
       onRowSelect={onRowSelect}
       onSelectAll={onSelectAll}
       emptyMessage="No transactions found"
-      filters={<Filters filters={filters} onFiltersChange={onFiltersChange} />}
+      filters={
+        <TransactionListFilters filters={filters} onFiltersChange={onFiltersChange} />
+      }
     />
   );
 }

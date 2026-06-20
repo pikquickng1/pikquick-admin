@@ -1,22 +1,22 @@
-import { Search, ChevronDown } from "lucide-react";
+import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { RequesterListFilters as Filters } from "../types/requester-list.types";
+import { Select } from "@/components/ui/select";
+import { ALL_FILTER } from "@/lib/types/enums";
+import { USER_STATUS_OPTIONS, USER_SORT_OPTIONS } from "@/lib/constants/filters";
+import { statusLabel } from "@/lib/utils/status";
+import type { RequesterListFilters as Filters } from "../types/requester-list.types";
 
 interface RequesterListFiltersProps {
   filters: Filters;
   onFiltersChange: (filters: Filters) => void;
 }
 
-export function RequesterListFilters({ filters, onFiltersChange }: RequesterListFiltersProps) {
-  const statusOptions = ["All Status", "Active", "Suspended", "Inactive"] as const;
-  const sortOptions = ["Most Recent", "Most tasks"] as const;
+const STATUS_OPTIONS = USER_STATUS_OPTIONS.map((o) => ({
+  value: o.value,
+  label: o.value === ALL_FILTER ? o.label : statusLabel(o.value),
+}));
 
+export function RequesterListFilters({ filters, onFiltersChange }: RequesterListFiltersProps) {
   return (
     <div className="flex items-center gap-4">
       <div className="flex-1 relative">
@@ -30,43 +30,21 @@ export function RequesterListFilters({ filters, onFiltersChange }: RequesterList
         />
       </div>
 
-      <DropdownMenu>
-        <DropdownMenuTrigger className="flex items-center gap-2 px-4 py-4 bg-white border border-neutral-200 rounded-[4px] text-sm text-text-primary hover:bg-gray-50">
-          {filters.status}
-            <ChevronDown className="w-4 h-4" />
-          
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-48">
-          {statusOptions.map((status) => (
-            <DropdownMenuItem
-              key={status}
-              onSelect={() => onFiltersChange({ ...filters, status })}
-              className={filters.status === status ? "bg-primary-50 text-primary-500 font-medium" : ""}
-            >
-              {status}
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <Select
+        value={filters.status}
+        options={STATUS_OPTIONS}
+        onChange={(e) => onFiltersChange({ ...filters, status: e.target.value as Filters["status"] })}
+        placeholder="Status"
+        className="min-w-[160px]"
+      />
 
-      <DropdownMenu>
-<DropdownMenuTrigger className="flex items-center gap-2 px-4 py-4 bg-white border border-neutral-200 rounded-[4px] text-sm text-text-primary hover:bg-gray-50">
-              {filters.sortBy}
-            <ChevronDown className="w-4 h-4" />
-          
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-48">
-          {sortOptions.map((sort) => (
-            <DropdownMenuItem
-              key={sort}
-              onSelect={() => onFiltersChange({ ...filters, sortBy: sort })}
-              className={filters.sortBy === sort ? "bg-primary-50 text-primary-500 font-medium" : ""}
-            >
-              {sort}
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <Select
+        value={filters.sortBy}
+        options={USER_SORT_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
+        onChange={(e) => onFiltersChange({ ...filters, sortBy: e.target.value })}
+        placeholder="Sort by"
+        className="min-w-[160px]"
+      />
     </div>
   );
 }
