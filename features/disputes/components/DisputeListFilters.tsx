@@ -13,7 +13,6 @@ import {
   DISPUTE_STATUS_OPTIONS,
 } from "@/lib/constants/filters";
 import type { DisputeTicketListFilters as Filters } from "../types/dispute.types";
-import { useState } from "react";
 
 interface DisputeListFiltersProps {
   filters: Filters;

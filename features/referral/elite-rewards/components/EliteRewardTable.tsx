@@ -26,6 +26,7 @@ const ELITE_REWARDS_ROUTE = "/dashboard/referral/elite-rewards";
 
 export function EliteRewardTable({
   rewards,
+  selectedRows,
   onRowSelect,
   onSelectAll,
   filters,

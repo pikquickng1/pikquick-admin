@@ -28,6 +28,7 @@ const REFERRAL_RECORDS_ROUTE = "/dashboard/referral/records";
 
 export function ReferralRecordTable({
   records,
+  selectedRows,
   onRowSelect,
   onSelectAll,
   filters,
