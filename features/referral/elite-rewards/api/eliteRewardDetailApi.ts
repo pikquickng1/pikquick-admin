@@ -3,6 +3,7 @@ import { EliteRewardDetail } from "../types/elite-reward-detail.types";
 export const eliteRewardDetailApi = {
   getEliteRewardDetail: async (id: string): Promise<EliteRewardDetail> => {
     await new Promise((resolve) => setTimeout(resolve, 300));
+    console.log("Fetching elite reward detail for ID:", id);
 
     return {
       user: {

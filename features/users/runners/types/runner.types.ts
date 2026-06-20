@@ -13,6 +13,7 @@ export interface Runner {
   rating: number;
   totalReviews: number;
   tasksCompleted: number;
+  totalTasks: number;
 }
 
 export interface RunnerTransaction {

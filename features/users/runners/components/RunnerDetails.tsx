@@ -24,7 +24,8 @@ interface RunnerDetailsProps {
 type TabType = "profile" | "kyc" | "wallet" | "rating" | "taskRecords";
 
 export function RunnerDetails({ runnerId, onBack }: RunnerDetailsProps) {
-  const { runner, wallet, transactions, taskHistory, loading, error, refetch } = useRunner(runnerId);
+  const { runner, wallet, transactions, taskHistory, loading, error, refetch } =
+    useRunner(runnerId);
   const { adjustWallet, loading: actionLoading } = useRunnerActions();
   const [activeTab, setActiveTab] = useState<TabType>("profile");
   const [showAdjustWalletModal, setShowAdjustWalletModal] = useState(false);
@@ -33,7 +34,10 @@ export function RunnerDetails({ runnerId, onBack }: RunnerDetailsProps) {
     setShowAdjustWalletModal(true);
   };
 
-  const handleAdjustWalletConfirm = async (type: "debit" | "credit", amount: number) => {
+  const handleAdjustWalletConfirm = async (
+    type: "debit" | "credit",
+    amount: number,
+  ) => {
     const success = await adjustWallet(runnerId, type, amount);
     if (success) {
       setShowAdjustWalletModal(false);
@@ -49,7 +53,9 @@ export function RunnerDetails({ runnerId, onBack }: RunnerDetailsProps) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <p className="text-sm text-red-500">{error || "Failed to load runner details"}</p>
+          <p className="text-sm text-red-500">
+            {error || "Failed to load runner details"}
+          </p>
           <Button onClick={onBack} variant="outline" className="mt-4">
             Go Back
           </Button>
@@ -64,6 +70,19 @@ export function RunnerDetails({ runnerId, onBack }: RunnerDetailsProps) {
       .map((n) => n[0])
       .join("")
       .toUpperCase();
+  };
+
+  const getVerificationColor = (verification: string) => {
+    switch (verification) {
+      case "verified":
+        return "bg-green-100 text-green-700";
+      case "unverified":
+        return "bg-yellow-100 text-yellow-700";
+      case "Failed":
+        return "bg-red-100 text-red-700";
+      default:
+        return "bg-gray-100 text-gray-700";
+    }
   };
 
   return (
@@ -88,21 +107,26 @@ export function RunnerDetails({ runnerId, onBack }: RunnerDetailsProps) {
 
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-3">
-              <h1 className="text-3xl font-semibold text-text-primary">{runner.name}</h1>
-              <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium bg-green-100 text-green-600">
-                Verified
-                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+              <h1 className="text-3xl font-semibold text-text-primary">
+                {runner.name}
+              </h1>
+              <span
+                className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium ${getVerificationColor(runner.verification)}`}
+              >
+                {runner.verification}
+                <svg
+                  className="w-5 h-5"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
                   <path d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" />
                 </svg>
               </span>
             </div>
 
             <div className="flex items-center gap-3 mb-3">
-              <span className="inline-flex items-center px-3 py-1 rounded-md text-sm font-medium bg-gray-100 text-gray-700">
-                {runner.id}
-              </span>
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-md text-sm font-medium bg-blue-50 text-blue-600">
-                🏍️ Motorcycle
+              <span className="inline-flex items-center gap-3 px-3 py-1 rounded-md text-sm font-medium bg-blue-50 text-blue-600">
+                🏍️ {runner.transportMode}
               </span>
             </div>
 
@@ -127,7 +151,9 @@ export function RunnerDetails({ runnerId, onBack }: RunnerDetailsProps) {
                   d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              <span className="text-sm text-text-primary">{runner.tasksCompleted} completed</span>
+              <span className="text-sm text-text-primary">
+                {runner.tasksCompleted} completed
+              </span>
             </div>
 
             <div className="flex items-center gap-6 text-sm text-text-secondary">
@@ -159,7 +185,9 @@ export function RunnerDetails({ runnerId, onBack }: RunnerDetailsProps) {
           <button
             onClick={() => setActiveTab("profile")}
             className={`px-4 py-2 text-sm font-medium rounded-[4px] ${
-              activeTab === "profile" ? "bg-primary-50 text-primary-500" : "hover:bg-neutral-50"
+              activeTab === "profile"
+                ? "bg-primary-50 text-primary-500"
+                : "hover:bg-neutral-50"
             }`}
           >
             Profile Info
@@ -167,7 +195,9 @@ export function RunnerDetails({ runnerId, onBack }: RunnerDetailsProps) {
           <button
             onClick={() => setActiveTab("kyc")}
             className={`px-4 py-2 text-sm font-medium rounded-[4px] ${
-              activeTab === "kyc" ? "bg-primary-50 text-primary-500" : "hover:bg-neutral-50"
+              activeTab === "kyc"
+                ? "bg-primary-50 text-primary-500"
+                : "hover:bg-neutral-50"
             }`}
           >
             KYC Verification
@@ -175,7 +205,9 @@ export function RunnerDetails({ runnerId, onBack }: RunnerDetailsProps) {
           <button
             onClick={() => setActiveTab("wallet")}
             className={`px-4 py-2 text-sm font-medium rounded-[4px] ${
-              activeTab === "wallet" ? "bg-primary-50 text-primary-500" : "hover:bg-neutral-50"
+              activeTab === "wallet"
+                ? "bg-primary-50 text-primary-500"
+                : "hover:bg-neutral-50"
             }`}
           >
             Wallet
@@ -183,7 +215,9 @@ export function RunnerDetails({ runnerId, onBack }: RunnerDetailsProps) {
           <button
             onClick={() => setActiveTab("rating")}
             className={`px-4 py-2 text-sm font-medium rounded-[4px] ${
-              activeTab === "rating" ? "bg-primary-50 text-primary-500" : "hover:bg-neutral-50"
+              activeTab === "rating"
+                ? "bg-primary-50 text-primary-500"
+                : "hover:bg-neutral-50"
             }`}
           >
             Rating & Review
@@ -191,7 +225,9 @@ export function RunnerDetails({ runnerId, onBack }: RunnerDetailsProps) {
           <button
             onClick={() => setActiveTab("taskRecords")}
             className={`px-4 py-2 text-sm font-medium rounded-[4px] ${
-              activeTab === "taskRecords" ? "bg-primary-50 text-primary-500" : "hover:bg-neutral-50"
+              activeTab === "taskRecords"
+                ? "bg-primary-50 text-primary-500"
+                : "hover:bg-neutral-50"
             }`}
           >
             Task Records
@@ -225,14 +261,20 @@ export function RunnerDetails({ runnerId, onBack }: RunnerDetailsProps) {
       )}
 
       {activeTab === "wallet" && (
-        <RunnerWalletTab wallet={wallet} onAdjustWallet={handleAdjustWallet} />
+        <RunnerWalletTab
+          wallet={wallet}
+          recentTransactions={transactions}
+          onAdjustWallet={handleAdjustWallet}
+        />
       )}
 
       {activeTab === "kyc" && <RunnerKYCTab />}
 
       {activeTab === "rating" && <RunnerRatingTab />}
 
-      {activeTab === "taskRecords" && <RunnerTaskRecordsTab tasks={taskHistory} />}
+      {activeTab === "taskRecords" && (
+        <RunnerTaskRecordsTab runnerId={runnerId} tasks={taskHistory} />
+      )}
 
       <AdjustWalletModal
         open={showAdjustWalletModal}

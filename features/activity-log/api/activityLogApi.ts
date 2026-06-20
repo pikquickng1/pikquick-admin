@@ -1,4 +1,4 @@
-import { ActivityLog, ActivityLogListResponse, ActivityLogFilters } from "../types/activity-log.types";
+import { ActivityLogListResponse, ActivityLogFilters } from "../types/activity-log.types";
 import { activityLogService } from "@/lib/services/activity-log.service";
 
 export const activityLogApi = {

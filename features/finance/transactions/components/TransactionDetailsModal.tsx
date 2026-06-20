@@ -2,7 +2,7 @@
 
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { X, Download, Loader2 } from "lucide-react";
-import { Transaction, TransactionDetails } from "../types/transaction.types";
+import { Transaction } from "../types/transaction.types";
 import { useTransaction } from "../hooks/useTransaction";
 
 interface TransactionDetailsModalProps {

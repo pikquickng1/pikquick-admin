@@ -1,7 +1,7 @@
 "use client";
 
 import { X, Save } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -49,31 +49,42 @@ export function EditRolePermissionsModal({
 }: EditRolePermissionsModalProps) {
   const [permissions, setPermissions] = useState<Permission[]>([]);
 
-  useEffect(() => {
-    if (role) {
-      setPermissions(getDefaultPermissions());
-    }
-  }, [role]);
+  const defaultPermissions = useMemo(
+    () => (role ? getDefaultPermissions() : []),
+    [role]
+  );
+
+  const currentPermissions = permissions.length ? permissions : defaultPermissions;
+
+  const handleClose = () => {
+    setPermissions([]);
+    onClose();
+  };
 
   const handleTogglePermission = (
     moduleIndex: number,
     permissionType: keyof Omit<Permission, "module">
   ) => {
-    const newPermissions = [...permissions];
-    newPermissions[moduleIndex][permissionType] = !newPermissions[moduleIndex][permissionType];
+    const basePermissions = permissions.length ? permissions : defaultPermissions;
+    const newPermissions = [...basePermissions];
+    newPermissions[moduleIndex] = {
+      ...newPermissions[moduleIndex],
+      [permissionType]: !newPermissions[moduleIndex][permissionType],
+    };
     setPermissions(newPermissions);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(permissions);
+    onSave(currentPermissions);
+    setPermissions([]);
     onClose();
   };
 
   if (!role) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-3xl">
         <DialogHeader>
           <div className="flex items-start justify-between">
@@ -86,7 +97,7 @@ export function EditRolePermissionsModal({
               </p>
             </div>
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="text-text-secondary hover:text-text-primary"
             >
               <X className="w-5 h-5" />
@@ -118,7 +129,7 @@ export function EditRolePermissionsModal({
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-100">
-                {permissions.map((permission, index) => (
+                {currentPermissions.map((permission, index) => (
                   <tr key={permission.module} className="hover:bg-neutral-50">
                     <td className="px-4 py-3 text-sm text-text-primary">
                       {permission.module}
@@ -164,7 +175,7 @@ export function EditRolePermissionsModal({
           <div className="flex items-center justify-end gap-3 pt-4">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className="px-4 py-2 text-sm text-text-secondary hover:text-text-primary"
             >
               Close

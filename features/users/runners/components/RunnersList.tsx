@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Pagination } from "@/components/ui/pagination";
 import { useRunnerList } from "../hooks/useRunnerList";
-import { RunnerListFilters } from "./RunnerListFilters";
 import { RunnerListTable } from "./RunnerListTable";
 import { RunnerListSkeleton } from "./RunnerListSkeleton";
 import { RunnerListFilters as Filters } from "../types/runner-list.types";
@@ -26,10 +25,6 @@ export function RunnersList() {
   const apiFilters = { ...filters, search: debouncedSearch };
 
   const { runners, loading, pagination } = useRunnerList(apiFilters, currentPage);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [filters.search, filters.status]);
 
   const toggleRow = (id: string) => {
     setSelectedRows((prev) =>
@@ -70,7 +65,10 @@ export function RunnersList() {
           onSelectAll={toggleAll}
           onViewDetails={handleViewDetails}
           filters={filters}
-          onFiltersChange={setFilters}
+          onFiltersChange={(newFilters) => {
+            setFilters(newFilters);
+            setCurrentPage(1);
+          }}
         />
       </div>
 

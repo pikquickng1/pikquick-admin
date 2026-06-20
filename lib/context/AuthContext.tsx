@@ -103,15 +103,13 @@ function clearStoredAuth() {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<AuthState>(initialState);
+  const [state, setState] = useState<AuthState>(() => loadStoredAuth());
 
   useEffect(() => {
-    const stored = loadStoredAuth();
-    if (stored.isAuthenticated && stored.accessToken && stored.user) {
-      setState(stored);
-      setTokenGetter(() => stored.accessToken);
+    if (state.accessToken) {
+      setTokenGetter(() => state.accessToken);
     }
-  }, []);
+  }, [state.accessToken]);
 
   const login = useCallback(
     (accessToken: string, refreshToken: string, user: AuthUser) => {

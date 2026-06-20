@@ -1,5 +1,4 @@
 import {
-  Transaction,
   TransactionListFilters,
   TransactionListResponse,
   TransactionStats,

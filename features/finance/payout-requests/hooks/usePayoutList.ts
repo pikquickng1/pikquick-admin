@@ -23,7 +23,7 @@ function statusToApi(status: string): string | undefined {
 }
 
 export function usePayoutList(filters: PayoutListFilters, page: number) {
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, isLoading, refetch } = useQuery({
     queryKey: queryKeys.withdrawals.list({
       page,
       limit: LIMIT,

@@ -7,6 +7,15 @@ interface RevenueGrowthChartProps {
   data?: RevenueGrowthData[];
 }
 
+type BarShapeProps = {
+  fill?: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  index: number;
+};
+
 const defaultData: RevenueGrowthData[] = [
   { month: "Jan", bottom: 2.5, middle: 1.5, top: 1.5 },
   { month: "Feb", bottom: 2.5, middle: 1, top: 0 },
@@ -17,7 +26,7 @@ const defaultData: RevenueGrowthData[] = [
 ];
 
 export function RevenueGrowthChart({ data = defaultData }: RevenueGrowthChartProps) {
-  const MiddleBar = (props: any) => {
+  const MiddleBar = (props: BarShapeProps) => {
     const { fill, x, y, width, height, index } = props;
 
     if (!data[index]) return null;

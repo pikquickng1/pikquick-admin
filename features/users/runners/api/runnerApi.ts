@@ -1,6 +1,10 @@
-import { Runner, RunnerTransaction, RunnerWallet, RunnerTaskHistory } from "../types/runner.types";
+  
+  import { Runner, RunnerTransaction, RunnerWallet, RunnerTaskHistory } from "../types/runner.types";
 import { RunnerListFilters, RunnerListResponse } from "../types/runner-list.types";
 import { runnersService } from "@/lib/services";
+
+  // Paginated runner tasks fetcher
+  
 
 export const runnerApi = {
   getRunnersList: async (
@@ -18,6 +22,28 @@ export const runnerApi = {
       return response;
     } catch (error) {
       console.error("Failed to fetch runners list:", error);
+      throw error;
+    }
+  },
+
+  getRunnerTasksPaginated: async (
+    id: string,
+    page: number = 1,
+    limit: number = 20
+  ): Promise<{ data: RunnerTaskHistory[]; pagination: { currentPage: number; totalPages: number; totalItems: number; itemsPerPage: number } }> => {
+    try {
+      const response = await runnersService.getRunnerTasks(id, { page, limit });
+      return {
+        data: response.data || [],
+        pagination: response.pagination || {
+          currentPage: page,
+          totalPages: 1,
+          totalItems: 0,
+          itemsPerPage: limit,
+        },
+      };
+    } catch (error) {
+      console.error("Failed to fetch paginated runner tasks:", error);
       throw error;
     }
   },

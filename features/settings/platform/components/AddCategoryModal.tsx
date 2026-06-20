@@ -63,7 +63,7 @@ export function AddCategoryModal({ isOpen, onClose, onSave }: AddCategoryModalPr
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              className="w-full"
+              className="w-full text-black"
             />
           </div>
 
@@ -78,7 +78,7 @@ export function AddCategoryModal({ isOpen, onClose, onSave }: AddCategoryModalPr
               onChange={(e) => setDescription(e.target.value)}
               required
               rows={3}
-              className="w-full px-3 py-2 border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none"
+              className="w-full text-black px-3 py-2 border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none"
             />
           </div>
 

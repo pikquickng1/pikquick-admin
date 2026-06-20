@@ -30,7 +30,7 @@ const AvatarImage = React.forwardRef<HTMLImageElement, AvatarImageProps>(
   ({ className = "", src, alt = "" }, ref) => {
     return (
       <Image
-        ref={ref as any}
+        ref={ref as React.LegacyRef<HTMLImageElement>}
         src={src}
         alt={alt}
         fill

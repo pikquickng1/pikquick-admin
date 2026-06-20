@@ -98,7 +98,7 @@ function LoginForm() {
                 placeholder="Enter your email or phone"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="h-12"
+                className="h-12 text-black"
                 required
               />
             </div>
@@ -115,7 +115,7 @@ function LoginForm() {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="h-12 pr-10"
+                  className="h-12 pr-10 text-black"
                   required
                 />
                 <button

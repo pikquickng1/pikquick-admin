@@ -50,7 +50,7 @@ export function RunnerAvailabilityPerformance({ runner }: RunnerAvailabilityPerf
           <div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-text-secondary">Total Tasks</span>
-              <span className="text-sm font-medium text-text-primary">{runner.tasksCompleted + 7}</span>
+              <span className="text-sm font-medium text-text-primary">{runner.totalTasks}</span>
             </div>
           </div>
 

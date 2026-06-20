@@ -16,7 +16,6 @@ interface ReferralRecordTableProps {
 
 export function ReferralRecordTable({
   records,
-  selectedRows,
   onRowSelect,
   onSelectAll,
   filters,

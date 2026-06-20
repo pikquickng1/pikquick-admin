@@ -65,7 +65,7 @@ export function RequesterPaymentTable({ payments }: RequesterPaymentTableProps) 
               ? "bg-green-100 text-green-700"
               : payment.status === "pending"
               ? "bg-orange-100 text-orange-700"
-              : "bg-red-100 text-red-700"
+              : "bg-green-100 text-green-700"
           }`}
         >
           {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}

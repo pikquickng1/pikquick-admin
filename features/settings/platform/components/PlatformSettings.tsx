@@ -90,7 +90,7 @@ export function PlatformSettings() {
               onChange={(e) =>
                 setSettings({ ...settings, accessFee: Number(e.target.value) })
               }
-              className="w-full px-3 py-2 border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full text-black px-3 py-2 border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <p className="text-xs text-text-secondary mt-2">
               Daily fee charged to runners for platform access
@@ -113,7 +113,7 @@ export function PlatformSettings() {
               onChange={(e) =>
                 setSettings({ ...settings, platformCommission: Number(e.target.value) })
               }
-              className="w-full px-3 py-2 border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full text-black px-3 py-2 border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <p className="text-xs text-text-secondary mt-2">
               Percentage taken from each completed task

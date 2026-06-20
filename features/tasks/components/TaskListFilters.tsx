@@ -26,7 +26,7 @@ export function TaskListFilters({ filters, onFiltersChange }: TaskListFiltersPro
           placeholder="Search by name, email or phone number"
           value={filters.search}
           onChange={(e) => onFiltersChange({ ...filters, search: e.target.value })}
-          className="pl-10 bg-white border-light"
+          className="pl-10 bg-white border-light text-black"
         />
       </div>
 
