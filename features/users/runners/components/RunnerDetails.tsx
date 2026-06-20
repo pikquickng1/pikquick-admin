@@ -24,7 +24,7 @@ interface RunnerDetailsProps {
 type TabType = "profile" | "kyc" | "wallet" | "rating" | "taskRecords";
 
 export function RunnerDetails({ runnerId, onBack }: RunnerDetailsProps) {
-  const { runner, wallet, taskHistory, loading, error, refetch } =
+  const { runner, wallet, transactions, taskHistory, loading, error, refetch } =
     useRunner(runnerId);
   const { adjustWallet, loading: actionLoading } = useRunnerActions();
   const [activeTab, setActiveTab] = useState<TabType>("profile");
@@ -261,7 +261,11 @@ export function RunnerDetails({ runnerId, onBack }: RunnerDetailsProps) {
       )}
 
       {activeTab === "wallet" && (
-        <RunnerWalletTab wallet={wallet} onAdjustWallet={handleAdjustWallet} />
+        <RunnerWalletTab
+          wallet={wallet}
+          recentTransactions={transactions}
+          onAdjustWallet={handleAdjustWallet}
+        />
       )}
 
       {activeTab === "kyc" && <RunnerKYCTab />}

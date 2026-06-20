@@ -40,6 +40,7 @@ export function mapAdminUserToRunner(user: AdminUser): Runner {
     balance: 0,
     rating: 0,
     totalReviews: 0,
+    totalTasks: 0,
     tasksCompleted: 0,
   };
 }

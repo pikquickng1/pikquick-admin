@@ -52,7 +52,7 @@ export function RequesterWalletTransactions({ transactions }: RequesterWalletTra
       render: (transaction: RequesterTransaction) => (
         <span
           className={`text-sm font-medium ${
-            transaction.type === "debit" ? "text-red-500" : "text-green-400"
+            transaction.type === "debit" ? "text-red-500" : "text-black"
           }`}
         >
           {formatCurrency(transaction.amount)}
