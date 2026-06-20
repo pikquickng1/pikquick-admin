@@ -1,28 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { ReferralSettings } from "../types/referral-settings.types";
+import { useQuery } from "@tanstack/react-query";
 import { referralSettingsApi } from "../api/referralSettingsApi";
+import type { ReferralSettings } from "../types/referral-settings.types";
 
 export function useReferralSettings() {
-  const [settings, setSettings] = useState<ReferralSettings | null>(null);
-  const [loading, setLoading] = useState(true);
+  const query = useQuery({
+    queryKey: ["referral-settings"],
+    queryFn: () => referralSettingsApi.getSettings(),
+  });
 
-  const fetchSettings = async () => {
-    try {
-      setLoading(true);
-      const data = await referralSettingsApi.getSettings();
-      setSettings(data);
-    } catch (error) {
-      console.error("Failed to fetch referral settings:", error);
-    } finally {
-      setLoading(false);
-    }
+  return {
+    settings: (query.data ?? null) as ReferralSettings | null,
+    loading: query.isLoading,
+    error: query.error instanceof Error ? query.error.message : null,
+    refetch: () => {
+      void query.refetch();
+    },
   };
-
-  useEffect(() => {
-    fetchSettings();
-  }, []);
-
-  return { settings, loading, refetch: fetchSettings };
 }

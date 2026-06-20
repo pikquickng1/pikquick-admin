@@ -1,14 +1,17 @@
-export interface Notification {
+import { ReadStatus } from "@/lib/types/enums";
+
+export interface AdminNotification {
   id: string;
   title: string;
   description: string;
   timestamp: string;
   isNew: boolean;
-  icon: string;
-  iconColor: string;
+  icon: "shield" | "users" | "alert" | "dollar";
+  iconColor: "blue" | "green" | "red" | "purple";
+  status?: ReadStatus;
 }
 
 export interface NotificationsResponse {
-  notifications: Notification[];
+  notifications: AdminNotification[];
   unreadCount: number;
 }

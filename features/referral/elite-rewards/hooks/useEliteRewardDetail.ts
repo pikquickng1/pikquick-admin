@@ -1,33 +1,22 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { EliteRewardDetail } from "../types/elite-reward-detail.types";
+import { useQuery } from "@tanstack/react-query";
 import { eliteRewardDetailApi } from "../api/eliteRewardDetailApi";
+import type { EliteRewardDetail } from "../types/elite-reward-detail.types";
 
 export function useEliteRewardDetail(id: string | null) {
-  const [detail, setDetail] = useState<EliteRewardDetail | null>(null);
-  const [loading, setLoading] = useState(true);
+  const query = useQuery({
+    queryKey: ["elite-reward-detail", id],
+    queryFn: () => eliteRewardDetailApi.getEliteRewardDetail(id!),
+    enabled: !!id,
+  });
 
-  const fetchDetail = async () => {
-    if (!id) {
-      setLoading(false);
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const data = await eliteRewardDetailApi.getEliteRewardDetail(id);
-      setDetail(data);
-    } catch (error) {
-      console.error("Failed to fetch elite reward detail:", error);
-    } finally {
-      setLoading(false);
-    }
+  return {
+    detail: (query.data ?? null) as EliteRewardDetail | null,
+    loading: query.isLoading,
+    error: query.error instanceof Error ? query.error.message : null,
+    refetch: () => {
+      void query.refetch();
+    },
   };
-
-  useEffect(() => {
-    fetchDetail();
-  }, [id]);
-
-  return { detail, loading, refetch: fetchDetail };
 }

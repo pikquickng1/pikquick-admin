@@ -2,7 +2,6 @@
 export { EliteRewardsList } from "./components/EliteRewardsList";
 export { EliteRewardTable } from "./components/EliteRewardTable";
 export { EliteRewardDetailPage } from "./components/EliteRewardDetailPage";
-// EliteRewardFilters is internal to EliteRewardTable, not exported
 
 // Hooks
 export { useEliteRewardList } from "./hooks/useEliteRewardList";
@@ -15,13 +14,13 @@ export type {
   EliteRewardStats,
   EliteRewardFilters,
   EliteRewardListResponse,
-  EliteRewardStatus,
 } from "./types/elite-reward.types";
 
 export type {
   EliteRewardUserProfile,
   EliteRewardMetrics,
   IntegrityCheck,
+  IntegrityLevel,
   ReferralBreakdown,
   RewardDetails,
   EliteRewardDetail,

@@ -2,7 +2,6 @@
 export { ReferralRecordsList } from "./components/ReferralRecordsList";
 export { ReferralRecordTable } from "./components/ReferralRecordTable";
 export { ReferralDetailsPage } from "./components/ReferralDetailsPage";
-// ReferralRecordFilters is internal to ReferralRecordTable, not exported
 
 // Hooks
 export { useReferralRecordList } from "./hooks/useReferralRecordList";
@@ -14,7 +13,6 @@ export type {
   ReferralRecordDetails,
   ReferralRecordFilters,
   ReferralRecordListResponse,
-  ReferralStatus,
 } from "./types/referral-record.types";
 
 export type {
@@ -23,6 +21,8 @@ export type {
   TimelineEvent,
   QualificationTask,
   FraudIndicator,
+  FraudOutcome,
+  FraudIndicatorType,
   SystemMetadata,
   ReferralDetails,
 } from "./types/referral-detail.types";

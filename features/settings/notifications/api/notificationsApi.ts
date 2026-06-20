@@ -1,26 +1,21 @@
-import { Notification, NotificationListResponse, NotificationFilters } from "../types/notifications.types";
-import { adminService } from "@/lib/services";
+import type {
+  CreateNotificationPayload,
+  NotificationLogResponse,
+} from "../types/notifications.types";
+import { adminService } from "@/lib/services/admin.service";
 
 export const notificationsApi = {
-  getNotifications: async (filters: NotificationFilters): Promise<NotificationListResponse> => {
-    try {
-      const response = await adminService.getNotifications({
-        page: filters.page,
-        limit: filters.limit,
-      });
-      return response;
-    } catch (error) {
-      console.error("Failed to fetch notifications:", error);
-      throw error;
-    }
+  async getNotificationsLog(
+    params: { page: number; limit: number },
+  ): Promise<NotificationLogResponse> {
+    return (await adminService.getNotifications(
+      params as unknown as Record<string, unknown>,
+    )) as NotificationLogResponse;
   },
 
-  createNotification: async (notification: Omit<Notification, "id" | "date">): Promise<void> => {
-    try {
-      await adminService.createNotification(notification);
-    } catch (error) {
-      console.error("Failed to create notification:", error);
-      throw error;
-    }
+  async createNotification(payload: CreateNotificationPayload): Promise<void> {
+    await adminService.createNotification(
+      payload as unknown as Record<string, unknown>,
+    );
   },
 };

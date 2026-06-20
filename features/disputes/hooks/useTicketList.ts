@@ -1,30 +1,57 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Ticket, TicketListFilters } from "../types/dispute.types";
+import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query/keys";
 import { disputeApi } from "../api/disputeApi";
+import type {
+  DisputeTicket,
+  DisputeTicketListFilters,
+  DisputeTicketStats,
+} from "../types/dispute.types";
 
-export function useTicketList(filters: TicketListFilters, page = 1, pageSize = 10) {
-  const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [total, setTotal] = useState(0);
+const EMPTY_TICKETS: DisputeTicket[] = [];
 
-  useEffect(() => {
-    const fetchTickets = async () => {
-      try {
-        setLoading(true);
-        const response = await disputeApi.getTickets(filters, page, pageSize);
-        setTickets(response.tickets);
-        setTotal(response.total);
-      } catch (error) {
-        console.error("Failed to fetch tickets:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+export function useTicketList(
+  filters: DisputeTicketListFilters,
+  page: number,
+  pageSize: number,
+) {
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: queryKeys.disputes.list({ filters, page, pageSize }),
+    queryFn: () => disputeApi.getTickets(filters, page, pageSize),
+  });
 
-    fetchTickets();
-  }, [filters.search, filters.priority, filters.category, filters.dateFrom, filters.dateTo, page, pageSize]);
+  return {
+    tickets: data?.tickets ?? EMPTY_TICKETS,
+    loading: isLoading,
+    total: data?.total ?? 0,
+    pageSize: data?.pageSize ?? pageSize,
+    totalPages: data?.totalPages ?? 1,
+    error: error instanceof Error ? error.message : null,
+    refetch: () => {
+      void refetch();
+    },
+  };
+}
 
-  return { tickets, loading, total };
+export function useTicketStats() {
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: queryKeys.disputes.stats(),
+    queryFn: () => disputeApi.getTicketStats(),
+  });
+
+  const fallback: DisputeTicketStats = {
+    openTickets: 0,
+    inProgress: 0,
+    resolved: 0,
+  };
+
+  return {
+    stats: data ?? fallback,
+    loading: isLoading,
+    error: error instanceof Error ? error.message : null,
+    refetch: () => {
+      void refetch();
+    },
+  };
 }

@@ -1,6 +1,5 @@
 "use client";
 
-import { X } from "lucide-react";
 import { useState } from "react";
 import {
   Dialog,
@@ -10,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 
 interface AddCategoryModalProps {
   isOpen: boolean;
@@ -33,22 +33,12 @@ export function AddCategoryModal({ isOpen, onClose, onSave }: AddCategoryModalPr
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <div className="flex items-start justify-between">
-            <div>
-              <DialogTitle className="text-xl font-semibold text-text-primary">
-                Add Task Category
-              </DialogTitle>
-              <p className="text-sm text-text-secondary mt-1">
-                Create a new task category for the platform
-              </p>
-            </div>
-            <button
-              onClick={onClose}
-              className="text-text-secondary hover:text-text-primary"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+          <DialogTitle className="text-xl font-semibold text-text-primary">
+            Add Task Category
+          </DialogTitle>
+          <p className="text-sm text-text-secondary mt-1">
+            Create a new task category for the platform
+          </p>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-6">
@@ -83,19 +73,10 @@ export function AddCategoryModal({ isOpen, onClose, onSave }: AddCategoryModalPr
           </div>
 
           <div className="flex items-center justify-end gap-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-sm text-text-secondary hover:text-text-primary"
-            >
+            <Button type="button" variant="ghost" onClick={onClose}>
               Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded"
-            >
-              Add Category
-            </button>
+            </Button>
+            <Button type="submit">Add Category</Button>
           </div>
         </form>
       </DialogContent>

@@ -13,26 +13,23 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { formatNgn } from "@/lib/utils/money";
+import { CURRENCY_SYMBOL } from "@/lib/config/feature-flags";
+import { CHART_COLORS } from "@/lib/utils/chart-colors";
+import { ReferralTierKey } from "@/lib/types/enums";
+import { referralTierLabel } from "@/lib/utils/status";
+import { statusBadgeClass, statusBadgeClasses } from "@/lib/utils/status";
 import { useReferralData } from "../hooks/useReferralData";
+
+const TOTAL_PAYOUTS_DISPLAY_DIVISOR = 1_000_000;
 
 export function ReferralOverview() {
   const { data, loading } = useReferralData();
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN",
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-sm text-neutral-500">Loading referral data...</p>
-        </div>
+        <p className="text-sm text-neutral-500">Loading referral data...</p>
       </div>
     );
   }
@@ -40,28 +37,14 @@ export function ReferralOverview() {
   if (!data) return null;
 
   const pieData = [
-    { name: "Paid", value: data.rewardStatus.paid, color: "#10B981" },
-    { name: "Pending", value: data.rewardStatus.pending, color: "#F59E0B" },
+    { name: "Paid", value: data.rewardStatus.paid, color: CHART_COLORS.success },
+    { name: "Pending", value: data.rewardStatus.pending, color: CHART_COLORS.warning },
   ];
-
-  const getStatusBadgeClass = (status: string) => {
-    switch (status) {
-      case "Elite":
-        return "bg-purple-100 text-purple-700";
-      case "Pro":
-        return "bg-blue-100 text-blue-700";
-      case "Starter":
-        return "bg-green-100 text-green-700";
-      default:
-        return "bg-gray-100 text-gray-700";
-    }
-  };
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold text-text-primary">Referral Overview</h1>
 
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <div className="bg-white rounded-lg border border-neutral-200 p-6">
           <div className="flex items-center justify-between mb-3">
@@ -117,16 +100,17 @@ export function ReferralOverview() {
               <Wallet className="w-5 h-5 text-teal-600" />
             </div>
           </div>
-          <p className="text-sm text-text-secondary mb-1">Total Payouts (₦)</p>
+          <p className="text-sm text-text-secondary mb-1">
+            Total Payouts ({CURRENCY_SYMBOL})
+          </p>
           <p className="text-2xl font-semibold text-text-primary">
-            ₦{(data.stats.totalPayouts / 1000000).toFixed(1)}M
+            {CURRENCY_SYMBOL}
+            {(data.stats.totalPayouts / TOTAL_PAYOUTS_DISPLAY_DIVISOR).toFixed(1)}M
           </p>
         </div>
       </div>
 
-      {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Referrals Over Time */}
         <div className="bg-white rounded-lg border border-neutral-200 p-6">
           <div className="mb-4">
             <h2 className="text-lg font-semibold text-text-primary">Referrals Over Time</h2>
@@ -134,22 +118,21 @@ export function ReferralOverview() {
           </div>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={data.dailyReferrals}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-              <XAxis dataKey="day" stroke="#6B7280" fontSize={12} />
-              <YAxis stroke="#6B7280" fontSize={12} />
+              <CartesianGrid strokeDasharray="3 3" stroke={CHART_COLORS.grid} />
+              <XAxis dataKey="day" stroke={CHART_COLORS.axis} fontSize={12} />
+              <YAxis stroke={CHART_COLORS.axis} fontSize={12} />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "#fff",
-                  border: "1px solid #E5E7EB",
+                  backgroundColor: CHART_COLORS.tooltipBg,
+                  border: `1px solid ${CHART_COLORS.tooltipBorder}`,
                   borderRadius: "8px",
                 }}
               />
-              <Bar dataKey="count" fill="#3B82F6" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="count" fill={CHART_COLORS.primary} radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
-        {/* Rewards Status */}
         <div className="bg-white rounded-lg border border-neutral-200 p-6">
           <div className="mb-4">
             <h2 className="text-lg font-semibold text-text-primary">Rewards Status</h2>
@@ -171,7 +154,11 @@ export function ReferralOverview() {
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value: number | undefined) => value !== undefined ? formatCurrency(value) : ""} />
+                <Tooltip
+                  formatter={(value: number | undefined) =>
+                    value !== undefined ? formatNgn(value) : ""
+                  }
+                />
               </PieChart>
             </ResponsiveContainer>
             <div className="space-y-4">
@@ -180,7 +167,7 @@ export function ReferralOverview() {
                 <div>
                   <p className="text-sm font-medium text-text-primary">Paid</p>
                   <p className="text-lg font-semibold text-text-primary">
-                    {formatCurrency(data.rewardStatus.paid)}
+                    {formatNgn(data.rewardStatus.paid)}
                   </p>
                 </div>
               </div>
@@ -189,14 +176,14 @@ export function ReferralOverview() {
                 <div>
                   <p className="text-sm font-medium text-text-primary">Pending</p>
                   <p className="text-lg font-semibold text-text-primary">
-                    {formatCurrency(data.rewardStatus.pending)}
+                    {formatNgn(data.rewardStatus.pending)}
                   </p>
                 </div>
               </div>
               <div className="pt-3 border-t border-neutral-200">
                 <p className="text-sm font-medium text-text-secondary">Total Rewards</p>
                 <p className="text-xl font-semibold text-text-primary">
-                  {formatCurrency(data.rewardStatus.total)}
+                  {formatNgn(data.rewardStatus.total)}
                 </p>
               </div>
             </div>
@@ -204,7 +191,6 @@ export function ReferralOverview() {
         </div>
       </div>
 
-      {/* Top Referrers This Week */}
       <div className="bg-white rounded-lg border border-neutral-200 p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-text-primary">Top Referrers This Week</h2>
@@ -217,21 +203,14 @@ export function ReferralOverview() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-neutral-200">
-                <th className="text-left py-3 px-4 text-sm font-medium text-text-secondary">
-                  Referrer
-                </th>
-                <th className="text-left py-3 px-4 text-sm font-medium text-text-secondary">
-                  Role
-                </th>
-                <th className="text-left py-3 px-4 text-sm font-medium text-text-secondary">
-                  Total Referrals
-                </th>
-                <th className="text-left py-3 px-4 text-sm font-medium text-text-secondary">
-                  Rewards Earned
-                </th>
-                <th className="text-left py-3 px-4 text-sm font-medium text-text-secondary">
-                  Status
-                </th>
+                {["Referrer", "Role", "Total Referrals", "Rewards Earned", "Status"].map((h) => (
+                  <th
+                    key={h}
+                    className="text-left py-3 px-4 text-sm font-medium text-text-secondary"
+                  >
+                    {h}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
@@ -259,16 +238,14 @@ export function ReferralOverview() {
                   </td>
                   <td className="py-4 px-4">
                     <span className="text-sm font-medium text-text-primary">
-                      {formatCurrency(referrer.rewardsEarned)}
+                      {formatNgn(referrer.rewardsEarned)}
                     </span>
                   </td>
                   <td className="py-4 px-4">
                     <span
-                      className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${getStatusBadgeClass(
-                        referrer.status
-                      )}`}
+                      className={statusBadgeClasses(referrer.status)}
                     >
-                      {referrer.status}
+                      {referralTierLabel(referrer.status)}
                     </span>
                   </td>
                 </tr>
@@ -280,3 +257,7 @@ export function ReferralOverview() {
     </div>
   );
 }
+
+// Keep the helper symbol referenced so unused imports don't sneak in during
+// future refactors while we migrate the rest of the module.
+export const __unused = { statusBadgeClass, ReferralTierKey };

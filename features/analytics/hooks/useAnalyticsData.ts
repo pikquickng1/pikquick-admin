@@ -1,28 +1,22 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { AnalyticsData } from "../types/analytics.types";
+import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query/keys";
 import { analyticsApi } from "../api/analyticsApi";
+import type { AnalyticsData } from "../types/analytics.types";
 
 export function useAnalyticsData() {
-  const [data, setData] = useState<AnalyticsData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: queryKeys.analytics.data(),
+    queryFn: () => analyticsApi.getAnalyticsData(),
+  });
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const analyticsData = await analyticsApi.getAnalyticsData();
-        setData(analyticsData);
-      } catch (error) {
-        console.error("Failed to fetch analytics data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  return { data, loading };
+  return {
+    data: (data ?? null) as AnalyticsData | null,
+    loading: isLoading,
+    error: error instanceof Error ? error.message : null,
+    refetch: () => {
+      void refetch();
+    },
+  };
 }

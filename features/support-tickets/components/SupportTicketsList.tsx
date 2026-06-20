@@ -4,77 +4,28 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { DataTable } from "@/components/ui/data-table";
 import { Pagination } from "@/components/ui/pagination";
+import { LoadingState } from "@/components/ui/loading-state";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { PageHeader } from "@/components/ui/page-header";
 import { SupportTicketListFilters } from "./SupportTicketListFilters";
-import { useSupportTicketsList } from "../hooks/useSupportTicketList";
-import type { SupportTicket, SupportTicketStatus, SupportTicketPriority } from "@/lib/types";
-
-function getPriorityColor(priority: SupportTicketPriority): string {
-  switch (priority) {
-    case "urgent":
-      return "bg-red-100 text-red-600";
-    case "high":
-      return "bg-orange-100 text-orange-600";
-    case "medium":
-      return "bg-yellow-100 text-yellow-600";
-    case "low":
-      return "bg-green-100 text-green-600";
-    default:
-      return "bg-gray-100 text-gray-600";
-  }
-}
-
-function getStatusColor(status: SupportTicketStatus): string {
-  switch (status) {
-    case "open":
-      return "bg-blue-100 text-blue-600";
-    case "in_progress":
-      return "bg-yellow-100 text-yellow-600";
-    case "resolved":
-      return "bg-green-100 text-green-600";
-    case "closed":
-      return "bg-gray-100 text-gray-600";
-    default:
-      return "bg-gray-100 text-gray-600";
-  }
-}
-
-function formatStatus(status: SupportTicketStatus): string {
-  return status.replace("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
-function formatDate(dateString: string): string {
-  return new Date(dateString).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
+import {
+  DEFAULT_SUPPORT_TICKET_FILTERS,
+  useSupportTicketsList,
+} from "../hooks/useSupportTicketList";
+import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from "@/lib/config/pagination";
+import { formatDateTime } from "@/lib/utils/date";
+import type { SupportTicket } from "@/lib/types";
 
 export function SupportTicketsList() {
   const router = useRouter();
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10;
+  const [currentPage, setCurrentPage] = useState<number>(DEFAULT_PAGE);
+  const [pageSize] = useState<number>(DEFAULT_PAGE_SIZE);
+  const [filters, setFilters] = useState(DEFAULT_SUPPORT_TICKET_FILTERS);
 
-  const [filters, setFilters] = useState<{
-    search?: string;
-    status?: SupportTicketStatus | "all";
-    priority?: SupportTicketPriority | "all";
-  }>({
-    search: "",
-    status: "all",
-    priority: "all",
-  });
-
-  const { tickets, loading, total } = useSupportTicketsList(
-    {
-      search: filters.search,
-      status: filters.status === "all" ? undefined : filters.status,
-      priority: filters.priority === "all" ? undefined : filters.priority,
-    },
+  const { tickets, loading, total, totalPages } = useSupportTicketsList(
+    filters,
     currentPage,
-    pageSize
+    pageSize,
   );
 
   const handleViewDetails = (id: string) => {
@@ -86,7 +37,9 @@ export function SupportTicketsList() {
       key: "id",
       header: "Ticket ID",
       render: (ticket: SupportTicket) => (
-        <span className="text-sm text-text-primary font-medium">{ticket.id.slice(0, 8)}...</span>
+        <span className="text-sm text-text-primary font-medium">
+          {ticket.id.slice(0, 8)}...
+        </span>
       ),
     },
     {
@@ -102,26 +55,14 @@ export function SupportTicketsList() {
       key: "status",
       header: "Status",
       render: (ticket: SupportTicket) => (
-        <span
-          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-            ticket.status
-          )}`}
-        >
-          {formatStatus(ticket.status)}
-        </span>
+        <StatusBadge status={ticket.status} />
       ),
     },
     {
       key: "priority",
       header: "Priority",
       render: (ticket: SupportTicket) => (
-        <span
-          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getPriorityColor(
-            ticket.priority
-          )}`}
-        >
-          {ticket.priority.charAt(0).toUpperCase() + ticket.priority.slice(1)}
-        </span>
+        <StatusBadge status={ticket.priority} />
       ),
     },
     {
@@ -137,14 +78,16 @@ export function SupportTicketsList() {
       key: "created",
       header: "Created",
       render: (ticket: SupportTicket) => (
-        <span className="text-sm text-text-secondary">{formatDate(ticket.created_at)}</span>
+        <span className="text-sm text-text-secondary">
+          {formatDateTime(ticket.created_at)}
+        </span>
       ),
     },
     {
       key: "replies",
       header: "Replies",
       render: (ticket: SupportTicket) => (
-        <span className="text-sm text-text-primary">{ticket.reply_count || 0}</span>
+        <span className="text-sm text-text-primary">{ticket.reply_count ?? 0}</span>
       ),
     },
     {
@@ -161,26 +104,21 @@ export function SupportTicketsList() {
     },
   ];
 
-  const totalPages = Math.ceil(total / pageSize);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-sm text-neutral-500">Loading tickets...</p>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <LoadingState label="Loading support tickets..." />;
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold text-text-primary">Support Tickets</h1>
+      <PageHeader title="Support Tickets" />
 
       <div className="bg-white rounded border border-light overflow-hidden">
         <div className="p-6 border-b border-neutral-200">
-          <SupportTicketListFilters filters={filters} onFiltersChange={setFilters} />
+          <SupportTicketListFilters
+            filters={filters}
+            onFiltersChange={(next) => {
+              setFilters(next);
+              setCurrentPage(DEFAULT_PAGE);
+            }}
+          />
         </div>
 
         <DataTable

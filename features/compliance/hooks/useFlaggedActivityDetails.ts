@@ -1,33 +1,23 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { FlaggedActivityDetails } from "../types/compliance.types";
+import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query/keys";
 import { complianceApi } from "../api/complianceApi";
+import type { FlaggedActivityDetails } from "../types/compliance.types";
 
 export function useFlaggedActivityDetails(activityId: string | null) {
-  const [activity, setActivity] = useState<FlaggedActivityDetails | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const query = useQuery({
+    queryKey: queryKeys.compliance.detail(activityId ?? ""),
+    queryFn: () => complianceApi.getFlaggedActivityById(activityId!),
+    enabled: !!activityId,
+  });
 
-  const fetchDetails = async () => {
-    if (!activityId) return;
-
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await complianceApi.getFlaggedActivityById(activityId);
-      setActivity(data);
-    } catch (err) {
-      console.error("Failed to fetch activity details:", err);
-      setError("Failed to load activity details");
-    } finally {
-      setLoading(false);
-    }
+  return {
+    activity: (query.data ?? null) as FlaggedActivityDetails | null,
+    loading: query.isLoading,
+    error: query.error instanceof Error ? query.error.message : null,
+    refetch: () => {
+      void query.refetch();
+    },
   };
-
-  useEffect(() => {
-    fetchDetails();
-  }, [activityId]);
-
-  return { activity, loading, error, refetch: fetchDetails };
 }

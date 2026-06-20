@@ -1,50 +1,47 @@
 "use client";
 
 import { useState } from "react";
-import { Settings, Save, RotateCcw, Award, Info, AlertCircle } from "lucide-react";
+import {
+  Settings,
+  Save,
+  RotateCcw,
+  Award,
+  Info,
+  AlertCircle,
+} from "lucide-react";
+import { LoadingState } from "@/components/ui/loading-state";
+import { formatNgn } from "@/lib/utils/money";
+import { CURRENCY_SYMBOL } from "@/lib/config/feature-flags";
+import { statusBadgeClass } from "@/lib/utils/status";
 import { useReferralSettings } from "../hooks/useReferralSettings";
 import { referralSettingsApi } from "../api/referralSettingsApi";
+import type { TierThreshold } from "../types/referral-settings.types";
+
+const TIER_COLOR_TEXT: Record<TierThreshold["color"], string> = {
+  green: "text-green-600",
+  blue: "text-blue-600",
+  purple: "text-purple-600",
+};
 
 export function ReferralSettings() {
   const { settings, loading } = useReferralSettings();
   const [saving, setSaving] = useState(false);
 
   const handleSaveConfiguration = async () => {
+    setSaving(true);
     try {
-      setSaving(true);
       await referralSettingsApi.saveConfiguration();
-    } catch (error) {
-      console.error("Failed to save configuration:", error);
     } finally {
       setSaving(false);
     }
   };
 
   const handleResetToDefaults = async () => {
-    try {
-      await referralSettingsApi.resetToDefaults();
-    } catch (error) {
-      console.error("Failed to reset to defaults:", error);
-    }
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN",
-      minimumFractionDigits: 0,
-    }).format(amount);
+    await referralSettingsApi.resetToDefaults();
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-sm text-neutral-500">Loading settings...</p>
-        </div>
-      </div>
-    );
+    return <LoadingState label="Loading settings..." />;
   }
 
   if (!settings) return null;
@@ -54,9 +51,7 @@ export function ReferralSettings() {
       <h1 className="text-2xl font-semibold text-text-primary">Referral Settings</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column - Main Settings */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Program Configuration */}
           <div className="bg-white rounded-lg border border-neutral-200 p-6">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
@@ -65,25 +60,25 @@ export function ReferralSettings() {
                 </div>
                 <div>
                   <h2 className="text-lg font-semibold text-text-primary">Program Configuration</h2>
-                  <p className="text-sm text-text-secondary">Manage referral tiers, rewards, and rules</p>
+                  <p className="text-sm text-text-secondary">
+                    Manage referral tiers, rewards, and rules
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-green-600">ACTIVE</span>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" checked={settings.programActive} className="sr-only peer" readOnly />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
-                </label>
+                <Toggle checked={settings.programActive} activeColor="green" />
               </div>
             </div>
           </div>
 
-          {/* Tier Thresholds & Rewards */}
           <div className="bg-white rounded-lg border border-neutral-200 p-6">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
                 <Award className="w-5 h-5 text-blue-500" />
-                <h3 className="text-base font-semibold text-text-primary">TIER THRESHOLDS & REWARDS</h3>
+                <h3 className="text-base font-semibold text-text-primary">
+                  TIER THRESHOLDS & REWARDS
+                </h3>
               </div>
               <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">
                 + Add Tier
@@ -94,48 +89,25 @@ export function ReferralSettings() {
               {settings.tiers.map((tier) => (
                 <div key={tier.id} className="border border-neutral-200 rounded-lg p-4">
                   <div className="flex items-center gap-3 mb-4">
-                    <span
-                      className={`text-sm font-medium ${
-                        tier.color === "green"
-                          ? "text-green-600"
-                          : tier.color === "blue"
-                          ? "text-blue-600"
-                          : "text-purple-600"
-                      }`}
-                    >
+                    <span className={`text-sm font-medium ${TIER_COLOR_TEXT[tier.color]}`}>
                       {tier.name}
                     </span>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs text-text-secondary uppercase mb-2">
-                        THRESHOLD (REFERRALS)
-                      </label>
-                      <input
-                        type="number"
-                        value={tier.threshold}
-                        className="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm"
-                        readOnly
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-text-secondary uppercase mb-2">
-                        REWARD AMOUNT (₦)
-                      </label>
-                      <input
-                        type="number"
-                        value={tier.rewardAmount}
-                        className="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm"
-                        readOnly
-                      />
-                    </div>
+                    <FieldInput
+                      label="THRESHOLD (REFERRALS)"
+                      value={tier.threshold}
+                    />
+                    <FieldInput
+                      label={`REWARD AMOUNT (${CURRENCY_SYMBOL})`}
+                      value={tier.rewardAmount}
+                    />
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Rules & Definitions */}
           <div className="bg-white rounded-lg border border-neutral-200 p-6">
             <div className="flex items-center gap-2 mb-6">
               <Info className="w-5 h-5 text-blue-500" />
@@ -145,11 +117,14 @@ export function ReferralSettings() {
             <div className="space-y-4">
               <div>
                 <p className="text-sm font-medium text-text-primary mb-3">
-                  Definition of Active Referral
+                  Definition of &quot;Active Referral&quot;
                 </p>
                 <div className="space-y-2">
                   {settings.activeReferralDefinitions.map((def) => (
-                    <label key={def.id} className="flex items-center gap-3 p-3 border border-neutral-200 rounded-lg cursor-pointer hover:bg-neutral-50">
+                    <label
+                      key={def.id}
+                      className="flex items-center gap-3 p-3 border border-neutral-200 rounded-lg cursor-pointer hover:bg-neutral-50"
+                    >
                       <input
                         type="radio"
                         name="activeReferral"
@@ -159,7 +134,7 @@ export function ReferralSettings() {
                       />
                       <span className="text-sm text-text-primary">{def.label}</span>
                       {def.selected && (
-                        <div className="ml-auto w-2 h-2 bg-blue-600 rounded-full"></div>
+                        <div className="ml-auto w-2 h-2 bg-blue-600 rounded-full" />
                       )}
                     </label>
                   ))}
@@ -169,24 +144,21 @@ export function ReferralSettings() {
               <div className="pt-4 border-t border-neutral-200">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-text-primary">Anti-Fraud Verification</p>
+                    <p className="text-sm font-medium text-text-primary">
+                      Anti-Fraud Verification
+                    </p>
                     <p className="text-xs text-text-secondary mt-1">
                       Require manual review for all Elite rewards
                     </p>
                   </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" checked={settings.antiFraudVerification} className="sr-only peer" readOnly />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                  </label>
+                  <Toggle checked={settings.antiFraudVerification} activeColor="blue" />
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right Column - Sidebar */}
         <div className="space-y-6">
-          {/* System Control */}
           <div className="bg-gray-900 rounded-lg p-6 text-white">
             <h3 className="text-base font-semibold mb-6">SYSTEM CONTROL</h3>
             <div className="space-y-4">
@@ -213,18 +185,16 @@ export function ReferralSettings() {
                 <div>
                   <p className="text-xs font-medium mb-1">LIVE STATUS</p>
                   <p className="text-xs opacity-80">
-                    Changes to reward amounts will only apply to new referrals generated after save.
+                    Changes to reward amounts will only apply to new referrals generated after
+                    save.
                   </p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Recent Changes */}
           <div className="bg-white rounded-lg border border-neutral-200 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base font-semibold text-text-primary">RECENT CHANGES</h3>
-            </div>
+            <h3 className="text-base font-semibold text-text-primary mb-4">RECENT CHANGES</h3>
             <div className="space-y-3">
               {settings.recentChanges.map((change) => (
                 <div key={change.id} className="flex items-start gap-3">
@@ -248,21 +218,10 @@ export function ReferralSettings() {
             </button>
           </div>
 
-          {/* Rewards Budget */}
           <div className="bg-blue-50 rounded-lg p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"
-                />
-              </svg>
-              <h3 className="text-base font-semibold text-text-primary">REWARDS BUDGET</h3>
-            </div>
+            <h3 className="text-base font-semibold text-text-primary mb-4">REWARDS BUDGET</h3>
             <p className="text-3xl font-bold text-text-primary mb-2">
-              {formatCurrency(settings.rewardsBudget.total)}
+              {formatNgn(settings.rewardsBudget.total)}
             </p>
             <p className="text-sm text-text-secondary mb-4">
               Available for referral payouts this month
@@ -271,7 +230,7 @@ export function ReferralSettings() {
               <div
                 className="bg-blue-600 h-2 rounded-full"
                 style={{ width: `${settings.rewardsBudget.percentage}%` }}
-              ></div>
+              />
             </div>
           </div>
         </div>
@@ -279,3 +238,37 @@ export function ReferralSettings() {
     </div>
   );
 }
+
+function Toggle({
+  checked,
+  activeColor,
+}: {
+  checked: boolean;
+  activeColor: "green" | "blue";
+}) {
+  const activeBg = activeColor === "green" ? "peer-checked:bg-green-600" : "peer-checked:bg-blue-600";
+  return (
+    <label className="relative inline-flex items-center cursor-pointer">
+      <input type="checkbox" checked={checked} className="sr-only peer" readOnly />
+      <div
+        className={`w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all ${activeBg}`}
+      />
+    </label>
+  );
+}
+
+function FieldInput({ label, value }: { label: string; value: number }) {
+  return (
+    <div>
+      <label className="block text-xs text-text-secondary uppercase mb-2">{label}</label>
+      <input
+        type="number"
+        value={value}
+        className="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm"
+        readOnly
+      />
+    </div>
+  );
+}
+
+export const __referralSettingsHelpers = { statusBadgeClass };

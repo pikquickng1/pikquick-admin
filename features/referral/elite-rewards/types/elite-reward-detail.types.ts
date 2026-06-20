@@ -1,7 +1,9 @@
+import { ReferralRewardStatus, UserType } from "@/lib/types/enums";
+
 export interface EliteRewardUserProfile {
   id: string;
   name: string;
-  role: "Runner" | "Requester";
+  role: UserType;
   joinedDate: string;
   avatar?: string;
 }
@@ -14,9 +16,11 @@ export interface EliteRewardMetrics {
   tier: string;
 }
 
+export type IntegrityLevel = "LOW" | "MEDIUM" | "HIGH";
+
 export interface IntegrityCheck {
   systemFraudScore: {
-    level: "LOW" | "MEDIUM" | "HIGH";
+    level: IntegrityLevel;
     message: string;
   };
   deviceSharing: {

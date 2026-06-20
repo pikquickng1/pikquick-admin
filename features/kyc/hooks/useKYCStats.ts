@@ -1,34 +1,22 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { KYCStats } from "../types/kyc.types";
+import { useQuery } from "@tanstack/react-query";
 import { kycApi } from "../api/kycApi";
+import { queryKeys } from "@/lib/query/keys";
+import type { KYCStats } from "../types/kyc.types";
 
 export function useKYCStats() {
-  const [stats, setStats] = useState<KYCStats>({
-    pendingVerifications: 0,
-    resubmissionRequests: 0,
+  const query = useQuery({
+    queryKey: queryKeys.kyc.stats(),
+    queryFn: () => kycApi.getKYCStats(),
   });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  const fetchStats = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await kycApi.getKYCStats();
-      setStats(data);
-    } catch (err) {
-      console.error("Failed to fetch KYC stats:", err);
-      setError("Failed to load KYC statistics");
-    } finally {
-      setLoading(false);
-    }
+  return {
+    stats: query.data ?? { pendingVerifications: 0, resubmissionRequests: 0 },
+    loading: query.isLoading,
+    error: query.error instanceof Error ? query.error.message : null,
+    refetch: () => {
+      void query.refetch();
+    },
   };
-
-  useEffect(() => {
-    fetchStats();
-  }, []);
-
-  return { stats, loading, error, refetch: fetchStats };
 }

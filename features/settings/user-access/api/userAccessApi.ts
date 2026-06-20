@@ -1,23 +1,12 @@
-import { AdminUser } from "../types/user-access.types";
-import { adminService } from "@/lib/services";
+import type { AdminUser } from "../types/user-access.types";
+import { adminService } from "@/lib/services/admin.service";
 
 export const userAccessApi = {
   async getAdminUsers(): Promise<AdminUser[]> {
-    try {
-      const response = await adminService.getAdminUsers();
-      return response.data;
-    } catch (error) {
-      console.error("Failed to fetch admin users:", error);
-      throw error;
-    }
+    return (await adminService.getAdminUsers()) as AdminUser[];
   },
 
   async deleteAdminUser(id: string): Promise<void> {
-    try {
-      await adminService.deleteAdminUser(id);
-    } catch (error) {
-      console.error("Failed to delete admin user:", error);
-      throw error;
-    }
+    await adminService.deleteAdminUser(id);
   },
 };

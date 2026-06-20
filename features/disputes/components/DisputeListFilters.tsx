@@ -5,11 +5,19 @@ import { Search, Calendar as CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { TicketListFilters } from "../types/dispute.types";
+import { Select } from "@/components/ui/select";
+import { ALL_FILTER } from "@/lib/types/enums";
+import {
+  DISPUTE_PRIORITY_OPTIONS,
+  DISPUTE_CATEGORY_OPTIONS,
+  DISPUTE_STATUS_OPTIONS,
+} from "@/lib/constants/filters";
+import type { DisputeTicketListFilters as Filters } from "../types/dispute.types";
+import { useState } from "react";
 
 interface DisputeListFiltersProps {
-  filters: TicketListFilters;
-  onFiltersChange: (filters: TicketListFilters) => void;
+  filters: Filters;
+  onFiltersChange: (filters: Filters) => void;
 }
 
 export function DisputeListFilters({ filters, onFiltersChange }: DisputeListFiltersProps) {
@@ -39,48 +47,34 @@ export function DisputeListFilters({ filters, onFiltersChange }: DisputeListFilt
       </div>
 
       <div className="md:col-span-2">
-        <select
-          value={filters.priority}
-          onChange={(e) => onFiltersChange({ ...filters, priority: e.target.value })}
-          className="w-full px-4 py-4 bg-white border border-neutral-200 rounded text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent appearance-none cursor-pointer"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
-            backgroundRepeat: "no-repeat",
-            backgroundPosition: "right 1rem center",
-          }}
-        >
-          <option>All Priority</option>
-          <option>High</option>
-          <option>Medium</option>
-          <option>Low</option>
-        </select>
+        <Select
+          value={(filters.priority as string) ?? ALL_FILTER}
+          options={DISPUTE_PRIORITY_OPTIONS as unknown as { value: string; label: string }[]}
+          onChange={(e) => onFiltersChange({ ...filters, priority: e.target.value as Filters["priority"] })}
+        />
       </div>
 
       <div className="md:col-span-2">
-        <select
-          value={filters.category}
-          onChange={(e) => onFiltersChange({ ...filters, category: e.target.value })}
-          className="w-full px-4 py-4 bg-white border border-neutral-200 rounded text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent appearance-none cursor-pointer"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
-            backgroundRepeat: "no-repeat",
-            backgroundPosition: "right 1rem center",
-          }}
-        >
-          <option>All Categories</option>
-          <option>Task Dispute</option>
-          <option>Payment Issue</option>
-          <option>Account Issue</option>
-          <option>Technical Support</option>
-          <option>Other</option>
-        </select>
+        <Select
+          value={(filters.category as string) ?? ALL_FILTER}
+          options={DISPUTE_CATEGORY_OPTIONS as unknown as { value: string; label: string }[]}
+          onChange={(e) => onFiltersChange({ ...filters, category: e.target.value as Filters["category"] })}
+        />
       </div>
 
       <div className="md:col-span-2">
+        <Select
+          value={(filters.status as string) ?? ALL_FILTER}
+          options={DISPUTE_STATUS_OPTIONS as unknown as { value: string; label: string }[]}
+          onChange={(e) => onFiltersChange({ ...filters, status: e.target.value as Filters["status"] })}
+        />
+      </div>
+
+      <div className="md:col-span-12">
         <Popover>
           <PopoverTrigger asChild>
             <button className="flex items-center justify-between w-full px-4 py-4 bg-white border border-neutral-200 rounded text-sm text-gray-900 hover:bg-gray-50">
-              {date ? format(date, "PPP") : "Date"}
+              {date ? format(date, "PPP") : "Filter by date"}
               <CalendarIcon className="w-4 h-4 text-gray-600" />
             </button>
           </PopoverTrigger>

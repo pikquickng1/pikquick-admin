@@ -1,33 +1,23 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { KYCVerification } from "../types/kyc.types";
+import { useQuery } from "@tanstack/react-query";
 import { kycApi } from "../api/kycApi";
+import { queryKeys } from "@/lib/query/keys";
+import type { KYCVerification } from "../types/kyc.types";
 
-export function useKYCDetails(verificationId: string | null, status?: "pending" | "resubmission") {
-  const [verification, setVerification] = useState<KYCVerification | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+export function useKYCDetails(verificationId: string | null) {
+  const query = useQuery({
+    queryKey: queryKeys.kyc.detail(verificationId ?? ""),
+    queryFn: () => kycApi.getKYCById(verificationId!),
+    enabled: !!verificationId,
+  });
 
-  const fetchDetails = async () => {
-    if (!verificationId) return;
-
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await kycApi.getKYCById(verificationId, status);
-      setVerification(data);
-    } catch (err) {
-      console.error("Failed to fetch KYC details:", err);
-      setError("Failed to load KYC details");
-    } finally {
-      setLoading(false);
-    }
+  return {
+    verification: (query.data ?? null) as KYCVerification | null,
+    loading: query.isLoading,
+    error: query.error instanceof Error ? query.error.message : null,
+    refetch: () => {
+      void query.refetch();
+    },
   };
-
-  useEffect(() => {
-    fetchDetails();
-  }, [verificationId, status]);
-
-  return { verification, loading, error, refetch: fetchDetails };
 }

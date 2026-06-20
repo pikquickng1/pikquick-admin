@@ -1,13 +1,13 @@
-export type EliteRewardStatus = "Pending" | "Approved" | "Rejected";
+import { ALL_FILTER, ReferralRewardStatus, UserType } from "@/lib/types/enums";
 
 export interface EliteReward {
   id: string;
   user: string;
-  role: "Runner" | "Requester";
+  role: UserType;
   referralsCount: number;
   monthAchieved: string;
   rewardAmount: number;
-  status: EliteRewardStatus;
+  status: ReferralRewardStatus;
 }
 
 export interface EliteRewardStats {
@@ -18,7 +18,7 @@ export interface EliteRewardStats {
 
 export interface EliteRewardFilters {
   search: string;
-  status?: EliteRewardStatus;
+  status?: ReferralRewardStatus | typeof ALL_FILTER;
 }
 
 export interface EliteRewardListResponse {

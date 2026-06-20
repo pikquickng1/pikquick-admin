@@ -1,42 +1,40 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Notification } from "../types/notifications.types";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query/keys";
 import { notificationsApi } from "../api/notificationsApi";
+import type { AdminNotificationLogItem, CreateNotificationPayload } from "../types/notifications.types";
 
-export function useNotifications() {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [total, setTotal] = useState(0);
-  const limit = 8;
+const EMPTY_LOG: AdminNotificationLogItem[] = [];
 
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      setLoading(true);
-      try {
-        const response = await notificationsApi.getNotifications({ page, limit });
-        setNotifications(response.notifications);
-        setTotalPages(response.totalPages);
-        setTotal(response.total);
-      } catch (error) {
-        console.error("Error fetching notifications:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchNotifications();
-  }, [page]);
+export function useNotificationsLog(params: { page: number; limit: number }) {
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: queryKeys.settings.notificationsLog(params),
+    queryFn: () => notificationsApi.getNotificationsLog(params),
+  });
 
   return {
-    notifications,
-    loading,
-    page,
-    setPage,
-    totalPages,
-    total,
-    limit,
+    notifications: data?.notifications ?? EMPTY_LOG,
+    loading: isLoading,
+    total: data?.total ?? 0,
+    page: data?.page ?? params.page,
+    totalPages: data?.totalPages ?? 1,
+    error: error instanceof Error ? error.message : null,
+    refetch: () => {
+      void refetch();
+    },
   };
+}
+
+export function useCreateNotification() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: CreateNotificationPayload) =>
+      notificationsApi.createNotification(payload),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: [...queryKeys.settings.all, "notifications-log"],
+      });
+    },
+  });
 }

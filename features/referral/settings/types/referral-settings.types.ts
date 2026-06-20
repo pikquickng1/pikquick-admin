@@ -1,13 +1,15 @@
+import { ActiveReferralDefinition, ReferralTierKey } from "@/lib/types/enums";
+
 export interface TierThreshold {
-  id: string;
+  id: ReferralTierKey;
   name: string;
-  color: string;
+  color: "green" | "blue" | "purple";
   threshold: number;
   rewardAmount: number;
 }
 
-export interface ActiveReferralDefinition {
-  id: string;
+export interface ActiveReferralConfig {
+  id: ActiveReferralDefinition;
   label: string;
   selected: boolean;
 }
@@ -23,7 +25,7 @@ export interface RecentChange {
 export interface ReferralSettings {
   programActive: boolean;
   tiers: TierThreshold[];
-  activeReferralDefinitions: ActiveReferralDefinition[];
+  activeReferralDefinitions: ActiveReferralConfig[];
   antiFraudVerification: boolean;
   rewardsBudget: {
     total: number;

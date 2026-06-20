@@ -1,32 +1,22 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { ComplianceStats } from "../types/compliance.types";
+import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query/keys";
 import { complianceApi } from "../api/complianceApi";
+import type { ComplianceStats } from "../types/compliance.types";
 
 export function useComplianceStats() {
-  const [stats, setStats] = useState<ComplianceStats>({
-    kycSummaryCount: 0,
-    flaggedTransactions: 0,
-    suspendedAccounts: 0,
+  const query = useQuery({
+    queryKey: queryKeys.compliance.stats(),
+    queryFn: () => complianceApi.getComplianceStats(),
   });
-  const [loading, setLoading] = useState(true);
 
-  const fetchStats = async () => {
-    try {
-      setLoading(true);
-      const data = await complianceApi.getComplianceStats();
-      setStats(data);
-    } catch (error) {
-      console.error("Failed to fetch compliance stats:", error);
-    } finally {
-      setLoading(false);
-    }
+  return {
+    stats: query.data ?? { kycSummaryCount: 0, flaggedTransactions: 0, suspendedAccounts: 0 },
+    loading: query.isLoading,
+    error: query.error instanceof Error ? query.error.message : null,
+    refetch: () => {
+      void query.refetch();
+    },
   };
-
-  useEffect(() => {
-    fetchStats();
-  }, []);
-
-  return { stats, loading, refetch: fetchStats };
 }

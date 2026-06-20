@@ -1,39 +1,37 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { KYCVerification, KYCListFilters } from "../types/kyc.types";
+import { useQuery } from "@tanstack/react-query";
 import { kycApi } from "../api/kycApi";
+import { queryKeys } from "@/lib/query/keys";
+import { DEFAULT_PAGE_SIZE } from "@/lib/config/pagination";
+import { KycTab } from "../types/kyc.types";
+
+const LIMIT = DEFAULT_PAGE_SIZE;
 
 export function useKYCList(
-  status: "pending" | "resubmission",
-  filters: KYCListFilters,
-  page: number
+  status: KycTab,
+  filters: { search: string },
+  page: number,
 ) {
-  const [verifications, setVerifications] = useState<KYCVerification[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [pagination, setPagination] = useState({
-    currentPage: 1,
-    totalPages: 1,
-    totalItems: 0,
-    itemsPerPage: 8,
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: queryKeys.kyc.list({ status, search: filters.search, page }),
+    queryFn: () => kycApi.getKYCList(status, filters, page),
   });
 
-  const fetchVerifications = async () => {
-    try {
-      setLoading(true);
-      const response = await kycApi.getKYCList(status, filters, page);
-      setVerifications(response.data);
-      setPagination(response.pagination);
-    } catch (error) {
-      console.error("Failed to fetch KYC verifications:", error);
-    } finally {
-      setLoading(false);
-    }
+  const pagination = {
+    currentPage: data?.pagination.currentPage ?? page,
+    totalPages: data?.pagination.totalPages ?? 1,
+    totalItems: data?.pagination.totalItems ?? 0,
+    itemsPerPage: data?.pagination.itemsPerPage ?? LIMIT,
   };
 
-  useEffect(() => {
-    fetchVerifications();
-  }, [status, filters, page]);
-
-  return { verifications, loading, pagination, refetch: fetchVerifications };
+  return {
+    verifications: data?.data ?? [],
+    loading: isLoading,
+    error: error instanceof Error ? error.message : null,
+    pagination,
+    refetch: () => {
+      void refetch();
+    },
+  };
 }

@@ -1,3 +1,10 @@
 export { PlatformSettings } from "./components/PlatformSettings";
+export { AddCategoryModal } from "./components/AddCategoryModal";
+export { EditCategoryModal } from "./components/EditCategoryModal";
 export { usePlatformSettings } from "./hooks/usePlatformSettings";
-export * from "./types/platform-settings.types";
+export { platformSettingsApi } from "./api/platformSettingsApi";
+export type {
+  PlatformSettingsData,
+  TaskCategory,
+  PlatformSettingsPayload,
+} from "./types/platform-settings.types";

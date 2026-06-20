@@ -1,26 +1,10 @@
-export interface TicketDetail {
-  id: string;
+import type { DisputeTicket } from "./dispute.types";
+
+/**
+ * Backend mounts at /admin/disputes/tickets/:id (see
+ * disputes/controllers/dispute.controller.ts:70). It returns the full Dispute
+ * record joined with user/task/agent.
+ */
+export interface DisputeTicketDetail extends DisputeTicket {
   ticketId: string;
-  user: {
-    name: string;
-    role: "Runner" | "Requester";
-    email: string;
-    phone: string;
-  };
-  taskReference: string;
-  currentStatus: "In Progress" | "Open" | "Resolved";
-  created: string;
-  category: string;
-  priority: string;
-  assignedAdmin: string;
-  description: string;
-  attachments: {
-    filename: string;
-    url: string;
-  }[];
-  chatThread: {
-    sender: string;
-    message: string;
-    timestamp: string;
-  }[];
 }

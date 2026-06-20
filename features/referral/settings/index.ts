@@ -7,9 +7,9 @@ export { useReferralSettings } from "./hooks/useReferralSettings";
 // Types
 export type {
   TierThreshold,
-  ActiveReferralDefinition,
+  ActiveReferralConfig,
   RecentChange,
-  ReferralSettings as ReferralSettingsType,
+  ReferralSettings as ReferralSettingsPayload,
 } from "./types/referral-settings.types";
 
 // API

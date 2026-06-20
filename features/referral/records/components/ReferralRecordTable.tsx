@@ -1,8 +1,18 @@
 "use client";
 
-import { Eye } from "lucide-react";
+import { Eye, CheckCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { DataTable } from "@/components/ui/data-table";
-import { ReferralRecord, ReferralRecordFilters as Filters } from "../types/referral-record.types";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { formatNgn } from "@/lib/utils/money";
+import { formatDate } from "@/lib/utils/date";
+import { referralStatusLabel } from "@/lib/utils/status";
+import { ALL_FILTER } from "@/lib/types/enums";
+import { REFERRAL_STATUS_OPTIONS } from "@/lib/constants/filters";
+import type {
+  ReferralRecord,
+  ReferralRecordFilters as Filters,
+} from "../types/referral-record.types";
 import { ReferralRecordFilters } from "./ReferralRecordFilters";
 
 interface ReferralRecordTableProps {
@@ -14,6 +24,8 @@ interface ReferralRecordTableProps {
   onFiltersChange: (filters: Filters) => void;
 }
 
+const REFERRAL_RECORDS_ROUTE = "/dashboard/referral/records";
+
 export function ReferralRecordTable({
   records,
   onRowSelect,
@@ -21,14 +33,7 @@ export function ReferralRecordTable({
   filters,
   onFiltersChange,
 }: ReferralRecordTableProps) {
-  const getStatusBadge = (status: string) => {
-    const styles = {
-      Active: "bg-green-100 text-green-700",
-      Pending: "bg-yellow-100 text-yellow-700",
-      Disqualified: "bg-red-100 text-red-700",
-    };
-    return styles[status as keyof typeof styles] || styles.Active;
-  };
+  const router = useRouter();
 
   const columns = [
     {
@@ -52,7 +57,7 @@ export function ReferralRecordTable({
       key: "signupDate",
       header: "SIGNUP DATE",
       render: (record: ReferralRecord) => (
-        <span className="text-sm text-text-primary">{record.signupDate}</span>
+        <span className="text-sm text-text-primary">{formatDate(record.signupDate)}</span>
       ),
     },
     {
@@ -62,25 +67,15 @@ export function ReferralRecordTable({
         <div className="flex items-center gap-2">
           {record.firstTask.completed ? (
             <>
-              <div className="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center">
-                <svg
-                  className="w-3 h-3 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-              </div>
+              <CheckCircle className="w-4 h-4 text-green-600" />
               <span className="text-sm text-green-600 font-medium">
                 Yes
-                <br />
-                <span className="text-xs">({record.firstTask.taskId})</span>
+                {record.firstTask.taskId && (
+                  <>
+                    <br />
+                    <span className="text-xs">({record.firstTask.taskId})</span>
+                  </>
+                )}
               </span>
             </>
           ) : (
@@ -96,13 +91,7 @@ export function ReferralRecordTable({
       key: "status",
       header: "STATUS",
       render: (record: ReferralRecord) => (
-        <span
-          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusBadge(
-            record.status
-          )}`}
-        >
-          {record.status}
-        </span>
+        <StatusBadge status={record.status} label={referralStatusLabel(record.status)} />
       ),
     },
     {
@@ -117,16 +106,20 @@ export function ReferralRecordTable({
       header: "ACTIONS",
       render: (record: ReferralRecord) => (
         <button
-          onClick={() => {
-            window.location.href = `/dashboard/referral/records/${record.id}`;
-          }}
+          onClick={() => router.push(`${REFERRAL_RECORDS_ROUTE}/${record.id}`)}
           className="p-2 hover:bg-neutral-100 rounded-lg transition-colors"
+          aria-label={`View details for ${record.referrer}`}
         >
           <Eye className="w-4 h-4 text-text-secondary" />
         </button>
       ),
     },
   ];
+
+  const statusOptions = REFERRAL_STATUS_OPTIONS as ReadonlyArray<{
+    value: string;
+    label: string;
+  }>;
 
   return (
     <div className="bg-white overflow-hidden">
@@ -136,8 +129,16 @@ export function ReferralRecordTable({
         keyExtractor={(record) => record.id}
         onRowSelect={onRowSelect}
         onSelectAll={onSelectAll}
+        selectedRows={selectedRows}
         emptyMessage="No referral records found"
-        filters={<ReferralRecordFilters filters={filters} onFiltersChange={onFiltersChange} />}
+        filters={
+          <ReferralRecordFilters
+            filters={filters}
+            onFiltersChange={onFiltersChange}
+            statusOptions={statusOptions}
+            allFilter={ALL_FILTER}
+          />
+        }
       />
     </div>
   );

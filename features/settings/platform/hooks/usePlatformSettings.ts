@@ -1,50 +1,49 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { PlatformSettings, TaskCategory } from "../types/platform-settings.types";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query/keys";
 import { platformSettingsApi } from "../api/platformSettingsApi";
+import type {
+  PlatformSettingsData,
+  TaskCategory,
+} from "../types/platform-settings.types";
+
+const DEFAULT_SETTINGS: PlatformSettingsData = { accessFee: 0, platformCommission: 0 };
 
 export function usePlatformSettings() {
-  const [settings, setSettings] = useState<PlatformSettings>({
-    accessFee: 100,
-    platformCommission: 15,
+  const queryClient = useQueryClient();
+
+  const settingsQuery = useQuery({
+    queryKey: queryKeys.settings.platform(),
+    queryFn: () => platformSettingsApi.getSettings(),
   });
-  const [categories, setCategories] = useState<TaskCategory[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [settingsData, categoriesData] = await Promise.all([
-          platformSettingsApi.getSettings(),
-          platformSettingsApi.getTaskCategories(),
-        ]);
-        setSettings(settingsData);
-        setCategories(categoriesData);
-      } catch (error) {
-        console.error("Error fetching platform settings:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const categoriesQuery = useQuery({
+    queryKey: queryKeys.settings.taskCategories(),
+    queryFn: () => platformSettingsApi.getTaskCategories(),
+  });
 
-    fetchData();
-  }, []);
-
-  const updateSettings = async (newSettings: PlatformSettings) => {
-    try {
-      await platformSettingsApi.updateSettings(newSettings);
-      setSettings(newSettings);
-    } catch (error) {
-      console.error("Error updating settings:", error);
-    }
-  };
+  const updateMutation = useMutation({
+    mutationFn: (next: PlatformSettingsData) => platformSettingsApi.updateSettings(next),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.settings.platform() });
+    },
+  });
 
   return {
-    settings,
-    categories,
-    loading,
-    updateSettings,
-    setSettings,
+    settings: settingsQuery.data ?? DEFAULT_SETTINGS,
+    categories: categoriesQuery.data ?? ([] as TaskCategory[]),
+    loading: settingsQuery.isLoading || categoriesQuery.isLoading,
+    error:
+      (settingsQuery.error instanceof Error ? settingsQuery.error.message : null) ??
+      (categoriesQuery.error instanceof Error ? categoriesQuery.error.message : null),
+    updateSettings: (next: PlatformSettingsData) => {
+      updateMutation.mutate(next);
+    },
+    isUpdating: updateMutation.isPending,
+    refetch: () => {
+      void settingsQuery.refetch();
+      void categoriesQuery.refetch();
+    },
   };
 }

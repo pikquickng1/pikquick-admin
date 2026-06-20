@@ -3,16 +3,19 @@
 import { useState } from "react";
 import { Clock, CheckCircle, Wallet } from "lucide-react";
 import { Pagination } from "@/components/ui/pagination";
+import { ALL_FILTER } from "@/lib/types/enums";
+import { DEFAULT_PAGE } from "@/lib/config/pagination";
 import { useEliteRewardList } from "../hooks/useEliteRewardList";
 import { useEliteRewardStats } from "../hooks/useEliteRewardStats";
-import { EliteRewardFilters } from "../types/elite-reward.types";
 import { EliteRewardTable } from "./EliteRewardTable";
+import type { EliteRewardFilters } from "../types/elite-reward.types";
 
 export function EliteRewardsList() {
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(DEFAULT_PAGE);
   const [filters, setFilters] = useState<EliteRewardFilters>({
     search: "",
+    status: ALL_FILTER,
   });
 
   const { rewards, loading, pagination } = useEliteRewardList(filters, currentPage);
@@ -20,7 +23,7 @@ export function EliteRewardsList() {
 
   const toggleRow = (id: string) => {
     setSelectedRows((prev) =>
-      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id],
     );
   };
 
@@ -32,72 +35,29 @@ export function EliteRewardsList() {
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN",
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-sm text-neutral-500">Loading elite rewards...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold text-text-primary">Elite Rewards Review</h1>
 
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-lg border border-neutral-200 p-6">
-          <div className="flex items-center justify-between mb-3">
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Clock className="w-6 h-6 text-blue-600" />
-            </div>
-          </div>
-          <p className="text-xs text-text-secondary uppercase tracking-wide mb-1">
-            AWAITING REVIEW
-          </p>
-          <p className="text-2xl font-semibold text-text-primary">
-            {stats.awaitingReview} Users
-          </p>
-        </div>
-
-        <div className="bg-white rounded-lg border border-neutral-200 p-6">
-          <div className="flex items-center justify-between mb-3">
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <CheckCircle className="w-6 h-6 text-green-600" />
-            </div>
-          </div>
-          <p className="text-xs text-text-secondary uppercase tracking-wide mb-1">
-            APPROVED (MTD)
-          </p>
-          <p className="text-2xl font-semibold text-text-primary">
-            {stats.approvedMTD} Users
-          </p>
-        </div>
-
-        <div className="bg-white rounded-lg border border-neutral-200 p-6">
-          <div className="flex items-center justify-between mb-3">
-            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-              <Wallet className="w-6 h-6 text-orange-600" />
-            </div>
-          </div>
-          <p className="text-xs text-text-secondary uppercase tracking-wide mb-1">
-            TOTAL ELITE PAYOUTS
-          </p>
-          <p className="text-2xl font-semibold text-text-primary">
-            {formatCurrency(stats.totalElitePayouts)}
-          </p>
-        </div>
+        <StatCard
+          icon={<Clock className="w-6 h-6 text-blue-600" />}
+          iconBgClass="bg-blue-100"
+          label="AWAITING REVIEW"
+          value={`${stats.awaitingReview} Users`}
+        />
+        <StatCard
+          icon={<CheckCircle className="w-6 h-6 text-green-600" />}
+          iconBgClass="bg-green-100"
+          label="APPROVED (MTD)"
+          value={`${stats.approvedMTD} Users`}
+        />
+        <StatCard
+          icon={<Wallet className="w-6 h-6 text-orange-600" />}
+          iconBgClass="bg-orange-100"
+          label="TOTAL ELITE PAYOUTS"
+          value={stats.totalElitePayouts}
+        />
       </div>
 
       <EliteRewardTable
@@ -114,12 +74,33 @@ export function EliteRewardsList() {
         totalPages={pagination.totalPages}
         onPageChange={setCurrentPage}
         showingFrom={(pagination.currentPage - 1) * pagination.itemsPerPage + 1}
-        showingTo={Math.min(
-          pagination.currentPage * pagination.itemsPerPage,
-          pagination.totalItems
-        )}
+        showingTo={Math.min(pagination.currentPage * pagination.itemsPerPage, pagination.totalItems)}
         totalItems={pagination.totalItems}
       />
+    </div>
+  );
+}
+
+function StatCard({
+  icon,
+  iconBgClass,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  iconBgClass: string;
+  label: string;
+  value: string | number;
+}) {
+  return (
+    <div className="bg-white rounded-lg border border-neutral-200 p-6">
+      <div className="flex items-center justify-between mb-3">
+        <div className={`w-12 h-12 ${iconBgClass} rounded-lg flex items-center justify-center`}>
+          {icon}
+        </div>
+      </div>
+      <p className="text-xs text-text-secondary uppercase tracking-wide mb-1">{label}</p>
+      <p className="text-2xl font-semibold text-text-primary">{value}</p>
     </div>
   );
 }

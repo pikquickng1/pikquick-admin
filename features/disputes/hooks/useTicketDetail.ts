@@ -1,33 +1,23 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { TicketDetail } from "../types/ticket-detail.types";
-import { ticketDetailApi } from "../api/ticketDetailApi";
+import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query/keys";
+import { disputeApi } from "../api/disputeApi";
+import type { DisputeTicketDetail } from "../types/ticket-detail.types";
 
 export function useTicketDetail(ticketId: string | null) {
-  const [ticket, setTicket] = useState<TicketDetail | null>(null);
-  const [loading, setLoading] = useState(false);
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: queryKeys.disputes.detail(ticketId ?? ""),
+    queryFn: () => disputeApi.getTicketById(ticketId!),
+    enabled: !!ticketId,
+  });
 
-  useEffect(() => {
-    if (!ticketId) {
-      setTicket(null);
-      return;
-    }
-
-    const fetchTicket = async () => {
-      try {
-        setLoading(true);
-        const data = await ticketDetailApi.getTicketDetail(ticketId);
-        setTicket(data);
-      } catch (error) {
-        console.error("Failed to fetch ticket detail:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTicket();
-  }, [ticketId]);
-
-  return { ticket, loading };
+  return {
+    ticket: (data ?? null) as DisputeTicketDetail | null,
+    loading: isLoading,
+    error: error instanceof Error ? error.message : null,
+    refetch: () => {
+      void refetch();
+    },
+  };
 }

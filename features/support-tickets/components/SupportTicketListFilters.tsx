@@ -1,20 +1,32 @@
 "use client";
 
 import { Search } from "lucide-react";
-import type { SupportTicketStatus, SupportTicketPriority } from "@/lib/types";
-
-interface SupportTicketFilters {
-  search?: string;
-  status?: SupportTicketStatus | "all";
-  priority?: SupportTicketPriority | "all";
-}
+import { Select } from "@/components/ui/select";
+import { ALL_FILTER } from "@/lib/types/enums";
+import {
+  SUPPORT_TICKET_STATUS_OPTIONS,
+  SUPPORT_TICKET_PRIORITY_OPTIONS,
+} from "@/lib/constants/filters";
+import type { SupportTicketFilters } from "../hooks/useSupportTicketList";
 
 interface SupportTicketListFiltersProps {
   filters: SupportTicketFilters;
   onFiltersChange: (filters: SupportTicketFilters) => void;
 }
 
-export function SupportTicketListFilters({ filters, onFiltersChange }: SupportTicketListFiltersProps) {
+export function SupportTicketListFilters({
+  filters,
+  onFiltersChange,
+}: SupportTicketListFiltersProps) {
+  const statusOptions = SUPPORT_TICKET_STATUS_OPTIONS as unknown as Array<{
+    value: string;
+    label: string;
+  }>;
+  const priorityOptions = SUPPORT_TICKET_PRIORITY_OPTIONS as unknown as Array<{
+    value: string;
+    label: string;
+  }>;
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
       <div className="relative md:col-span-6">
@@ -29,51 +41,33 @@ export function SupportTicketListFilters({ filters, onFiltersChange }: SupportTi
       </div>
 
       <div className="md:col-span-3">
-        <select
-          value={filters.status || "all"}
+        <Select
+          value={(filters.status as string) ?? ALL_FILTER}
+          options={statusOptions}
           onChange={(e) =>
             onFiltersChange({
               ...filters,
-              status: e.target.value === "all" ? undefined : (e.target.value as SupportTicketStatus),
+              status: e.target.value === ALL_FILTER
+                ? ALL_FILTER
+                : (e.target.value as SupportTicketFilters["status"]),
             })
           }
-          className="w-full px-4 py-4 bg-white border border-neutral-200 rounded text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent appearance-none cursor-pointer"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
-            backgroundRepeat: "no-repeat",
-            backgroundPosition: "right 1rem center",
-          }}
-        >
-          <option value="all">All Status</option>
-          <option value="open">Open</option>
-          <option value="in_progress">In Progress</option>
-          <option value="resolved">Resolved</option>
-          <option value="closed">Closed</option>
-        </select>
+        />
       </div>
 
       <div className="md:col-span-3">
-        <select
-          value={filters.priority || "all"}
+        <Select
+          value={(filters.priority as string) ?? ALL_FILTER}
+          options={priorityOptions}
           onChange={(e) =>
             onFiltersChange({
               ...filters,
-              priority: e.target.value === "all" ? undefined : (e.target.value as SupportTicketPriority),
+              priority: e.target.value === ALL_FILTER
+                ? ALL_FILTER
+                : (e.target.value as SupportTicketFilters["priority"]),
             })
           }
-          className="w-full px-4 py-4 bg-white border border-neutral-200 rounded text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent appearance-none cursor-pointer"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
-            backgroundRepeat: "no-repeat",
-            backgroundPosition: "right 1rem center",
-          }}
-        >
-          <option value="all">All Priority</option>
-          <option value="low">Low</option>
-          <option value="medium">Medium</option>
-          <option value="high">High</option>
-          <option value="urgent">Urgent</option>
-        </select>
+        />
       </div>
     </div>
   );

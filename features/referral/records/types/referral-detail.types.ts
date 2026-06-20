@@ -1,7 +1,9 @@
+import { ReferralStatus, UserType, VerificationStatus } from "@/lib/types/enums";
+
 export interface ReferrerProfile {
   id: string;
   name: string;
-  role: "Runner" | "Requester";
+  role: UserType;
   email: string;
   phone: string;
   joinedDate: string;
@@ -11,11 +13,11 @@ export interface ReferrerProfile {
 export interface ReferredUserProfile {
   id: string;
   name: string;
-  role: "Runner" | "Requester";
+  role: UserType;
   email: string;
   phone: string;
   joinedDate: string;
-  status: "Verified" | "Pending" | "Unverified";
+  status: VerificationStatus;
 }
 
 export interface TimelineEvent {
@@ -30,15 +32,18 @@ export interface QualificationTask {
   serviceType: string;
   totalPaid: number;
   completionDate: string;
-  status: "Completed" | "Pending" | "Failed";
+  status: "completed" | "pending" | "failed";
 }
 
+export type FraudIndicatorType = "device_similarity" | "ip_match" | "rapid_referral";
+export type FraudOutcome = "safe" | "warning" | "danger";
+
 export interface FraudIndicator {
-  type: "device_similarity" | "ip_match" | "rapid_referral";
+  type: FraudIndicatorType;
   label: string;
   level: "Low" | "Medium" | "High";
   value: string;
-  status: "safe" | "warning" | "danger";
+  status: FraudOutcome;
 }
 
 export interface SystemMetadata {

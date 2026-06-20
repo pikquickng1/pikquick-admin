@@ -3,32 +3,47 @@
 import { useState } from "react";
 import { DataTable } from "@/components/ui/data-table";
 import { Pagination } from "@/components/ui/pagination";
+import { LoadingState } from "@/components/ui/loading-state";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { PageHeader } from "@/components/ui/page-header";
 import { DisputeListFilters } from "./DisputeListFilters";
 import { TicketDetailsSlideOver } from "./TicketDetailsSlideOver";
-import { useTicketList } from "../hooks/useTicketList";
-import { useTicketStats } from "../hooks/useTicketStats";
-import { Ticket, TicketListFilters } from "../types/dispute.types";
+import { useTicketList, useTicketStats } from "../hooks/useTicketList";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query/keys";
+import {
+  DEFAULT_DISPUTE_FILTERS,
+  DEFAULT_DISPUTE_TAB,
+  type DisputeTab,
+  type DisputeTicket,
+} from "../types/dispute.types";
+import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from "@/lib/config/pagination";
+import { cn } from "@/lib/utils";
 
 export function DisputesList() {
-  const [activeTab, setActiveTab] = useState<"open" | "in-progress" | "resolved">("open");
+  const queryClient = useQueryClient();
+  const [activeTab, setActiveTab] = useState<DisputeTab>(DEFAULT_DISPUTE_TAB);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState<number>(DEFAULT_PAGE);
+  const [pageSize] = useState<number>(DEFAULT_PAGE_SIZE);
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [isSlideOverOpen, setIsSlideOverOpen] = useState(false);
-  const pageSize = 8;
+  const [filters, setFilters] = useState(DEFAULT_DISPUTE_FILTERS);
 
-  const [filters, setFilters] = useState<TicketListFilters>({
-    search: "",
-    priority: "All Priority",
-    category: "All Categories",
-  });
-
-  const { tickets, loading, total } = useTicketList(filters, currentPage, pageSize);
+  const { tickets, loading, total, totalPages } = useTicketList(
+    filters,
+    currentPage,
+    pageSize,
+  );
   const { stats } = useTicketStats();
+
+  const refresh = () => {
+    void queryClient.invalidateQueries({ queryKey: queryKeys.disputes.all });
+  };
 
   const handleRowSelect = (id: string) => {
     setSelectedRows((prev) =>
-      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id],
     );
   };
 
@@ -46,105 +61,74 @@ export function DisputesList() {
   };
 
   const handleActionComplete = () => {
-    // Refresh ticket list after action
-    // This would trigger a re-fetch in a real implementation
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "High":
-        return "bg-red-100 text-red-600";
-      case "Medium":
-        return "bg-yellow-100 text-yellow-600";
-      case "Low":
-        return "bg-green-100 text-green-600";
-      default:
-        return "bg-gray-100 text-gray-600";
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Open":
-        return "bg-blue-100 text-blue-600";
-      case "In Progress":
-        return "bg-yellow-100 text-yellow-600";
-      case "Resolved":
-        return "bg-green-100 text-green-600";
-      default:
-        return "bg-gray-100 text-gray-600";
-    }
+    refresh();
   };
 
   const columns = [
     {
       key: "ticketId",
       header: "Ticket ID",
-      render: (ticket: Ticket) => (
-        <span className="text-sm text-text-primary font-medium">{ticket.ticketId}</span>
+      render: (ticket: DisputeTicket) => (
+        <span className="text-sm text-text-primary font-medium">
+          {ticket.ticket_id}
+        </span>
       ),
     },
     {
       key: "user",
       header: "User",
-      render: (ticket: Ticket) => (
+      render: (ticket: DisputeTicket) => (
         <div>
-          <p className="text-sm font-medium text-text-primary">{ticket.user.name}</p>
-          <p className="text-xs text-text-secondary">{ticket.user.role}</p>
+          <p className="text-sm font-medium text-text-primary">
+            {ticket.user?.full_name ?? "—"}
+          </p>
+          <p className="text-xs text-text-secondary capitalize">
+            {ticket.user?.role ?? "—"}
+          </p>
         </div>
       ),
     },
     {
       key: "category",
       header: "Category",
-      render: (ticket: Ticket) => (
+      render: (ticket: DisputeTicket) => (
         <span className="text-sm text-text-primary">{ticket.category}</span>
       ),
     },
     {
       key: "priority",
       header: "Priority",
-      render: (ticket: Ticket) => (
-        <span
-          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getPriorityColor(
-            ticket.priority
-          )}`}
-        >
-          {ticket.priority}
-        </span>
+      render: (ticket: DisputeTicket) => (
+        <StatusBadge status={ticket.priority} />
       ),
     },
     {
       key: "assignedAgent",
       header: "Assigned Agent",
-      render: (ticket: Ticket) => (
-        <span className="text-sm text-text-primary">{ticket.assignedAgent}</span>
+      render: (ticket: DisputeTicket) => (
+        <span className="text-sm text-text-primary">
+          {ticket.assigned_agent?.full_name ?? "Unassigned"}
+        </span>
       ),
     },
     {
       key: "status",
       header: "Status",
-      render: (ticket: Ticket) => (
-        <span
-          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-            ticket.status
-          )}`}
-        >
-          {ticket.status}
-        </span>
+      render: (ticket: DisputeTicket) => (
+        <StatusBadge status={ticket.status} />
       ),
     },
     {
       key: "date",
       header: "Date",
-      render: (ticket: Ticket) => (
-        <span className="text-sm text-text-primary">{ticket.date}</span>
+      render: (ticket: DisputeTicket) => (
+        <span className="text-sm text-text-primary">{ticket.created_at}</span>
       ),
     },
     {
       key: "action",
       header: "Action",
-      render: (ticket: Ticket) => (
+      render: (ticket: DisputeTicket) => (
         <button
           onClick={() => handleViewDetails(ticket.id)}
           className="text-sm text-blue-500 hover:text-blue-600 font-medium"
@@ -155,107 +139,65 @@ export function DisputesList() {
     },
   ];
 
-  const totalPages = Math.ceil(total / pageSize);
-
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-sm text-neutral-500">Loading tickets...</p>
-        </div>
-      </div>
-    );
+    return <LoadingState label="Loading tickets..." />;
   }
+
+  const tabStats: Array<{ key: DisputeTab; label: string; count: number }> = [
+    { key: "open", label: "Open Tickets", count: stats.openTickets },
+    { key: "in-progress", label: "In Progress", count: stats.inProgress },
+    { key: "resolved", label: "Resolved", count: stats.resolved },
+  ];
 
   return (
     <>
       <div className="space-y-6">
-        <h1 className="text-2xl font-semibold text-text-primary">Disputes & Support</h1>
+        <PageHeader title="Disputes & Support" />
 
-        {/* Table wrapper with filters and tabs inside */}
         <div className="bg-white rounded border border-light overflow-hidden">
-          {/* Filters inside table */}
           <div className="p-6 border-b border-neutral-200">
-            <DisputeListFilters filters={filters} onFiltersChange={setFilters} />
+            <DisputeListFilters filters={filters} onFiltersChange={(next) => {
+              setFilters(next);
+              setCurrentPage(DEFAULT_PAGE);
+            }} />
           </div>
 
-          {/* Tabs inside table */}
           <div className="grid grid-cols-3 gap-3 bg-neutral-50 p-1 m-4">
-            <button
-              onClick={() => {
-                setActiveTab("open");
-                setCurrentPage(1);
-                setSelectedRows([]);
-              }}
-              className={`py-4 text-center text-base font-medium transition-colors rounded ${
-                activeTab === "open"
-                  ? "bg-white text-text-primary shadow-sm"
-                  : "bg-transparent text-text-primary hover:bg-white/50"
-              }`}
-            >
-              Open Tickets
-              {stats && (
+            {tabStats.map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => {
+                  setActiveTab(tab.key);
+                  setCurrentPage(DEFAULT_PAGE);
+                  setSelectedRows([]);
+                }}
+                className={cn(
+                  "py-4 text-center text-base font-medium transition-colors rounded",
+                  activeTab === tab.key
+                    ? "bg-white text-text-primary shadow-sm"
+                    : "bg-transparent text-text-primary hover:bg-white/50",
+                )}
+              >
+                {tab.label}
                 <span className="ml-2 inline-flex items-center justify-center w-6 h-6 text-xs font-semibold text-blue-800 bg-blue-100 rounded-full">
-                  {stats.openTickets}
+                  {tab.count}
                 </span>
-              )}
-            </button>
-            <button
-              onClick={() => {
-                setActiveTab("in-progress");
-                setCurrentPage(1);
-                setSelectedRows([]);
-              }}
-              className={`py-4 text-center text-base font-medium transition-colors rounded ${
-                activeTab === "in-progress"
-                  ? "bg-white text-text-primary shadow-sm"
-                  : "bg-transparent text-text-primary hover:bg-white/50"
-              }`}
-            >
-              In Progress
-              {stats && (
-                <span className="ml-2 inline-flex items-center justify-center w-6 h-6 text-xs font-semibold text-yellow-800 bg-yellow-100 rounded-full">
-                  {stats.inProgress}
-                </span>
-              )}
-            </button>
-            <button
-              onClick={() => {
-                setActiveTab("resolved");
-                setCurrentPage(1);
-                setSelectedRows([]);
-              }}
-              className={`py-4 text-center text-base font-medium transition-colors rounded ${
-                activeTab === "resolved"
-                  ? "bg-white text-text-primary shadow-sm"
-                  : "bg-transparent text-text-primary hover:bg-white/50"
-              }`}
-            >
-              Resolved
-              {stats && (
-                <span className="ml-2 inline-flex items-center justify-center w-6 h-6 text-xs font-semibold text-green-800 bg-green-100 rounded-full">
-                  {stats.resolved}
-                </span>
-              )}
-            </button>
+              </button>
+            ))}
           </div>
 
-          <div className="">
-            <DataTable
-              columns={columns}
-              data={tickets}
-              keyExtractor={(ticket) => ticket.id}
-              selectable
-              selectedRows={selectedRows}
-              onRowSelect={handleRowSelect}
-              onSelectAll={handleSelectAll}
-              emptyMessage="No tickets found"
-            />
-          </div>
+          <DataTable
+            columns={columns}
+            data={tickets}
+            keyExtractor={(ticket) => ticket.id}
+            selectable
+            selectedRows={selectedRows}
+            onRowSelect={handleRowSelect}
+            onSelectAll={handleSelectAll}
+            emptyMessage="No tickets found"
+          />
         </div>
 
-        {/* Pagination */}
         {totalPages > 1 && (
           <Pagination
             currentPage={currentPage}
@@ -268,7 +210,6 @@ export function DisputesList() {
         )}
       </div>
 
-      {/* Ticket Details Slide Over */}
       <TicketDetailsSlideOver
         open={isSlideOverOpen}
         onClose={() => setIsSlideOverOpen(false)}

@@ -1,36 +1,26 @@
-import { NotificationsResponse } from "../types/notifications.types";
+import type {
+  AdminNotification,
+  NotificationsResponse,
+} from "../types/notifications.types";
 import { notificationsService } from "@/lib/services/notifications.service";
 
 export const notificationsApi = {
-  getNotifications: async (): Promise<NotificationsResponse> => {
-    try {
-      const response = await notificationsService.getAll();
-      const nestedData = response.data?.data || response.data;
-      return {
-        notifications: nestedData?.notifications || [],
-        unreadCount: nestedData?.unreadCount || 0
-      };
-    } catch (error) {
-      console.error("Failed to fetch notifications:", error);
-      throw error;
-    }
+  async getNotifications(): Promise<NotificationsResponse> {
+    const body = (await notificationsService.getAll()) as
+      | { data?: { notifications?: AdminNotification[]; unreadCount?: number } }
+      | { notifications?: AdminNotification[]; unreadCount?: number }
+      | undefined;
+    const inner = (body && "data" in body && body.data ? body.data : body) ?? {};
+    const list = (inner as { notifications?: AdminNotification[] }).notifications ?? [];
+    const unreadCount = (inner as { unreadCount?: number }).unreadCount ?? 0;
+    return { notifications: list, unreadCount };
   },
 
-  markAsRead: async (notificationId: string): Promise<void> => {
-    try {
-      await notificationsService.markAsRead(notificationId);
-    } catch (error) {
-      console.error("Failed to mark notification as read:", error);
-      throw error;
-    }
+  async markAsRead(notificationId: string): Promise<void> {
+    await notificationsService.markAsRead(notificationId);
   },
 
-  markAllAsRead: async (): Promise<void> => {
-    try {
-      await notificationsService.markAllAsRead();
-    } catch (error) {
-      console.error("Failed to mark all notifications as read:", error);
-      throw error;
-    }
+  async markAllAsRead(): Promise<void> {
+    await notificationsService.markAllAsRead();
   },
 };

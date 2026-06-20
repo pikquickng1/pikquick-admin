@@ -1,12 +1,13 @@
 "use client";
 
-import { X, Download } from "lucide-react";
+import { Download } from "lucide-react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 interface CategoryDetail {
   name: string;
@@ -32,22 +33,12 @@ export function TaskCategoryDetailsModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <div className="flex items-start justify-between">
-            <div>
-              <DialogTitle className="text-xl font-semibold text-text-primary">
-                Detailed Analytics - Tasks by Category
-              </DialogTitle>
-              <p className="text-sm text-text-secondary mt-1">
-                In-depth breakdown of task categories and performance metrics
-              </p>
-            </div>
-            <button
-              onClick={onClose}
-              className="text-text-secondary hover:text-text-primary"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+          <DialogTitle className="text-xl font-semibold text-text-primary">
+            Detailed Analytics - Tasks by Category
+          </DialogTitle>
+          <p className="text-sm text-text-secondary mt-1">
+            In-depth breakdown of task categories and performance metrics
+          </p>
         </DialogHeader>
 
         <div className="space-y-6 mt-6">
@@ -93,16 +84,13 @@ export function TaskCategoryDetailsModal({
         </div>
 
         <div className="flex items-center justify-end gap-3 mt-6 pt-6 border-t border-neutral-200">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-sm text-text-secondary hover:text-text-primary"
-          >
+          <Button variant="ghost" onClick={onClose}>
             Close
-          </button>
-          <button className="flex items-center gap-2 px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded">
+          </Button>
+          <Button>
             <Download className="w-4 h-4" />
             Export Details
-          </button>
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

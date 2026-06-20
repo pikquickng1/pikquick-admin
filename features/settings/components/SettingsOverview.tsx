@@ -2,34 +2,45 @@
 
 import { Settings, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
+import { PageHeader } from "@/components/ui/page-header";
+
+interface SettingsCard {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  path: string;
+}
+
+const SETTINGS_CARDS: SettingsCard[] = [
+  {
+    id: "user-access",
+    title: "User & Access Control",
+    description: "Manage roles and permissions",
+    icon: "users",
+    path: "/dashboard/settings/user-access",
+  },
+  {
+    id: "platform-settings",
+    title: "Platform Settings",
+    description: "Configure your platform's basic information",
+    icon: "settings",
+    path: "/dashboard/settings/platform",
+  },
+  {
+    id: "notifications",
+    title: "Notifications & Alerts",
+    description: "Configure notification preferences and channels",
+    icon: "bell",
+    path: "/dashboard/settings/notifications",
+  },
+];
 
 export function SettingsOverview() {
-  const settingsCards = [
-    {
-      id: "user-access",
-      title: "User & Access Control",
-      description: "Manage roles and permissions",
-      path: "/dashboard/settings/user-access",
-    },
-    {
-      id: "platform-settings",
-      title: "Platform Settings",
-      description: "Configure your platform's basic information",
-      path: "/dashboard/settings/platform",
-    },
-    {
-      id: "notifications",
-      title: "Notifications & Alerts",
-      description: "Configure notification preferences and channels",
-      path: "/dashboard/settings/notifications",
-    },
-  ];
-
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold text-text-primary">Settings & Roles</h1>
+      <PageHeader title="Settings & Roles" />
 
-      {/* Header Card */}
       <div className="bg-white rounded-lg border border-neutral-200 p-6">
         <div className="flex items-start gap-4">
           <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
@@ -46,9 +57,8 @@ export function SettingsOverview() {
         </div>
       </div>
 
-      {/* Settings Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {settingsCards.map((card) => (
+        {SETTINGS_CARDS.map((card) => (
           <Link
             key={card.id}
             href={card.path}

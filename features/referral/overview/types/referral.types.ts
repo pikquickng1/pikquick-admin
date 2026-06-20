@@ -1,3 +1,5 @@
+import { ReferralTierKey, UserType } from "@/lib/types/enums";
+
 export interface ReferralStats {
   totalReferrals: number;
   activeReferrals: number;
@@ -19,10 +21,10 @@ export interface RewardStatus {
 export interface TopReferrer {
   id: string;
   name: string;
-  role: "Runner" | "Requester";
+  role: UserType;
   totalReferrals: number;
   rewardsEarned: number;
-  status: "Elite" | "Pro" | "Starter";
+  status: ReferralTierKey;
 }
 
 export interface ReferralData {

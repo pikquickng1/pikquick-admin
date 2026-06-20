@@ -1,90 +1,61 @@
-import {
+import { ReferralStatus, UserType } from "@/lib/types/enums";
+import { USE_MOCKS } from "@/lib/config/feature-flags";
+import type {
   ReferralRecord,
   ReferralRecordFilters,
   ReferralRecordListResponse,
 } from "../types/referral-record.types";
 
+const MOCK_FETCH_DELAY_MS = 300;
+const MOCK_LIST_LENGTH = 5;
+const MOCK_TOTAL_PAGES = 20;
+const MOCK_TOTAL_ITEMS = 100;
+const MOCK_ITEMS_PER_PAGE = 5;
+const MOCK_TASK_ID = "TASK-45231";
+const MOCK_MONTH = "March";
+
+const buildMockList = (): ReferralRecord[] =>
+  Array.from({ length: MOCK_LIST_LENGTH }, (_, i) => ({
+    id: String(i + 1),
+    referrer: [
+      "Adebayo Samuel",
+      "Chioma Okoro",
+      "Ibrahim Musa",
+      "Osawele John",
+      "Blessing Udoh",
+    ][i]!,
+    referrerRole: (
+      ["runner", "client", "runner", "runner", "client"] as const
+    )[i]!,
+    referredUser: ["John Doe", "Sarah Smith", "Michael Jordan", "Alice Cooper", "David Beckham"][i]!,
+    signupDate: `2024-03-${String(10 + i).padStart(2, "0")}`,
+    firstTask: {
+      completed: i !== 2 && i !== 3,
+      taskId: i !== 2 && i !== 3 ? MOCK_TASK_ID : undefined,
+    },
+    status: (
+      [ReferralStatus.ACTIVE, ReferralStatus.ACTIVE, ReferralStatus.PENDING, ReferralStatus.DISQUALIFIED, ReferralStatus.ACTIVE] as const
+    )[i]!,
+    month: MOCK_MONTH,
+  }));
+
 export const referralRecordApi = {
-  getReferralRecords: async (
-    filters: ReferralRecordFilters,
-    page: number = 1
-  ): Promise<ReferralRecordListResponse> => {
-    await new Promise((resolve) => setTimeout(resolve, 300));
-
-    const mockData: ReferralRecord[] = [
-      {
-        id: "1",
-        referrer: "Adebayo Samuel",
-        referrerRole: "Runner",
-        referredUser: "John Doe",
-        signupDate: "2024-03-12",
-        firstTask: {
-          completed: true,
-          taskId: "TASK-45231",
+  async getReferralRecords(
+    _filters: ReferralRecordFilters,
+    page: number = 1,
+  ): Promise<ReferralRecordListResponse> {
+    if (USE_MOCKS) {
+      await new Promise((r) => setTimeout(r, MOCK_FETCH_DELAY_MS));
+      return {
+        data: buildMockList(),
+        pagination: {
+          currentPage: page,
+          totalPages: MOCK_TOTAL_PAGES,
+          totalItems: MOCK_TOTAL_ITEMS,
+          itemsPerPage: MOCK_ITEMS_PER_PAGE,
         },
-        status: "Active",
-        month: "March",
-      },
-      {
-        id: "2",
-        referrer: "Chioma Okoro",
-        referrerRole: "Requester",
-        referredUser: "Sarah Smith",
-        signupDate: "2024-03-14",
-        firstTask: {
-          completed: true,
-          taskId: "TASK-45231",
-        },
-        status: "Active",
-        month: "March",
-      },
-      {
-        id: "3",
-        referrer: "Ibrahim Musa",
-        referrerRole: "Runner",
-        referredUser: "Michael Jordan",
-        signupDate: "2024-03-15",
-        firstTask: {
-          completed: false,
-        },
-        status: "Pending",
-        month: "March",
-      },
-      {
-        id: "4",
-        referrer: "Osawele John",
-        referrerRole: "Runner",
-        referredUser: "Alice Cooper",
-        signupDate: "2024-03-15",
-        firstTask: {
-          completed: false,
-        },
-        status: "Disqualified",
-        month: "March",
-      },
-      {
-        id: "5",
-        referrer: "Blessing Udoh",
-        referrerRole: "Requester",
-        referredUser: "David Beckham",
-        signupDate: "2024-03-10",
-        firstTask: {
-          completed: true,
-          taskId: "TASK-45231",
-        },
-        status: "Active",
-        month: "March",
-      },
-    ];
-
-    return {
-      data: mockData,
-      pagination: {
-        currentPage: page,
-        totalPages: 20,
-        totalItems: 100,
-        itemsPerPage: 5,
-      },
-    };
+      };
+    }
+    throw new Error("Live referral-records endpoint not yet wired in the admin UI");
   },
 };

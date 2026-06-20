@@ -1,35 +1,36 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { EliteReward, EliteRewardFilters } from "../types/elite-reward.types";
+import { useQuery } from "@tanstack/react-query";
 import { eliteRewardApi } from "../api/eliteRewardApi";
+import { DEFAULT_PAGE_SIZE } from "@/lib/config/pagination";
+import type { EliteRewardFilters } from "../types/elite-reward.types";
+
+const LIMIT = DEFAULT_PAGE_SIZE;
 
 export function useEliteRewardList(filters: EliteRewardFilters, page: number) {
-  const [rewards, setRewards] = useState<EliteReward[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [pagination, setPagination] = useState({
-    currentPage: 1,
-    totalPages: 1,
-    totalItems: 0,
-    itemsPerPage: 8,
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ["elite-rewards", filters, page],
+    queryFn: () => eliteRewardApi.getEliteRewards(filters, page),
   });
 
-  const fetchRewards = async () => {
-    try {
-      setLoading(true);
-      const response = await eliteRewardApi.getEliteRewards(filters, page);
-      setRewards(response.data);
-      setPagination(response.pagination);
-    } catch (error) {
-      console.error("Failed to fetch elite rewards:", error);
-    } finally {
-      setLoading(false);
-    }
+  const rewards = data?.data ?? [];
+  const total = data?.pagination.totalItems ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / LIMIT));
+
+  const pagination = {
+    currentPage: data?.pagination.currentPage ?? page,
+    totalPages,
+    totalItems: total,
+    itemsPerPage: data?.pagination.itemsPerPage ?? LIMIT,
   };
 
-  useEffect(() => {
-    fetchRewards();
-  }, [filters.search, filters.status, page]);
-
-  return { rewards, loading, pagination, refetch: fetchRewards };
+  return {
+    rewards,
+    loading: isLoading,
+    error: error instanceof Error ? error.message : null,
+    pagination,
+    refetch: () => {
+      void refetch();
+    },
+  };
 }

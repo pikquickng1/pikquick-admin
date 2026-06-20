@@ -1,35 +1,30 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { FlaggedActivity, ComplianceListFilters } from "../types/compliance.types";
+import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query/keys";
 import { complianceApi } from "../api/complianceApi";
+import type { ComplianceListFilters } from "../types/compliance.types";
 
 export function useComplianceList(filters: ComplianceListFilters, page: number) {
-  const [activities, setActivities] = useState<FlaggedActivity[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [pagination, setPagination] = useState({
-    currentPage: 1,
-    totalPages: 1,
-    totalItems: 0,
-    itemsPerPage: 8,
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: queryKeys.compliance.list({ ...filters, page }),
+    queryFn: () => complianceApi.getFlaggedActivities(filters, page),
   });
 
-  const fetchActivities = async () => {
-    try {
-      setLoading(true);
-      const response = await complianceApi.getFlaggedActivities(filters, page);
-      setActivities(response.data);
-      setPagination(response.pagination);
-    } catch (error) {
-      console.error("Failed to fetch flagged activities:", error);
-    } finally {
-      setLoading(false);
-    }
+  const fallbackPagination = {
+    currentPage: page,
+    totalPages: 1,
+    totalItems: 0,
+    itemsPerPage: 20,
   };
 
-  useEffect(() => {
-    fetchActivities();
-  }, [filters.search, filters.dateFrom, filters.dateTo, filters.status, page]);
-
-  return { activities, loading, pagination, refetch: fetchActivities };
+  return {
+    activities: data?.data ?? [],
+    loading: isLoading,
+    error: error instanceof Error ? error.message : null,
+    pagination: data?.pagination ?? fallbackPagination,
+    refetch: () => {
+      void refetch();
+    },
+  };
 }

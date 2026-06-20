@@ -5,35 +5,15 @@ import Image from "next/image";
 import { DataTable } from "@/components/ui/data-table";
 import { Pagination } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { LoadingState } from "@/components/ui/loading-state";
+import { formatDate } from "@/lib/utils/date";
+import { DocumentVerificationStatus, ALL_FILTER } from "@/lib/types/enums";
 import { RunnerDocumentFilters } from "./RunnerDocumentFilters";
 import { useRunnerDocumentsList } from "../hooks/useRunnerDocumentsList";
 import { runnerDocumentsService } from "@/lib/services";
-import type { RunnerDocument, DocumentVerificationStatus } from "@/lib/types";
-
-function getStatusColor(status: DocumentVerificationStatus): string {
-  switch (status) {
-    case "verified":
-      return "bg-green-100 text-green-600";
-    case "pending":
-      return "bg-yellow-100 text-yellow-600";
-    case "rejected":
-      return "bg-red-100 text-red-600";
-    default:
-      return "bg-gray-100 text-gray-600";
-  }
-}
-
-function formatStatus(status: DocumentVerificationStatus): string {
-  return status.charAt(0).toUpperCase() + status.slice(1);
-}
-
-function formatDate(dateString: string): string {
-  return new Date(dateString).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
+import type { RunnerDocument, RunnerDocumentFilters as Filters } from "../types/runner-document.types";
+import { ID_DISPLAY_LENGTH } from "../types/runner-document.types";
 
 interface DocumentPreviewModalProps {
   document: RunnerDocument | null;
@@ -41,6 +21,8 @@ interface DocumentPreviewModalProps {
   onClose: () => void;
   onVerify: (id: string, status: "verified" | "rejected", reason?: string) => Promise<void>;
 }
+
+const REJECTION_REASON_ROWS = 3;
 
 function DocumentPreviewModal({ document, isOpen, onClose, onVerify }: DocumentPreviewModalProps) {
   const [verificationStatus, setVerificationStatus] = useState<"verified" | "rejected" | null>(null);
@@ -53,14 +35,15 @@ function DocumentPreviewModal({ document, isOpen, onClose, onVerify }: DocumentP
     if (!verificationStatus) return;
     setIsVerifying(true);
     try {
-      await onVerify(document.id, verificationStatus, verificationStatus === "rejected" ? rejectionReason : undefined);
+      const status: "verified" | "rejected" = verificationStatus;
+      await onVerify(document.id, status, status === "rejected" ? rejectionReason : undefined);
       onClose();
-    } catch (err) {
-      console.error("Verification failed:", err);
     } finally {
       setIsVerifying(false);
     }
   };
+
+  const idDisplay = document.id.slice(0, ID_DISPLAY_LENGTH);
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -76,43 +59,24 @@ function DocumentPreviewModal({ document, isOpen, onClose, onVerify }: DocumentP
 
         <div className="p-6 space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm text-text-secondary">Document ID</label>
-              <p className="text-text-primary font-mono text-sm">{document.id.slice(0, 8)}...</p>
-            </div>
-            <div>
-              <label className="text-sm text-text-secondary">Status</label>
-              <p>
-                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(document.verification_status)}`}>
-                  {formatStatus(document.verification_status)}
-                </span>
-              </p>
-            </div>
-            <div>
-              <label className="text-sm text-text-secondary">Document Type</label>
-              <p className="text-text-primary">{document.document_type_name || document.document_type_id}</p>
-            </div>
-            <div>
-              <label className="text-sm text-text-secondary">Submitted</label>
-              <p className="text-text-primary">{formatDate(document.submitted_at)}</p>
-            </div>
+            <FieldCol label="Document ID" value={`${idDisplay}…`} mono />
+            <FieldCol
+              label="Status"
+              value={<StatusBadge status={document.verification_status} />}
+            />
+            <FieldCol
+              label="Document Type"
+              value={document.document_type_name || document.document_type_id}
+            />
+            <FieldCol label="Submitted" value={formatDate(document.submitted_at)} />
             {document.document_name && (
-              <div>
-                <label className="text-sm text-text-secondary">Document Name</label>
-                <p className="text-text-primary">{document.document_name}</p>
-              </div>
+              <FieldCol label="Document Name" value={document.document_name} />
             )}
             {document.document_number && (
-              <div>
-                <label className="text-sm text-text-secondary">Document Number</label>
-                <p className="text-text-primary">{document.document_number}</p>
-              </div>
+              <FieldCol label="Document Number" value={document.document_number} />
             )}
             {document.expiry_date && (
-              <div>
-                <label className="text-sm text-text-secondary">Expiry Date</label>
-                <p className="text-text-primary">{formatDate(document.expiry_date)}</p>
-              </div>
+              <FieldCol label="Expiry Date" value={formatDate(document.expiry_date)} />
             )}
           </div>
 
@@ -165,7 +129,7 @@ function DocumentPreviewModal({ document, isOpen, onClose, onVerify }: DocumentP
                     value={rejectionReason}
                     onChange={(e) => setRejectionReason(e.target.value)}
                     placeholder="Enter reason for rejection..."
-                    rows={3}
+                    rows={REJECTION_REASON_ROWS}
                     className="w-full mt-1 px-3 py-2 border border-neutral-200 rounded text-text-primary"
                   />
                 </div>
@@ -186,37 +150,46 @@ function DocumentPreviewModal({ document, isOpen, onClose, onVerify }: DocumentP
   );
 }
 
+function FieldCol({
+  label,
+  value,
+  mono,
+}: {
+  label: string;
+  value: React.ReactNode;
+  mono?: boolean;
+}) {
+  return (
+    <div>
+      <label className="text-sm text-text-secondary">{label}</label>
+      <p className={`text-text-primary ${mono ? "font-mono text-sm" : ""}`}>{value}</p>
+    </div>
+  );
+}
+
 export function RunnerDocumentsList() {
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10;
   const [selectedDocument, setSelectedDocument] = useState<RunnerDocument | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
-  const [filters, setFilters] = useState<{
-    search?: string;
-    status?: DocumentVerificationStatus | "all";
-    document_type_id?: string;
-  }>({
+  const [filters, setFilters] = useState<Filters>({
     search: "",
-    status: "all",
+    status: ALL_FILTER,
+    document_type_id: "",
   });
 
-  const { documents, loading, total, error } = useRunnerDocumentsList(
-    {
-      search: filters.search,
-      verification_status: filters.status === "all" ? undefined : filters.status,
-      document_type_id: filters.document_type_id,
-    },
-    currentPage,
-    pageSize
-  );
+  const { documents, loading, total, error } = useRunnerDocumentsList(filters, currentPage);
 
   const handleViewDocument = (doc: RunnerDocument) => {
     setSelectedDocument(doc);
     setIsPreviewOpen(true);
   };
 
-  const handleVerify = async (id: string, status: "verified" | "rejected", reason?: string) => {
+  const handleVerify = async (
+    id: string,
+    status: "verified" | "rejected",
+    reason?: string,
+  ) => {
     await runnerDocumentsService.verify(id, {
       verification_status: status,
       rejection_reason: reason,
@@ -229,31 +202,33 @@ export function RunnerDocumentsList() {
       key: "id",
       header: "Document ID",
       render: (doc: RunnerDocument) => (
-        <span className="text-sm text-text-primary font-mono">{doc.id.slice(0, 8)}...</span>
+        <span className="text-sm text-text-primary font-mono">
+          {doc.id.slice(0, ID_DISPLAY_LENGTH)}…
+        </span>
       ),
     },
     {
       key: "runnerId",
       header: "Runner ID",
       render: (doc: RunnerDocument) => (
-        <span className="text-sm text-text-primary">{doc.runner_id.slice(0, 8)}...</span>
+        <span className="text-sm text-text-primary">
+          {doc.runner_id.slice(0, ID_DISPLAY_LENGTH)}…
+        </span>
       ),
     },
     {
       key: "documentType",
       header: "Document Type",
       render: (doc: RunnerDocument) => (
-        <span className="text-sm text-text-primary">{doc.document_type_name || doc.document_type_id}</span>
+        <span className="text-sm text-text-primary">
+          {doc.document_type_name || doc.document_type_id}
+        </span>
       ),
     },
     {
       key: "status",
       header: "Status",
-      render: (doc: RunnerDocument) => (
-        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(doc.verification_status)}`}>
-          {formatStatus(doc.verification_status)}
-        </span>
-      ),
+      render: (doc: RunnerDocument) => <StatusBadge status={doc.verification_status} />,
     },
     {
       key: "submitted",
@@ -276,17 +251,8 @@ export function RunnerDocumentsList() {
     },
   ];
 
-  const totalPages = Math.ceil(total / pageSize);
-
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-sm text-neutral-500">Loading documents...</p>
-        </div>
-      </div>
-    );
+    return <LoadingState label="Loading documents..." />;
   }
 
   if (error) {
@@ -296,6 +262,8 @@ export function RunnerDocumentsList() {
       </div>
     );
   }
+
+  const totalPages = Math.ceil(total / 10) || 1;
 
   return (
     <div className="space-y-6">
@@ -308,7 +276,7 @@ export function RunnerDocumentsList() {
 
         <DataTable
           columns={columns}
-          data={documents}
+          data={documents as RunnerDocument[]}
           keyExtractor={(doc) => doc.id}
           emptyMessage="No documents found"
         />
@@ -319,8 +287,8 @@ export function RunnerDocumentsList() {
           currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={setCurrentPage}
-          showingFrom={(currentPage - 1) * pageSize + 1}
-          showingTo={Math.min(currentPage * pageSize, total)}
+          showingFrom={(currentPage - 1) * 10 + 1}
+          showingTo={Math.min(currentPage * 10, total)}
           totalItems={total}
         />
       )}

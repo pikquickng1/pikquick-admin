@@ -1,60 +1,45 @@
-import { PlatformSettings, TaskCategory } from "../types/platform-settings.types";
-import { adminService } from "@/lib/services";
+import type {
+  PlatformSettingsData,
+  TaskCategory,
+  PlatformSettingsPayload,
+} from "../types/platform-settings.types";
+import { adminService } from "@/lib/services/admin.service";
+
+type RawPlatformSettings = Partial<PlatformSettingsData> &
+  Partial<PlatformSettingsPayload>;
 
 export const platformSettingsApi = {
-  getSettings: async (): Promise<PlatformSettings> => {
-    try {
-      const response = await adminService.getPlatformSettings();
-      return response.data;
-    } catch (error) {
-      console.error("Failed to fetch platform settings:", error);
-      throw error;
-    }
+  async getSettings(): Promise<PlatformSettingsData> {
+    const data = (await adminService.getPlatformSettings()) as RawPlatformSettings | undefined;
+    return {
+      accessFee: Number(data?.accessFee ?? data?.access_fee ?? 0),
+      platformCommission: Number(
+        data?.platformCommission ?? data?.platform_commission ?? 0,
+      ),
+    };
   },
 
-  updateSettings: async (settings: PlatformSettings): Promise<void> => {
-    try {
-      await adminService.updatePlatformSettings(settings as unknown as Record<string, unknown>);
-    } catch (error) {
-      console.error("Failed to update platform settings:", error);
-      throw error;
-    }
+  async updateSettings(settings: PlatformSettingsData): Promise<void> {
+    const payload: PlatformSettingsPayload = {
+      access_fee: settings.accessFee,
+      platform_commission: settings.platformCommission,
+    };
+    await adminService.updatePlatformSettings(payload as unknown as Record<string, unknown>);
   },
 
-  getTaskCategories: async (): Promise<TaskCategory[]> => {
-    try {
-      const response = await adminService.getTaskCategories();
-      return response.data;
-    } catch (error) {
-      console.error("Failed to fetch task categories:", error);
-      throw error;
-    }
+  async getTaskCategories(): Promise<TaskCategory[]> {
+    return (await adminService.getTaskCategories()) as TaskCategory[];
   },
 
-  addTaskCategory: async (category: Omit<TaskCategory, "id">): Promise<void> => {
-    try {
-      await adminService.addTaskCategory(category);
-    } catch (error) {
-      console.error("Failed to add task category:", error);
-      throw error;
-    }
+  async addTaskCategory(category: Omit<TaskCategory, "id">): Promise<void> {
+    await adminService.addTaskCategory(category);
   },
 
-  updateTaskCategory: async (id: string, category: Partial<TaskCategory>): Promise<void> => {
-    try {
-      await adminService.updateTaskCategory(id, category);
-    } catch (error) {
-      console.error("Failed to update task category:", error);
-      throw error;
-    }
+  async updateTaskCategory(id: string, category: Partial<TaskCategory>): Promise<void> {
+    await adminService.updateTaskCategory(id, category);
   },
 
-  deleteTaskCategory: async (id: string): Promise<void> => {
-    try {
-      await adminService.deleteTaskCategory(id);
-    } catch (error) {
-      console.error("Failed to delete task category:", error);
-      throw error;
-    }
+  async deleteTaskCategory(id: string): Promise<void> {
+    await adminService.deleteTaskCategory(id);
   },
 };

@@ -1,45 +1,24 @@
 "use client";
 
-import { X, Save } from "lucide-react";
-import { useState, useMemo } from "react";
+import { Save } from "lucide-react";
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Role } from "../types/roles.types";
-
-interface Permission {
-  module: string;
-  view: boolean;
-  edit: boolean;
-  delete: boolean;
-  configure: boolean;
-}
+import { Button } from "@/components/ui/button";
+import { getDefaultPermissions } from "@/lib/permissions/defaults";
+import type { DefaultPermission } from "@/lib/permissions/defaults";
+import type { Role } from "../types/roles.types";
 
 interface EditRolePermissionsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (permissions: Permission[]) => void;
+  onSave: (permissions: DefaultPermission[]) => void;
   role: Role | null;
 }
-
-const getDefaultPermissions = (): Permission[] => {
-  // Different default permissions based on role
-  const basePermissions = [
-    { module: "Finance", view: true, edit: true, delete: false, configure: true },
-    { module: "Compliance", view: true, edit: true, delete: true, configure: true },
-    { module: "Support", view: true, edit: true, delete: false, configure: false },
-    { module: "Operations", view: true, edit: true, delete: false, configure: false },
-    { module: "Analytics", view: true, edit: false, delete: false, configure: false },
-    { module: "Settings", view: true, edit: true, delete: true, configure: true },
-    { module: "Notifications", view: true, edit: true, delete: false, configure: true },
-    { module: "KYC", view: true, edit: true, delete: false, configure: false },
-  ];
-
-  return basePermissions;
-};
 
 export function EditRolePermissionsModal({
   isOpen,
@@ -47,26 +26,48 @@ export function EditRolePermissionsModal({
   onSave,
   role,
 }: EditRolePermissionsModalProps) {
-  const [permissions, setPermissions] = useState<Permission[]>([]);
+  if (!role) return null;
 
-  const defaultPermissions = useMemo(
-    () => (role ? getDefaultPermissions() : []),
-    [role]
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-3xl">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-semibold text-text-primary">
+            Edit Role Permissions - {role.name}
+          </DialogTitle>
+          <p className="text-sm text-text-secondary mt-1">
+            Configure granular permissions for this role
+          </p>
+        </DialogHeader>
+
+        <PermissionsForm
+          key={role.id}
+          onSubmit={(permissions) => {
+            onSave(permissions);
+            onClose();
+          }}
+          onCancel={onClose}
+        />
+      </DialogContent>
+    </Dialog>
   );
+}
 
-  const currentPermissions = permissions.length ? permissions : defaultPermissions;
+interface PermissionsFormProps {
+  onSubmit: (permissions: DefaultPermission[]) => void;
+  onCancel: () => void;
+}
 
-  const handleClose = () => {
-    setPermissions([]);
-    onClose();
-  };
+function PermissionsForm({ onSubmit, onCancel }: PermissionsFormProps) {
+  const [permissions, setPermissions] = useState<DefaultPermission[]>(() =>
+    getDefaultPermissions(),
+  );
 
   const handleTogglePermission = (
     moduleIndex: number,
-    permissionType: keyof Omit<Permission, "module">
+    permissionType: keyof Omit<DefaultPermission, "module">,
   ) => {
-    const basePermissions = permissions.length ? permissions : defaultPermissions;
-    const newPermissions = [...basePermissions];
+    const newPermissions = [...permissions];
     newPermissions[moduleIndex] = {
       ...newPermissions[moduleIndex],
       [permissionType]: !newPermissions[moduleIndex][permissionType],
@@ -76,120 +77,53 @@ export function EditRolePermissionsModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(currentPermissions);
-    setPermissions([]);
-    onClose();
+    onSubmit(permissions);
   };
 
-  if (!role) return null;
-
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-3xl">
-        <DialogHeader>
-          <div className="flex items-start justify-between">
-            <div>
-              <DialogTitle className="text-xl font-semibold text-text-primary">
-                Edit Role Permissions - {role.name}
-              </DialogTitle>
-              <p className="text-sm text-text-secondary mt-1">
-                Configure granular permissions for this role
-              </p>
-            </div>
-            <button
-              onClick={handleClose}
-              className="text-text-secondary hover:text-text-primary"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-        </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="space-y-6 mt-6">
-          {/* Permissions Table */}
-          <div className="border border-neutral-200 rounded-lg overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-neutral-50 border-b border-neutral-200">
-                <tr>
-                  <th className="text-left px-4 py-3 text-sm font-semibold text-text-primary">
-                    Module
-                  </th>
-                  <th className="text-center px-4 py-3 text-sm font-semibold text-text-primary">
-                    View
-                  </th>
-                  <th className="text-center px-4 py-3 text-sm font-semibold text-text-primary">
-                    Edit
-                  </th>
-                  <th className="text-center px-4 py-3 text-sm font-semibold text-text-primary">
-                    Delete
-                  </th>
-                  <th className="text-center px-4 py-3 text-sm font-semibold text-text-primary">
-                    Configure
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-100">
-                {currentPermissions.map((permission, index) => (
-                  <tr key={permission.module} className="hover:bg-neutral-50">
-                    <td className="px-4 py-3 text-sm text-text-primary">
-                      {permission.module}
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <input
-                        type="checkbox"
-                        checked={permission.view}
-                        onChange={() => handleTogglePermission(index, "view")}
-                        className="w-4 h-4 rounded border-neutral-300"
-                      />
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <input
-                        type="checkbox"
-                        checked={permission.edit}
-                        onChange={() => handleTogglePermission(index, "edit")}
-                        className="w-4 h-4 rounded border-neutral-300"
-                      />
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <input
-                        type="checkbox"
-                        checked={permission.delete}
-                        onChange={() => handleTogglePermission(index, "delete")}
-                        className="w-4 h-4 rounded border-neutral-300"
-                      />
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <input
-                        type="checkbox"
-                        checked={permission.configure}
-                        onChange={() => handleTogglePermission(index, "configure")}
-                        className="w-4 h-4 rounded border-neutral-300"
-                      />
-                    </td>
-                  </tr>
+    <form onSubmit={handleSubmit} className="space-y-6 mt-6">
+      <div className="border border-neutral-200 rounded-lg overflow-hidden">
+        <table className="w-full">
+          <thead className="bg-neutral-50 border-b border-neutral-200">
+            <tr>
+              <th className="text-left px-4 py-3 text-sm font-semibold text-text-primary">
+                Module
+              </th>
+              <th className="text-center px-4 py-3 text-sm font-semibold text-text-primary">View</th>
+              <th className="text-center px-4 py-3 text-sm font-semibold text-text-primary">Edit</th>
+              <th className="text-center px-4 py-3 text-sm font-semibold text-text-primary">Delete</th>
+              <th className="text-center px-4 py-3 text-sm font-semibold text-text-primary">Configure</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-neutral-100">
+            {permissions.map((permission, index) => (
+              <tr key={permission.module} className="hover:bg-neutral-50">
+                <td className="px-4 py-3 text-sm text-text-primary">{permission.module}</td>
+                {(["view", "edit", "delete", "configure"] as const).map((key) => (
+                  <td key={key} className="px-4 py-3 text-center">
+                    <input
+                      type="checkbox"
+                      checked={permission[key]}
+                      onChange={() => handleTogglePermission(index, key)}
+                      className="w-4 h-4 rounded border-neutral-300"
+                    />
+                  </td>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4">
-            <button
-              type="button"
-              onClick={handleClose}
-              className="px-4 py-2 text-sm text-text-secondary hover:text-text-primary"
-            >
-              Close
-            </button>
-            <button
-              type="submit"
-              className="flex items-center gap-2 px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded"
-            >
-              <Save className="w-4 h-4" />
-              Save Permissions
-            </button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+      <div className="flex items-center justify-end gap-3 pt-4">
+        <Button type="button" variant="ghost" onClick={onCancel}>
+          Close
+        </Button>
+        <Button type="submit">
+          <Save className="w-4 h-4" />
+          Save Permissions
+        </Button>
+      </div>
+    </form>
   );
 }

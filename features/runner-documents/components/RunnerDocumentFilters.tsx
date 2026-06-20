@@ -1,20 +1,19 @@
 "use client";
 
 import { Search } from "lucide-react";
-import type { DocumentVerificationStatus } from "@/lib/types";
+import { Select } from "@/components/ui/select";
+import { ALL_FILTER, DocumentVerificationStatus } from "@/lib/types/enums";
+import { RUNNER_VERIFICATION_OPTIONS } from "@/lib/constants/filters";
+import type { RunnerDocumentFilters as Filters } from "../types/runner-document.types";
 
 interface RunnerDocumentFiltersProps {
-  filters: {
-    search?: string;
-    status?: DocumentVerificationStatus | "all";
-    document_type_id?: string;
-  };
-  onFiltersChange: (filters: {
-    search?: string;
-    status?: DocumentVerificationStatus | "all";
-    document_type_id?: string;
-  }) => void;
+  filters: Filters;
+  onFiltersChange: (filters: Filters) => void;
 }
+
+const VERIFICATION_OPTIONS = [
+  ...RUNNER_VERIFICATION_OPTIONS,
+] as ReadonlyArray<{ value: DocumentVerificationStatus | typeof ALL_FILTER; label: string }>;
 
 export function RunnerDocumentFilters({ filters, onFiltersChange }: RunnerDocumentFiltersProps) {
   return (
@@ -24,33 +23,26 @@ export function RunnerDocumentFilters({ filters, onFiltersChange }: RunnerDocume
         <input
           type="text"
           placeholder="Search by runner name or document..."
-          value={filters.search || ""}
+          value={filters.search ?? ""}
           onChange={(e) => onFiltersChange({ ...filters, search: e.target.value })}
           className="w-full pl-10 py-4 text-text-primary bg-white border border-neutral-200 rounded text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
         />
       </div>
 
       <div className="md:col-span-4">
-        <select
-          value={filters.status || "all"}
+        <Select
+          options={VERIFICATION_OPTIONS as ReadonlyArray<{ value: string; label: string }>}
+          value={filters.status}
           onChange={(e) =>
             onFiltersChange({
               ...filters,
-              status: e.target.value === "all" ? undefined : (e.target.value as DocumentVerificationStatus),
+              status:
+                e.target.value === ALL_FILTER
+                  ? ALL_FILTER
+                  : (e.target.value as DocumentVerificationStatus),
             })
           }
-          className="w-full px-4 py-4 bg-white border border-neutral-200 rounded text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent appearance-none cursor-pointer"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
-            backgroundRepeat: "no-repeat",
-            backgroundPosition: "right 1rem center",
-          }}
-        >
-          <option value="all">All Status</option>
-          <option value="pending">Pending</option>
-          <option value="verified">Verified</option>
-          <option value="rejected">Rejected</option>
-        </select>
+        />
       </div>
     </div>
   );

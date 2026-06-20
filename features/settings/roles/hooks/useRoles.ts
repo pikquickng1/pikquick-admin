@@ -1,36 +1,24 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Role } from "../types/roles.types";
+import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query/keys";
 import { rolesApi } from "../api/rolesApi";
+import type { Role } from "../types/roles.types";
+
+const EMPTY_ROLES: Role[] = [];
 
 export function useRoles() {
-  const [roles, setRoles] = useState<Role[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetchRoles();
-  }, []);
-
-  const fetchRoles = async () => {
-    try {
-      setLoading(true);
-      const data = await rolesApi.getRoles();
-      setRoles(data);
-      setError(null);
-    } catch (err) {
-      setError("Failed to load roles");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: queryKeys.settings.roles(),
+    queryFn: () => rolesApi.getRoles(),
+  });
 
   return {
-    roles,
-    loading,
-    error,
-    refetch: fetchRoles,
+    roles: data ?? EMPTY_ROLES,
+    loading: isLoading,
+    error: error instanceof Error ? error.message : null,
+    refetch: () => {
+      void refetch();
+    },
   };
 }

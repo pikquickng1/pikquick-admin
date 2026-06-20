@@ -1,32 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { EliteRewardStats } from "../types/elite-reward.types";
+import { useQuery } from "@tanstack/react-query";
 import { eliteRewardApi } from "../api/eliteRewardApi";
+import type { EliteRewardStats } from "../types/elite-reward.types";
 
 export function useEliteRewardStats() {
-  const [stats, setStats] = useState<EliteRewardStats>({
-    awaitingReview: 0,
-    approvedMTD: 0,
-    totalElitePayouts: 0,
+  const query = useQuery({
+    queryKey: ["elite-reward-stats"],
+    queryFn: () => eliteRewardApi.getEliteRewardStats(),
   });
-  const [loading, setLoading] = useState(true);
 
-  const fetchStats = async () => {
-    try {
-      setLoading(true);
-      const data = await eliteRewardApi.getEliteRewardStats();
-      setStats(data);
-    } catch (error) {
-      console.error("Failed to fetch elite reward stats:", error);
-    } finally {
-      setLoading(false);
-    }
+  return {
+    stats: query.data ?? { awaitingReview: 0, approvedMTD: 0, totalElitePayouts: 0 },
+    loading: query.isLoading,
+    error: query.error instanceof Error ? query.error.message : null,
+    refetch: () => {
+      void query.refetch();
+    },
   };
-
-  useEffect(() => {
-    fetchStats();
-  }, []);
-
-  return { stats, loading, refetch: fetchStats };
 }

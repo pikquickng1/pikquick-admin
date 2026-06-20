@@ -1,31 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { ReferralData } from "../types/referral.types";
+import { useQuery } from "@tanstack/react-query";
 import { referralApi } from "../api/referralApi";
+import { queryKeys } from "@/lib/query/keys";
 
 export function useReferralData() {
-  const [data, setData] = useState<ReferralData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const query = useQuery({
+    queryKey: queryKeys.referral.overview(),
+    queryFn: () => referralApi.getReferralData(),
+  });
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const referralData = await referralApi.getReferralData();
-      setData(referralData);
-    } catch (err) {
-      console.error("Failed to fetch referral data:", err);
-      setError("Failed to load referral data");
-    } finally {
-      setLoading(false);
-    }
+  return {
+    data: query.data ?? null,
+    loading: query.isLoading,
+    error: query.error instanceof Error ? query.error.message : null,
+    refetch: () => {
+      void query.refetch();
+    },
   };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  return { data, loading, error, refetch: fetchData };
 }

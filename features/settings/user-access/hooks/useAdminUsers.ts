@@ -1,47 +1,37 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { AdminUser } from "../types/user-access.types";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query/keys";
 import { userAccessApi } from "../api/userAccessApi";
+import type { AdminUser } from "../types/user-access.types";
+
+const EMPTY_USERS: AdminUser[] = [];
 
 export function useAdminUsers() {
-  const [users, setUsers] = useState<AdminUser[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: queryKeys.settings.adminUsers(),
+    queryFn: () => userAccessApi.getAdminUsers(),
+  });
 
-  const fetchUsers = async () => {
-    try {
-      setLoading(true);
-      const data = await userAccessApi.getAdminUsers();
-      setUsers(data);
-      setError(null);
-    } catch (err) {
-      setError("Failed to load admin users");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const deleteUser = async (id: string) => {
-    try {
-      await userAccessApi.deleteAdminUser(id);
-      setUsers(users.filter((user) => user.id !== id));
-    } catch (err) {
-      console.error("Failed to delete user:", err);
-      throw err;
-    }
-  };
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => userAccessApi.deleteAdminUser(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.settings.adminUsers() });
+    },
+  });
 
   return {
-    users,
-    loading,
-    error,
-    deleteUser,
-    refetch: fetchUsers,
+    users: data ?? EMPTY_USERS,
+    loading: isLoading,
+    error: error instanceof Error ? error.message : null,
+    deleteUser: (id: string) => {
+      deleteMutation.mutate(id);
+    },
+    isDeleting: deleteMutation.isPending,
+    refetch: () => {
+      void refetch();
+    },
   };
 }

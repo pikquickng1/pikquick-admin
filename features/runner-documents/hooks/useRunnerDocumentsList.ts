@@ -1,51 +1,56 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { runnerDocumentsService } from "@/lib/services";
-import type { RunnerDocument, RunnerDocumentFilterParams } from "@/lib/types";
+import { USE_MOCKS } from "@/lib/config/feature-flags";
+import { queryKeys } from "@/lib/query/keys";
+import { DEFAULT_PAGE_SIZE } from "@/lib/config/pagination";
+import { ALL_FILTER, DocumentVerificationStatus } from "@/lib/types/enums";
+import { statusToApi } from "@/lib/utils/status";
+import type { RunnerDocumentFilters } from "../types/runner-document.types";
+import { MOCK_RUNNER_DOCUMENTS } from "../types/runner-documents.mock";
 
-export function useRunnerDocumentsList(
-  filters: RunnerDocumentFilterParams = {},
-  page = 1,
-  pageSize = 10,
-) {
-  const [documents, setDocuments] = useState<RunnerDocument[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [total, setTotal] = useState(0);
-  const [error, setError] = useState<Error | null>(null);
+const LIMIT = DEFAULT_PAGE_SIZE;
+const MOCK_DELAY_MS = 250;
 
-  const { verification_status, document_type_id, search = "" } = filters;
-
-  useEffect(() => {
-    const fetchDocuments = async () => {
-      try {
-        setLoading(true);
-        // Only include defined filter parameters
-        const params: Partial<RunnerDocumentFilterParams>  = {};
-        if (verification_status)
-          params.verification_status = verification_status;
-        if (document_type_id) params.document_type_id = document_type_id;
-        if (search) params.search = search;
-
-        const response = await runnerDocumentsService.list(params);
-
-        if (Array.isArray(response)) {
-          setDocuments(response);
-          setTotal(response.length);
-        } else if (response && "data" in response) {
-          setDocuments((response as { data: RunnerDocument[] }).data);
-          setTotal((response as { total: number }).total);
-        }
-        setError(null);
-      } catch (err) {
-        setError(err as Error);
-        console.error("Failed to fetch runner documents:", err);
-      } finally {
-        setLoading(false);
+export function useRunnerDocumentsList(filters: RunnerDocumentFilters, page: number = 1) {
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: queryKeys.runnerDocuments.list({
+      page,
+      limit: LIMIT,
+      search: filters.search,
+      verification_status: filters.status === ALL_FILTER ? undefined : filters.status,
+      document_type_id: filters.document_type_id,
+    }),
+    queryFn: async () => {
+      if (USE_MOCKS) {
+        await new Promise((resolve) => setTimeout(resolve, MOCK_DELAY_MS));
+        return MOCK_RUNNER_DOCUMENTS;
       }
-    };
+      return runnerDocumentsService.list({
+        page,
+        limit: LIMIT,
+        search: filters.search,
+        verification_status: statusToApi(filters.status) as DocumentVerificationStatus | undefined,
+        document_type_id: filters.document_type_id,
+      });
+    },
+  });
 
-    fetchDocuments();
-  }, [verification_status, document_type_id, search, page, pageSize]);
-  return { documents, loading, total, error };
+  const documents = (data as unknown as { data?: unknown[] })?.data ??
+    (Array.isArray(data) ? data : []) ??
+    [];
+  const total =
+    (data as unknown as { total?: number })?.total ??
+    (Array.isArray(documents) ? documents.length : 0);
+
+  return {
+    documents,
+    loading: isLoading,
+    error: error instanceof Error ? error.message : null,
+    total,
+    refetch: () => {
+      void refetch();
+    },
+  };
 }

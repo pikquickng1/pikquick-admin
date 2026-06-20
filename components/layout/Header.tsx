@@ -13,6 +13,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { cn } from "@/lib/utils";
+import { UNREAD_BADGE_BG_CLASS } from "@/lib/config/feature-flags";
 import { NotificationsPanel } from "@/features/notifications";
 import { useNotifications } from "@/features/notifications/hooks/useNotifications";
 
@@ -73,7 +74,12 @@ export function Header() {
             <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />
           </svg>
           {unreadCount > 0 && (
-            <span className="absolute top-0 right-0 min-w-[18px] h-[18px] bg-[#FF5C5C] text-white text-xs font-medium rounded-full flex items-center justify-center px-1">
+            <span
+              className={cn(
+                "absolute top-0 right-0 min-w-[18px] h-[18px] text-white text-xs font-medium rounded-full flex items-center justify-center px-1",
+                UNREAD_BADGE_BG_CLASS,
+              )}
+            >
               {unreadCount}
             </span>
           )}

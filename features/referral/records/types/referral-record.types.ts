@@ -1,9 +1,9 @@
-export type ReferralStatus = "Active" | "Pending" | "Disqualified";
+import { ALL_FILTER, ReferralStatus, UserType } from "@/lib/types/enums";
 
 export interface ReferralRecord {
   id: string;
   referrer: string;
-  referrerRole: "Runner" | "Requester";
+  referrerRole: UserType;
   referredUser: string;
   signupDate: string;
   firstTask: {
@@ -25,7 +25,7 @@ export interface ReferralRecordFilters {
   search: string;
   dateFrom?: string;
   dateTo?: string;
-  status?: ReferralStatus;
+  status?: ReferralStatus | typeof ALL_FILTER;
 }
 
 export interface ReferralRecordListResponse {

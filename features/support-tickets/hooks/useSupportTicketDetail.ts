@@ -1,36 +1,23 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { supportTicketsService } from "@/lib/services";
+import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query/keys";
+import { supportTicketsService } from "@/lib/services/support-tickets.service";
 import type { SupportTicketDetailResponse } from "@/lib/types";
 
 export function useSupportTicketDetail(ticketId: string | null) {
-  const [ticket, setTicket] = useState<SupportTicketDetailResponse | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: queryKeys.supportTickets.detail(ticketId ?? ""),
+    queryFn: () => supportTicketsService.getTicketById(ticketId!),
+    enabled: !!ticketId,
+  });
 
-  useEffect(() => {
-    if (!ticketId) {
-      setTicket(null);
-      return;
-    }
-
-    const fetchTicket = async () => {
-      try {
-        setLoading(true);
-        const data = await supportTicketsService.getTicketById(ticketId);
-        setTicket(data);
-        setError(null);
-      } catch (err) {
-        setError(err as Error);
-        console.error("Failed to fetch support ticket detail:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTicket();
-  }, [ticketId]);
-
-  return { ticket, loading, error };
+  return {
+    ticket: (data ?? null) as SupportTicketDetailResponse | null,
+    loading: isLoading,
+    error: error instanceof Error ? error.message : null,
+    refetch: () => {
+      void refetch();
+    },
+  };
 }

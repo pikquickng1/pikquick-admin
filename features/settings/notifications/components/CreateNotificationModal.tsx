@@ -1,6 +1,6 @@
 "use client";
 
-import { X, Send, CalendarIcon, Clock } from "lucide-react";
+import { Send, CalendarIcon, Clock } from "lucide-react";
 import { useState } from "react";
 import { format } from "date-fns";
 import {
@@ -10,12 +10,19 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  NOTIFICATION_AUDIENCE_OPTIONS,
+  NOTIFICATION_CHANNEL_OPTIONS,
+} from "@/lib/constants/filters";
+import {
+  notificationAudienceLabel,
+  notificationChannelLabel,
+} from "@/lib/utils/status";
+import { NotificationAudience, NotificationChannel } from "@/lib/types/enums";
 
 interface CreateNotificationModalProps {
   isOpen: boolean;
@@ -28,13 +35,26 @@ interface CreateNotificationModalProps {
   }) => void;
 }
 
+const AUDIENCE_OPTIONS = NOTIFICATION_AUDIENCE_OPTIONS.map((o) => ({
+  value: o.value,
+  label: notificationAudienceLabel(o.value),
+}));
+
+const CHANNEL_OPTIONS = NOTIFICATION_CHANNEL_OPTIONS.map((o) => ({
+  value: o.value,
+  label: notificationChannelLabel(o.value),
+}));
+
+const DEFAULT_AUDIENCE = notificationAudienceLabel(NotificationAudience.ALL);
+const DEFAULT_CHANNEL = notificationChannelLabel(NotificationChannel.PUSH);
+
 export function CreateNotificationModal({
   isOpen,
   onClose,
   onSave,
 }: CreateNotificationModalProps) {
-  const [audience, setAudience] = useState("All Users");
-  const [messageType, setMessageType] = useState("Push Notification");
+  const [audience, setAudience] = useState<string>(DEFAULT_AUDIENCE);
+  const [messageType, setMessageType] = useState<string>(DEFAULT_CHANNEL);
   const [message, setMessage] = useState("");
   const [scheduleDate, setScheduleDate] = useState<Date>();
   const [hours, setHours] = useState("12");
@@ -43,20 +63,19 @@ export function CreateNotificationModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Combine date and time if date is selected
-    let finalDateTime: Date | undefined = undefined;
+
+    let finalDateTime: Date | undefined;
     if (scheduleDate) {
       finalDateTime = new Date(scheduleDate);
-      let hour24 = parseInt(hours);
+      let hour24 = parseInt(hours, 10);
       if (period === "PM" && hour24 !== 12) hour24 += 12;
       if (period === "AM" && hour24 === 12) hour24 = 0;
-      finalDateTime.setHours(hour24, parseInt(minutes));
+      finalDateTime.setHours(hour24, parseInt(minutes, 10));
     }
-    
+
     onSave({ audience, messageType, message, scheduleTime: finalDateTime });
-    setAudience("All Users");
-    setMessageType("Push Notification");
+    setAudience(DEFAULT_AUDIENCE);
+    setMessageType(DEFAULT_CHANNEL);
     setMessage("");
     setScheduleDate(undefined);
     setHours("12");
@@ -71,35 +90,23 @@ export function CreateNotificationModal({
     return `${dateStr} at ${hours}:${minutes} ${period}`;
   };
 
-  const hourOptions = Array.from({ length: 12 }, (_, i) => {
-    const hour = i + 1;
-    return hour.toString().padStart(2, "0");
-  });
-
-  const minuteOptions = Array.from({ length: 60 }, (_, i) => {
-    return i.toString().padStart(2, "0");
-  });
+  const hourOptions = Array.from({ length: 12 }, (_, i) =>
+    (i + 1).toString().padStart(2, "0"),
+  );
+  const minuteOptions = Array.from({ length: 60 }, (_, i) =>
+    i.toString().padStart(2, "0"),
+  );
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <div className="flex items-start justify-between">
-            <div>
-              <DialogTitle className="text-xl font-semibold text-text-primary">
-                Create Notification
-              </DialogTitle>
-              <p className="text-sm text-text-secondary mt-1">
-                Send a notification to users on the platform
-              </p>
-            </div>
-            <button
-              onClick={onClose}
-              className="text-text-secondary hover:text-text-primary"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+          <DialogTitle className="text-xl font-semibold text-text-primary">
+            Create Notification
+          </DialogTitle>
+          <p className="text-sm text-text-secondary mt-1">
+            Send a notification to users on the platform
+          </p>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-6">
@@ -107,43 +114,24 @@ export function CreateNotificationModal({
             <Label htmlFor="audience" className="text-sm font-medium text-text-primary mb-2 block">
               Audience
             </Label>
-            <select
+            <Select
               id="audience"
               value={audience}
+              options={AUDIENCE_OPTIONS}
               onChange={(e) => setAudience(e.target.value)}
-              className="w-full px-3 py-2.5 bg-neutral-50 border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-text-primary appearance-none"
-              style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'right 12px center',
-              }}
-            >
-              <option value="All Users">All Users</option>
-              <option value="Runners">Runners</option>
-              <option value="Requesters">Requesters</option>
-            </select>
+            />
           </div>
 
           <div>
             <Label htmlFor="messageType" className="text-sm font-medium text-text-primary mb-2 block">
-              Message Type
+              Channel
             </Label>
-            <select
+            <Select
               id="messageType"
               value={messageType}
+              options={CHANNEL_OPTIONS}
               onChange={(e) => setMessageType(e.target.value)}
-              className="w-full px-3 py-2.5 bg-neutral-50 border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-text-primary appearance-none"
-              style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'right 12px center',
-              }}
-            >
-              <option value="Push Notification">Push Notification</option>
-              <option value="Email">Email</option>
-              <option value="SMS">SMS</option>
-              <option value="In-App">In-App</option>
-            </select>
+            />
           </div>
 
           <div>
@@ -206,43 +194,31 @@ export function CreateNotificationModal({
                     <div className="flex gap-2 items-center">
                       <div className="flex-1">
                         <Label className="text-xs text-text-secondary mb-1 block">Hour</Label>
-                        <select
+                        <Select
                           value={hours}
+                          options={hourOptions.map((h) => ({ value: h, label: h }))}
                           onChange={(e) => setHours(e.target.value)}
-                          className="w-full px-2 py-1.5 border border-neutral-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                          {hourOptions.map((hour) => (
-                            <option key={hour} value={hour}>
-                              {hour}
-                            </option>
-                          ))}
-                        </select>
+                        />
                       </div>
                       <div className="text-lg font-semibold text-text-secondary mt-5">:</div>
                       <div className="flex-1">
                         <Label className="text-xs text-text-secondary mb-1 block">Minute</Label>
-                        <select
+                        <Select
                           value={minutes}
+                          options={minuteOptions.map((m) => ({ value: m, label: m }))}
                           onChange={(e) => setMinutes(e.target.value)}
-                          className="w-full px-2 py-1.5 border border-neutral-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                          {minuteOptions.map((minute) => (
-                            <option key={minute} value={minute}>
-                              {minute}
-                            </option>
-                          ))}
-                        </select>
+                        />
                       </div>
                       <div className="flex-1">
                         <Label className="text-xs text-text-secondary mb-1 block">Period</Label>
-                        <select
+                        <Select
                           value={period}
+                          options={[
+                            { value: "AM", label: "AM" },
+                            { value: "PM", label: "PM" },
+                          ]}
                           onChange={(e) => setPeriod(e.target.value as "AM" | "PM")}
-                          className="w-full px-2 py-1.5 border border-neutral-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                          <option value="AM">AM</option>
-                          <option value="PM">PM</option>
-                        </select>
+                        />
                       </div>
                     </div>
                   </div>
@@ -257,20 +233,13 @@ export function CreateNotificationModal({
           </div>
 
           <div className="flex items-center justify-end gap-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-sm text-text-secondary hover:text-text-primary"
-            >
+            <Button type="button" variant="ghost" onClick={onClose}>
               Cancel
-            </button>
-            <button
-              type="submit"
-              className="flex items-center gap-2 px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded"
-            >
+            </Button>
+            <Button type="submit">
               <Send className="w-4 h-4" />
               Send Notification
-            </button>
+            </Button>
           </div>
         </form>
       </DialogContent>

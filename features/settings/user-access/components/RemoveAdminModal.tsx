@@ -6,7 +6,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { AdminUser } from "../types/user-access.types";
+import { Button } from "@/components/ui/button";
+import type { AdminUser } from "../types/user-access.types";
 
 interface RemoveAdminModalProps {
   isOpen: boolean;
@@ -23,7 +24,6 @@ export function RemoveAdminModal({
 }: RemoveAdminModalProps) {
   const handleConfirm = () => {
     onConfirm();
-    onClose();
   };
 
   if (!admin) return null;
@@ -44,18 +44,12 @@ export function RemoveAdminModal({
         </div>
 
         <div className="flex items-center justify-end gap-3 mt-6">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-sm text-text-secondary hover:text-text-primary"
-          >
+          <Button variant="ghost" onClick={onClose}>
             Cancel
-          </button>
-          <button
-            onClick={handleConfirm}
-            className="px-4 py-2 text-sm text-white bg-red-600 hover:bg-red-700 rounded"
-          >
+          </Button>
+          <Button variant="destructive" onClick={handleConfirm}>
             Remove Admin
-          </button>
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
