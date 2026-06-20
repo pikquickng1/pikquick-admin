@@ -61,11 +61,12 @@ function createClient(): AxiosInstance {
 
   client.interceptors.response.use(
     (response) => {
-      // Backend wraps success responses as { success: true, data: <payload>, timestamp }
-      const body = response.data;
-      if (body && body.success === true && "data" in body) {
-        response.data = body.data;
-      }
+      // Backend wraps success responses as { success: true, data: <payload>, timestamp }.
+      // Some controllers double-wrap (also returning { success: true, data: ... } at the
+      // next layer). Recursively unwrap until the payload is no longer envelope-shaped
+      // so callers always receive the real payload regardless of how many wrappers the
+      // controller added.
+      response.data = unwrapEnvelope(response.data);
       return response;
     },
     async (error: AxiosError) => {
@@ -93,3 +94,33 @@ function createClient(): AxiosInstance {
 }
 
 export const apiClient = createClient();
+
+/**
+ * Recursively strips `{ success: true, data: ... }` envelopes.
+ *
+ * The backend has historically wrapped controller responses in a success
+ * envelope (`{ success: true, data: <payload>, timestamp }`). A handful
+ * of controllers double-wrap (their body is itself `{ success, data, … }`).
+ * This helper unwraps as long as the value looks like an envelope, so all
+ * services receive the same shape.
+ *
+ * Only unwraps when `success === true` to avoid stripping error envelopes
+ * (those use `statusCode` / `message`, not `success`).
+ */
+function unwrapEnvelope(value: unknown): unknown {
+  const MAX_DEPTH = 5;
+  let current = value;
+  for (let i = 0; i < MAX_DEPTH; i++) {
+    if (
+      current !== null &&
+      typeof current === "object" &&
+      (current as { success?: unknown }).success === true &&
+      "data" in (current as Record<string, unknown>)
+    ) {
+      current = (current as { data: unknown }).data;
+      continue;
+    }
+    break;
+  }
+  return current;
+}

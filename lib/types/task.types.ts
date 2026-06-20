@@ -3,6 +3,7 @@
  */
 
 import type { PaginatedResponse } from "./common.types";
+import type { PaymentType } from "./enums";
 
 export interface AddressDto {
   address: string;
@@ -12,8 +13,6 @@ export interface AddressDto {
   latitude?: number;
   longitude?: number;
 }
-
-export type PaymentType = "card" | "wallet";
 
 export interface CreateTaskDto {
   runner_id?: string | null;
