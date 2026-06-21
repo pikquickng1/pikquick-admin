@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { DataTable } from "@/components/ui/data-table";
 import { Pagination } from "@/components/ui/pagination";
 import { LoadingState } from "@/components/ui/loading-state";
+import { ErrorState } from "@/components/ui/error-state";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { PageHeader } from "@/components/ui/page-header";
 import { SupportTicketListFilters } from "./SupportTicketListFilters";
@@ -22,7 +23,7 @@ export function SupportTicketsList() {
   const [pageSize] = useState<number>(DEFAULT_PAGE_SIZE);
   const [filters, setFilters] = useState(DEFAULT_SUPPORT_TICKET_FILTERS);
 
-  const { tickets, loading, total, totalPages } = useSupportTicketsList(
+  const { tickets, loading, error, total, totalPages, refetch } = useSupportTicketsList(
     filters,
     currentPage,
     pageSize,
@@ -105,6 +106,7 @@ export function SupportTicketsList() {
   ];
 
   if (loading) return <LoadingState label="Loading support tickets..." />;
+  if (error) return <ErrorState message={error} onRetry={refetch} />;
 
   return (
     <div className="space-y-6">

@@ -32,6 +32,7 @@ export interface AuthState {
   user: AuthUser | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
+  isInitialized: boolean;
 }
 
 interface AuthContextValue extends AuthState {
@@ -47,6 +48,7 @@ const initialState: AuthState = {
   user: null,
   isAuthenticated: false,
   isAdmin: false,
+  isInitialized: false,
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -71,6 +73,7 @@ function loadStoredAuth(): AuthState {
       user,
       isAuthenticated: true,
       isAdmin,
+      isInitialized: false,
     };
   } catch {
     return initialState;
@@ -106,6 +109,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>(() => loadStoredAuth());
 
   useEffect(() => {
+    setState((prev) => ({ ...prev, isInitialized: true }));
+  }, []);
+
+  useEffect(() => {
     if (state.accessToken) {
       setTokenGetter(() => state.accessToken);
     }
@@ -114,13 +121,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(
     (accessToken: string, refreshToken: string, user: AuthUser) => {
       const isAdmin = user.role === "admin";
-      setState({
+      setState((prev) => ({
         accessToken,
         refreshToken,
         user,
         isAuthenticated: true,
         isAdmin,
-      });
+        isInitialized: prev.isInitialized,
+      }));
       persistAuth(accessToken, refreshToken, user);
       setTokenGetter(() => accessToken);
     },

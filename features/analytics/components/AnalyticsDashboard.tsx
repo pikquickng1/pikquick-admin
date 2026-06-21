@@ -21,6 +21,7 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { LoadingState } from "@/components/ui/loading-state";
+import { ErrorState } from "@/components/ui/error-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { format } from "date-fns";
 import type { DateRange } from "react-day-picker";
@@ -61,12 +62,13 @@ const STAT_COLOR_CLASS: Record<string, { bg: string; text: string }> = {
 };
 
 export function AnalyticsDashboard() {
-  const { data, loading } = useAnalyticsData();
+  const { data, loading, error, refetch } = useAnalyticsData();
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showCompareCitiesModal, setShowCompareCitiesModal] = useState(false);
 
   if (loading) return <LoadingState label="Loading analytics..." />;
+  if (error) return <ErrorState message={error} onRetry={refetch} />;
   if (!data) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">

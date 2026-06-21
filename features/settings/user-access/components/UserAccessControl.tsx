@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { LoadingState } from "@/components/ui/loading-state";
+import { ErrorState } from "@/components/ui/error-state";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { useAdminUsers } from "../hooks/useAdminUsers";
 import { AddAdminModal } from "./AddAdminModal";
@@ -32,7 +33,7 @@ const ROLE_LABEL_TO_ENUM: Record<string, AdminRole> = {
 };
 
 export function UserAccessControl() {
-  const { users, loading, deleteUser } = useAdminUsers();
+  const { users, loading, error, deleteUser, refetch } = useAdminUsers();
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -86,6 +87,7 @@ export function UserAccessControl() {
   };
 
   if (loading) return <LoadingState label="Loading admins..." />;
+  if (error) return <ErrorState message={error} onRetry={refetch} />;
 
   const initialsOf = (name: string) =>
     name.split(" ").map((n) => n[0] ?? "").join("");

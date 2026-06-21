@@ -17,16 +17,17 @@ interface RequireAuthProps {
 export function RequireAuth({ children }: RequireAuthProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const { isAuthenticated, isAdmin } = useAuth();
+  const { isAuthenticated, isAdmin, isInitialized } = useAuth();
 
   useEffect(() => {
+    if (!isInitialized) return;
     if (!isAuthenticated || !isAdmin) {
       const redirect = `${LOGIN_PATH}?redirect=${encodeURIComponent(pathname ?? "/dashboard")}`;
       router.replace(redirect);
     }
-  }, [isAuthenticated, isAdmin, router, pathname]);
+  }, [isAuthenticated, isAdmin, isInitialized, router, pathname]);
 
-  if (!isAuthenticated || !isAdmin) {
+  if (!isInitialized || !isAuthenticated || !isAdmin) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-white">
         <div className="h-10 w-10 animate-spin rounded-full border-2 border-primary-500 border-t-transparent" />

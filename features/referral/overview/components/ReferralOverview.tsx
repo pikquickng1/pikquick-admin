@@ -20,11 +20,12 @@ import { ReferralTierKey } from "@/lib/types/enums";
 import { referralTierLabel } from "@/lib/utils/status";
 import { statusBadgeClass, statusBadgeClasses } from "@/lib/utils/status";
 import { useReferralData } from "../hooks/useReferralData";
+import { ErrorState } from "@/components/ui/error-state";
 
 const TOTAL_PAYOUTS_DISPLAY_DIVISOR = 1_000_000;
 
 export function ReferralOverview() {
-  const { data, loading } = useReferralData();
+  const { data, loading, error, refetch } = useReferralData();
 
   if (loading) {
     return (
@@ -34,6 +35,7 @@ export function ReferralOverview() {
     );
   }
 
+  if (error) return <ErrorState message={error} onRetry={refetch} />;
   if (!data) return null;
 
   const pieData = [
