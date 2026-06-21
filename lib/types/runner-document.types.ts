@@ -25,8 +25,6 @@ export interface RunnerDocumentFilterParams {
   document_type_id?: string;
   verification_status?: string;
   search?: string;
-  page?: number;
-  limit?: number;
 }
 
 export interface RunnerDocumentsListResponse {
