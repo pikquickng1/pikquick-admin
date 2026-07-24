@@ -10,7 +10,12 @@ type RawPlatformSettings = Partial<PlatformSettingsData> &
 
 export const platformSettingsApi = {
   async getSettings(): Promise<PlatformSettingsData> {
-    const data = (await adminService.getPlatformSettings()) as RawPlatformSettings | undefined;
+    const raw = (await adminService.getPlatformSettings()) as
+      | (RawPlatformSettings & { data?: RawPlatformSettings })
+      | undefined;
+    // Tolerate the legacy double-wrapped `{ data: { ... } }` shape as well as
+    // the corrected flat shape.
+    const data = raw?.data ?? raw;
     return {
       accessFee: Number(data?.accessFee ?? data?.access_fee ?? 0),
       platformCommission: Number(
