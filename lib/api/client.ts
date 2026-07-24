@@ -44,6 +44,27 @@ async function tryRefresh(): Promise<string | null> {
   }
 }
 
+/**
+ * Proactively run a token refresh (used by the client-side expiry watcher).
+ * Returns the new access token, or null if refresh failed / is unavailable.
+ */
+export async function runTokenRefresh(): Promise<string | null> {
+  return tryRefresh();
+}
+
+/** True for the auth endpoints that must NOT trigger the 401 refresh/retry loop. */
+function isAuthEndpoint(url?: string): boolean {
+  if (!url) return false;
+  return url.includes("/auth/login") || url.includes("/auth/refresh-token");
+}
+
+/** Fire the global "logged out" signal so the app can clear state + redirect. */
+export function emitUnauthorized(): void {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("auth:unauthorized"));
+  }
+}
+
 function createClient(): AxiosInstance {
   const client = axios.create({
     baseURL: apiConfig.baseURL,
@@ -73,8 +94,19 @@ function createClient(): AxiosInstance {
       const originalRequest = error.config as InternalAxiosRequestConfig & {
         _retried?: boolean;
       };
+      const status = error.response?.status;
+      const authEndpoint = isAuthEndpoint(originalRequest?.url);
 
-      if (error.response?.status === 401 && originalRequest && !originalRequest._retried) {
+      // Try a single refresh + retry on 401 — but NEVER for the auth endpoints
+      // themselves. Refreshing on a failed /auth/refresh-token call would
+      // re-enter this interceptor and await its own in-flight promise (deadlock),
+      // which is why expired sessions previously hung instead of logging out.
+      if (
+        status === 401 &&
+        originalRequest &&
+        !originalRequest._retried &&
+        !authEndpoint
+      ) {
         originalRequest._retried = true;
         const newToken = await tryRefresh();
         if (newToken) {
@@ -83,8 +115,14 @@ function createClient(): AxiosInstance {
         }
       }
 
-      if (error.response?.status === 401 && typeof window !== "undefined") {
-        window.dispatchEvent(new CustomEvent("auth:unauthorized"));
+      // A 401 that we could not recover from means the session is dead. Signal a
+      // logout — except for a failed login attempt (the user is already on the
+      // login page and should just see the error).
+      if (
+        status === 401 &&
+        !originalRequest?.url?.includes("/auth/login")
+      ) {
+        emitUnauthorized();
       }
       return Promise.reject(error);
     }

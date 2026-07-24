@@ -33,7 +33,8 @@ const ROLE_LABEL_TO_ENUM: Record<string, AdminRole> = {
 };
 
 export function UserAccessControl() {
-  const { users, loading, error, deleteUser, refetch } = useAdminUsers();
+  const { users, loading, error, deleteUser, createUser, updateUser, refetch } =
+    useAdminUsers();
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -73,17 +74,21 @@ export function UserAccessControl() {
     }
   };
 
-  const handleUpdateAdmin = (data: { role: string; status: string }) => {
-    console.log("Update admin:", selectedAdmin?.id, data);
+  const handleUpdateAdmin = async (data: { role: string; status: string }) => {
+    if (!selectedAdmin) return;
+    await updateUser(selectedAdmin.id, data);
+    setShowEditModal(false);
+    setSelectedAdmin(null);
   };
 
-  const handleAddAdmin = (data: {
+  const handleAddAdmin = async (data: {
     name: string;
     email: string;
     password: string;
     role: string;
   }) => {
-    console.log("Add new admin:", data);
+    await createUser(data);
+    setShowAddModal(false);
   };
 
   if (loading) return <LoadingState label="Loading admins..." />;

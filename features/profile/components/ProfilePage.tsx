@@ -9,23 +9,37 @@ import { EditProfileModal } from "./EditProfileModal";
 import { ChangePasswordModal } from "./ChangePasswordModal";
 
 export function ProfilePage() {
-  const { profile, activityLogs, loading } = useProfile();
+  const { profile, activityLogs, loading, refetch } = useProfile();
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
 
   const handleLogoutAllDevices = async () => {
     await profileApi.logoutAllDevices();
-    // TODO: Implement actual logout logic
   };
 
-  const handleEditProfile = (data: { fullName: string; email: string; phoneNumber: string }) => {
-    console.log("Updating profile:", data);
-    // TODO: Implement API call to update profile
+  const handleEditProfile = async (data: {
+    fullName: string;
+    email: string;
+    phoneNumber: string;
+  }) => {
+    await profileApi.updateProfile({
+      fullName: data.fullName,
+      phoneNumber: data.phoneNumber,
+    });
+    setIsEditProfileOpen(false);
+    await refetch();
   };
 
-  const handleChangePassword = (data: { currentPassword: string; newPassword: string; confirmPassword: string }) => {
-    console.log("Changing password:", data);
-    // TODO: Implement API call to change password
+  const handleChangePassword = async (data: {
+    currentPassword: string;
+    newPassword: string;
+    confirmPassword: string;
+  }) => {
+    await profileApi.changePassword({
+      currentPassword: data.currentPassword,
+      newPassword: data.newPassword,
+    });
+    setIsChangePasswordOpen(false);
   };
 
   if (loading || !profile) {

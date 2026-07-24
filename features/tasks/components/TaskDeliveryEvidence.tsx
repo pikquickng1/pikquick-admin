@@ -15,11 +15,16 @@ interface TaskDeliveryEvidenceProps {
 }
 
 export function TaskDeliveryEvidence({ files }: TaskDeliveryEvidenceProps) {
-  console.log("TaskDeliveryEvidence files:", files);
-  
   const handleDownload = (file: DeliveryFile) => {
-    // TODO: Implement actual download logic
-    console.log("Downloading:", file.url);
+    if (!file.url) return;
+    const link = document.createElement("a");
+    link.href = file.url;
+    link.download = file.label || "delivery-evidence";
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
   };
 
   return (

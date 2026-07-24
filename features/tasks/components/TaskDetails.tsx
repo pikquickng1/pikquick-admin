@@ -33,7 +33,7 @@ interface TaskDetailsProps {
 }
 
 const CANCEL_REASON_BY_ADMIN = "Cancelled by admin";
-const MOCK_REFUND_DELAY_MS = 1000;
+const REFUND_REASON_BY_ADMIN = "Refund issued by admin";
 
 export function TaskDetails({ taskId, onBack }: TaskDetailsProps) {
   const { task, loading, error, refetch } = useTask(taskId);
@@ -45,8 +45,9 @@ export function TaskDetails({ taskId, onBack }: TaskDetailsProps) {
   const handleIssueRefund = async (amount: number) => {
     setIsRefundLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, MOCK_REFUND_DELAY_MS));
+      await tasksService.refund(taskId, amount, REFUND_REASON_BY_ADMIN);
       setIsRefundModalOpen(false);
+      await refetch();
     } finally {
       setIsRefundLoading(false);
     }

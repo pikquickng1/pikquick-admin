@@ -19,6 +19,30 @@ const BACKDROP_OPACITY = "bg-black/30" as const;
 export function WalletHistorySlideOver({ open, onClose, walletId }: WalletHistorySlideOverProps) {
   const { history, loading } = useTransactionHistory(walletId);
 
+  const handleDownload = () => {
+    if (!history?.transactions?.length) return;
+    const header = ["Date", "Type", "Description", "Category", "Amount", "Balance"];
+    const escape = (v: unknown) => {
+      const s = v == null ? "" : String(v);
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const rows = history.transactions.map((t) =>
+      [t.date, t.type, t.description, t.category, t.amount, t.balance]
+        .map(escape)
+        .join(","),
+    );
+    const csv = [header.join(","), ...rows].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `wallet-history-${history.userName || walletId || "user"}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  };
+
   if (!open) return null;
 
   return (
@@ -43,9 +67,7 @@ export function WalletHistorySlideOver({ open, onClose, walletId }: WalletHistor
             </div>
             <div className="flex items-center gap-2">
               <button
-                onClick={() => {
-                  /* TODO: wire download endpoint once available */
-                }}
+                onClick={handleDownload}
                 className="p-2 text-text-secondary hover:text-text-primary transition-colors"
                 aria-label="Download history"
               >

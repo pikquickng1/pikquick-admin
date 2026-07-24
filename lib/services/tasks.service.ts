@@ -67,4 +67,8 @@ export const tasksService = {
   getStats(): Promise<AdminTaskStats> {
     return apiClient.get("/tasks/admin/stats").then((r) => r.data);
   },
+
+  refund(id: string, amount: number, reason?: string): Promise<{ message: string; task_id: string; amount: number }> {
+    return apiClient.post(`/tasks/${id}/refund`, { amount, reason }).then((r) => r.data);
+  },
 };

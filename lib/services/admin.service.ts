@@ -4,11 +4,26 @@ export const adminService = {
   getAdminUsers() {
     return apiClient.get("/admin/admins").then((r) => r.data);
   },
+  createAdminUser(data: Record<string, unknown>) {
+    return apiClient.post("/admin/admins", data).then((r) => r.data);
+  },
+  updateAdminUser(id: string, data: Record<string, unknown>) {
+    return apiClient.put(`/admin/admins/${id}`, data).then((r) => r.data);
+  },
   deleteAdminUser(id: string) {
     return apiClient.delete(`/admin/admins/${id}`).then((r) => r.data);
   },
   getRoles() {
     return apiClient.get("/admin/roles").then((r) => r.data);
+  },
+  createRole(data: Record<string, unknown>) {
+    return apiClient.post("/admin/roles", data).then((r) => r.data);
+  },
+  updateRole(id: string, data: Record<string, unknown>) {
+    return apiClient.put(`/admin/roles/${id}`, data).then((r) => r.data);
+  },
+  deleteRole(id: string) {
+    return apiClient.delete(`/admin/roles/${id}`).then((r) => r.data);
   },
   getAdminProfile() {
     return apiClient.get("/admin/profile").then((r) => r.data);

@@ -150,6 +150,7 @@ export const queryKeys = {
   analytics: {
     all: ["admin", "analytics"] as const,
     data: () => [...queryKeys.analytics.all, "data"] as const,
+    cityMetrics: () => [...queryKeys.analytics.all, "city-metrics"] as const,
   },
   notifications: {
     all: ["admin", "notifications"] as const,

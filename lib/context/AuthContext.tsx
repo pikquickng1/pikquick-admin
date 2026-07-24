@@ -10,6 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import { setTokenGetter } from "@/lib/api/client";
+import { queryClient } from "@/lib/query/query-client";
 import type { UserRole } from "@/lib/types";
 
 const AUTH_STORAGE_KEY = "pikquick_admin_auth";
@@ -157,9 +158,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(() => {
-    setState(initialState);
+    setState({ ...initialState, isInitialized: true });
     clearStoredAuth();
     setTokenGetter(() => null);
+    // Drop all cached server state so a stale/previous session's data can never
+    // leak into the next login.
+    queryClient.clear();
   }, []);
 
   const setUser = useCallback((user: AuthUser | null) => {

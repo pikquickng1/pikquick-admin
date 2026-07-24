@@ -7,11 +7,12 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/ui/pagination";
 import { formatDateTime } from "@/lib/utils/date";
-import { useNotificationsLog } from "../hooks/useNotifications";
+import { useNotificationsLog, useCreateNotification } from "../hooks/useNotifications";
 import { CreateNotificationModal } from "./CreateNotificationModal";
 import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from "@/lib/config/pagination";
 import type {
   AdminNotificationLogItem,
+  CreateNotificationPayload,
   NotificationAudienceLabel,
 } from "../types/notifications.types";
 
@@ -24,14 +25,16 @@ export function NotificationsAlerts() {
     page,
     limit,
   });
+  const { mutateAsync: createNotification } = useCreateNotification();
 
-  const handleCreateNotification = (data: {
+  const handleCreateNotification = async (data: {
     audience: string;
     messageType: string;
     message: string;
     scheduleTime?: Date;
   }) => {
-    console.log("Creating notification:", data);
+    await createNotification(data as unknown as CreateNotificationPayload);
+    setIsCreateModalOpen(false);
   };
 
   if (loading) return <LoadingState label="Loading notifications..." />;

@@ -15,11 +15,30 @@ export function useAdminUsers() {
     queryFn: () => userAccessApi.getAdminUsers(),
   });
 
+  const invalidate = () =>
+    queryClient.invalidateQueries({ queryKey: queryKeys.settings.adminUsers() });
+
   const deleteMutation = useMutation({
     mutationFn: (id: string) => userAccessApi.deleteAdminUser(id),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.settings.adminUsers() });
-    },
+    onSuccess: () => void invalidate(),
+  });
+
+  const createMutation = useMutation({
+    mutationFn: (data: {
+      name: string;
+      email: string;
+      password: string;
+      role: string;
+    }) => userAccessApi.createAdminUser(data),
+    onSuccess: () => void invalidate(),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: (vars: {
+      id: string;
+      data: { role?: string; status?: string };
+    }) => userAccessApi.updateAdminUser(vars.id, vars.data),
+    onSuccess: () => void invalidate(),
   });
 
   return {
@@ -29,6 +48,14 @@ export function useAdminUsers() {
     deleteUser: (id: string) => {
       deleteMutation.mutate(id);
     },
+    createUser: (data: {
+      name: string;
+      email: string;
+      password: string;
+      role: string;
+    }) => createMutation.mutateAsync(data),
+    updateUser: (id: string, data: { role?: string; status?: string }) =>
+      updateMutation.mutateAsync({ id, data }),
     isDeleting: deleteMutation.isPending,
     refetch: () => {
       void refetch();

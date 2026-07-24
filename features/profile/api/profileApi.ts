@@ -31,4 +31,24 @@ export const profileApi = {
       throw error;
     }
   },
+
+  updateProfile: async (data: {
+    fullName: string;
+    phoneNumber: string;
+  }): Promise<void> => {
+    await adminService.updateAdminProfile({
+      fullName: data.fullName,
+      phoneNumber: data.phoneNumber,
+    });
+  },
+
+  changePassword: async (data: {
+    currentPassword: string;
+    newPassword: string;
+  }): Promise<void> => {
+    await adminService.changePassword({
+      currentPassword: data.currentPassword,
+      newPassword: data.newPassword,
+    });
+  },
 };

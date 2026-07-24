@@ -12,8 +12,6 @@ interface TaskChatLogProps {
 }
 
 export function TaskChatLog({ messages }: TaskChatLogProps) {
-  console.log("TaskChatLog messages:", messages);
-  
   return (
     <div className="bg-white rounded-2xl border border-light p-6">
       <h3 className="text-lg font-semibold text-text-primary mb-6">Chat Log</h3>

@@ -22,8 +22,15 @@ export function DocumentPreviewModal({
   if (!open) return null;
 
   const handleDownload = () => {
-    console.log("Downloading document:", documentType);
-    // TODO: Implement actual download
+    if (!documentUrl) return;
+    const link = document.createElement("a");
+    link.href = documentUrl;
+    link.download = documentType || "document";
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
   };
 
   return (

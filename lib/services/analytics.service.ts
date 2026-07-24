@@ -13,6 +13,13 @@ export interface AdminRevenueReport {
   caveat?: string;
 }
 
+export interface AdminCityMetric {
+  city: string;
+  tasks: number;
+  revenue: number;
+  rating: number;
+}
+
 export const analyticsService = {
   getAnalytics() {
     return apiClient.get("/admin/analytics").then((r) => r.data);
@@ -20,5 +27,9 @@ export const analyticsService = {
 
   getRevenueReport(): Promise<AdminRevenueReport> {
     return apiClient.get("/admin/analytics/revenue-report").then((r) => r.data);
+  },
+
+  getCityMetrics(): Promise<AdminCityMetric[]> {
+    return apiClient.get("/admin/analytics/city-metrics").then((r) => r.data);
   },
 };

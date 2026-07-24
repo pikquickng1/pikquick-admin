@@ -2,6 +2,7 @@
 
 import { Star } from "lucide-react";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -11,6 +12,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { formatNgn } from "@/lib/utils/money";
+import { analyticsService } from "@/lib/services/analytics.service";
+import { queryKeys } from "@/lib/query/keys";
 
 interface CityData {
   name: string;
@@ -25,30 +28,29 @@ interface CompareCitiesModalProps {
   cities: string[];
 }
 
-/**
- * TODO: Compare-cities metrics are hardcoded (Lagos/Abuja/etc. with mock
- * task counts and revenue) because the backend does not yet expose a
- * per-city breakdown endpoint. Replace once `/admin/analytics/cities` is
- * available.
- */
-const CITY_METRICS: Record<string, CityData> = {
-  Lagos: { name: "Lagos", tasks: 1240, revenue: 2_500_000, rating: 4.6 },
-  Abuja: { name: "Abuja", tasks: 920, revenue: 1_800_000, rating: 4.5 },
-  Ibadan: { name: "Ibadan", tasks: 650, revenue: 1_300_000, rating: 4.4 },
-  "Port Harcourt": { name: "Port Harcourt", tasks: 550, revenue: 1_100_000, rating: 4.3 },
-  Kano: { name: "Kano", tasks: 450, revenue: 900_000, rating: 4.2 },
-};
-
 export function CompareCitiesModal({
   isOpen,
   onClose,
   cities,
 }: CompareCitiesModalProps) {
-  const [city1, setCity1] = useState(cities[0] || "Lagos");
-  const [city2, setCity2] = useState(cities[1] || "Abuja");
+  const [city1, setCity1] = useState(cities[0] || "");
+  const [city2, setCity2] = useState(cities[1] || "");
 
-  const city1Data = CITY_METRICS[city1];
-  const city2Data = CITY_METRICS[city2];
+  const { data: cityMetrics } = useQuery({
+    queryKey: queryKeys.analytics.cityMetrics(),
+    queryFn: () => analyticsService.getCityMetrics(),
+    enabled: isOpen,
+  });
+
+  const metricsByCity = new Map(
+    (cityMetrics ?? []).map((m) => [
+      m.city,
+      { name: m.city, tasks: m.tasks, revenue: m.revenue, rating: m.rating },
+    ]),
+  );
+
+  const city1Data = metricsByCity.get(city1);
+  const city2Data = metricsByCity.get(city2);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

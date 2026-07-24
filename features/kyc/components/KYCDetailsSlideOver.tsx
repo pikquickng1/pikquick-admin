@@ -51,6 +51,24 @@ export function KYCDetailsSlideOver({
   const [showResubmissionModal, setShowResubmissionModal] = useState(false);
   const [resubmissionMessage, setResubmissionMessage] = useState("");
 
+  const handleDownloadDocuments = () => {
+    const docs = verification?.documents;
+    if (!docs) return;
+    const urls = [docs.idDocument, docs.proofOfAddress, docs.selfie].filter(
+      (u): u is string => Boolean(u),
+    );
+    urls.forEach((url) => {
+      const link = document.createElement("a");
+      link.href = url;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.download = "";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    });
+  };
+
   const handleApprove = async () => {
     if (!verification) return;
     setActionLoading(true);
@@ -102,9 +120,7 @@ export function KYCDetailsSlideOver({
             </div>
             <div className="flex items-center gap-2">
               <button
-                onClick={() => {
-                  /* TODO: wire to backend download endpoint */
-                }}
+                onClick={handleDownloadDocuments}
                 className="p-2 text-text-secondary hover:text-text-primary transition-colors"
                 aria-label="Download documents"
               >

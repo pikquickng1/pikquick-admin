@@ -30,6 +30,28 @@ export function usePlatformSettings() {
     },
   });
 
+  const invalidateCategories = () =>
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.settings.taskCategories(),
+    });
+
+  const addCategoryMutation = useMutation({
+    mutationFn: (data: { name: string; description: string }) =>
+      platformSettingsApi.addTaskCategory(data as Omit<TaskCategory, "id">),
+    onSuccess: () => void invalidateCategories(),
+  });
+
+  const updateCategoryMutation = useMutation({
+    mutationFn: (vars: { id: string; data: Partial<TaskCategory> }) =>
+      platformSettingsApi.updateTaskCategory(vars.id, vars.data),
+    onSuccess: () => void invalidateCategories(),
+  });
+
+  const deleteCategoryMutation = useMutation({
+    mutationFn: (id: string) => platformSettingsApi.deleteTaskCategory(id),
+    onSuccess: () => void invalidateCategories(),
+  });
+
   return {
     settings: settingsQuery.data ?? DEFAULT_SETTINGS,
     categories: categoriesQuery.data ?? ([] as TaskCategory[]),
@@ -41,6 +63,11 @@ export function usePlatformSettings() {
       updateMutation.mutate(next);
     },
     isUpdating: updateMutation.isPending,
+    addCategory: (data: { name: string; description: string }) =>
+      addCategoryMutation.mutateAsync(data),
+    updateCategory: (id: string, data: Partial<TaskCategory>) =>
+      updateCategoryMutation.mutateAsync({ id, data }),
+    deleteCategory: (id: string) => deleteCategoryMutation.mutateAsync(id),
     refetch: () => {
       void settingsQuery.refetch();
       void categoriesQuery.refetch();

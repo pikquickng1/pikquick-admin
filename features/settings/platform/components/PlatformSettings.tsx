@@ -14,8 +14,16 @@ import { EditCategoryModal } from "./EditCategoryModal";
 import type { PlatformSettingsData, TaskCategory } from "../types/platform-settings.types";
 
 export function PlatformSettings() {
-  const { settings, categories, loading, updateSettings, isUpdating } =
-    usePlatformSettings();
+  const {
+    settings,
+    categories,
+    loading,
+    updateSettings,
+    isUpdating,
+    addCategory,
+    updateCategory,
+    deleteCategory,
+  } = usePlatformSettings();
   const [draft, setDraft] = useState<PlatformSettingsData>(settings);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -25,8 +33,9 @@ export function PlatformSettings() {
     updateSettings(draft);
   };
 
-  const handleAddCategory = (data: { name: string; description: string }) => {
-    console.log("Adding category:", data);
+  const handleAddCategory = async (data: { name: string; description: string }) => {
+    await addCategory(data);
+    setIsAddModalOpen(false);
   };
 
   const handleEditCategory = (category: TaskCategory) => {
@@ -34,12 +43,15 @@ export function PlatformSettings() {
     setIsEditModalOpen(true);
   };
 
-  const handleSaveCategory = (data: { name: string; description: string }) => {
-    console.log("Updating category:", selectedCategory?.id, data);
+  const handleSaveCategory = async (data: { name: string; description: string }) => {
+    if (!selectedCategory) return;
+    await updateCategory(selectedCategory.id, data);
+    setIsEditModalOpen(false);
+    setSelectedCategory(null);
   };
 
-  const handleDeleteCategory = (categoryId: string) => {
-    console.log("Deleting category:", categoryId);
+  const handleDeleteCategory = async (categoryId: string) => {
+    await deleteCategory(categoryId);
   };
 
   if (loading) return <LoadingState label="Loading platform settings..." />;

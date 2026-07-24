@@ -21,13 +21,17 @@ const ROLE_COLOR_CLASS: Record<Role["color"], string> = {
 };
 
 export function ManageRoles() {
-  const { roles, loading } = useRoles();
+  const { roles, loading, createRole, updateRolePermissions } = useRoles();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
 
-  const handleCreateRole = (data: { name: string; permissions: DefaultPermission[] }) => {
-    console.log("Creating role:", data);
+  const handleCreateRole = async (data: {
+    name: string;
+    permissions: DefaultPermission[];
+  }) => {
+    await createRole(data);
+    setIsCreateModalOpen(false);
   };
 
   const handleEditRole = (role: Role) => {
@@ -35,8 +39,11 @@ export function ManageRoles() {
     setIsEditModalOpen(true);
   };
 
-  const handleSavePermissions = (permissions: DefaultPermission[]) => {
-    console.log("Saving permissions for role:", selectedRole?.name, permissions);
+  const handleSavePermissions = async (permissions: DefaultPermission[]) => {
+    if (!selectedRole) return;
+    await updateRolePermissions(selectedRole.id, permissions);
+    setIsEditModalOpen(false);
+    setSelectedRole(null);
   };
 
   if (loading) return <LoadingState label="Loading roles..." />;

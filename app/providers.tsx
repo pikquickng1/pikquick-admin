@@ -3,9 +3,18 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 import { AuthProvider, useOptionalAuth } from "@/lib/context/AuthContext";
-import { setTokenGetter, setRefreshHandler, apiClient } from "@/lib/api/client";
+import {
+  setTokenGetter,
+  setRefreshHandler,
+  runTokenRefresh,
+  emitUnauthorized,
+} from "@/lib/api/client";
 import { queryClient } from "@/lib/query/query-client";
 import { authService } from "@/lib/services";
+import { isTokenExpired } from "@/lib/utils/jwt";
+
+/** How often to proactively verify the access token has not expired. */
+const EXPIRY_CHECK_INTERVAL_MS = 30_000;
 
 function TokenSync() {
   const auth = useOptionalAuth();
@@ -38,16 +47,41 @@ function TokenSync() {
 
   useEffect(() => {
     if (!auth?.isAuthenticated) return;
-    // Verify the stored token is valid on mount using a reliable endpoint.
-    // If the token is expired the server returns 401, the interceptor triggers
-    // refresh, and if that also fails auth:unauthorized fires → logout.
-    // This catches expired tokens even when other pages only hit endpoints that
-    // crash with 500 (which never trigger the 401 refresh path).
-    apiClient.get("/admin/profile").catch(() => {
-      // Non-401 errors (e.g., 500 server crashes) are ignored here.
-      // Auth failures are handled by the response interceptor in client.ts.
-    });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps -- intentionally runs once on mount
+
+    // Proactively watch the access token's `exp` client-side so an expired
+    // session is cleared even when the user is idle or only hits endpoints that
+    // crash with 500 (which never produce the 401 that drives the reactive
+    // logout path). When the access token is expired we attempt a refresh; if
+    // that fails (refresh token also expired/invalid) we force a logout.
+    let cancelled = false;
+
+    const check = async () => {
+      if (cancelled) return;
+      const token = auth?.accessToken;
+      if (!token) return;
+      if (!isTokenExpired(token)) return;
+
+      const newToken = await runTokenRefresh();
+      if (!newToken && !cancelled) {
+        emitUnauthorized();
+      }
+    };
+
+    void check();
+    const intervalId = window.setInterval(() => void check(), EXPIRY_CHECK_INTERVAL_MS);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") void check();
+    };
+    window.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", onVisible);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+      window.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", onVisible);
+    };
+  }, [auth, auth?.isAuthenticated, auth?.accessToken]);
 
   useEffect(() => {
     const handleUnauthorized = () => {

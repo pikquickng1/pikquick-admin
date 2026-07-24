@@ -6,6 +6,28 @@ export const userAccessApi = {
     return (await adminService.getAdminUsers()) as AdminUser[];
   },
 
+  async createAdminUser(data: {
+    name: string;
+    email: string;
+    password: string;
+    role: string;
+  }): Promise<void> {
+    // NOTE: the backend persists admins with role='admin'; the granular admin
+    // sub-role (Super/Finance/…) is not stored server-side yet.
+    await adminService.createAdminUser({
+      name: data.name,
+      email: data.email,
+      password: data.password,
+    });
+  },
+
+  async updateAdminUser(
+    id: string,
+    data: { role?: string; status?: string },
+  ): Promise<void> {
+    await adminService.updateAdminUser(id, { status: data.status });
+  },
+
   async deleteAdminUser(id: string): Promise<void> {
     await adminService.deleteAdminUser(id);
   },

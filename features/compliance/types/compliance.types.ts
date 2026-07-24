@@ -38,9 +38,3 @@ export interface ComplianceListResponse {
   };
 }
 
-/** Mock fallback officers (no backend endpoint yet). */
-export const MOCK_COMPLIANCE_OFFICERS = [
-  { id: "officer1", name: "John Doe" },
-  { id: "officer2", name: "Jane Smith" },
-  { id: "officer3", name: "Mike Johnson" },
-] as const;
