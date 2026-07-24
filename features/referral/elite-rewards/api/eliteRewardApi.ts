@@ -1,5 +1,7 @@
 import { ReferralRewardStatus, UserType } from "@/lib/types/enums";
-import { USE_MOCKS } from "@/lib/config/feature-flags";
+import { referralService } from "@/lib/services";
+import { DEFAULT_PAGE_SIZE } from "@/lib/config/pagination";
+import type { EliteReward as ApiEliteReward } from "@/lib/types";
 import type {
   EliteReward,
   EliteRewardFilters,
@@ -7,91 +9,62 @@ import type {
   EliteRewardStats,
 } from "../types/elite-reward.types";
 
-const MOCK_FETCH_DELAY_MS = 300;
-const MOCK_ACTION_DELAY_MS = 500;
+const ITEMS_PER_PAGE = DEFAULT_PAGE_SIZE;
 
-const MOCK_LIST_LENGTH = 5;
-const MOCK_TOTAL_PAGES = 20;
-const MOCK_TOTAL_ITEMS = 100;
-const MOCK_ITEMS_PER_PAGE = 8;
-const MOCK_REFERRAL_COUNT = 152;
-const MOCK_REWARD_AMOUNT = 25000;
-const MOCK_MONTH_ACHIEVED = "February 2024";
+/** Formats a backend YYYY-MM month into e.g. "February 2024". */
+function formatMonthAchieved(month: string): string {
+  const [year, m] = (month ?? "").split("-");
+  const idx = Number(m) - 1;
+  const names = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+  ];
+  return names[idx] ? `${names[idx]} ${year}` : month;
+}
 
-const MOCK_NAMES = [
-  "Adebayo Samuel",
-  "Chioma Okoro",
-  "Olawale John",
-  "Ibrahim Musa",
-  "Ibrahim Musa",
-] as const;
-const MOCK_ROLES = [
-  UserType.RUNNER,
-  UserType.CLIENT,
-  UserType.RUNNER,
-  UserType.RUNNER,
-  UserType.RUNNER,
-] as const;
-const MOCK_STATUSES = [
-  ReferralRewardStatus.PENDING_VERIFICATION,
-  ReferralRewardStatus.PAID,
-  ReferralRewardStatus.PAID,
-  ReferralRewardStatus.PENDING_VERIFICATION,
-  ReferralRewardStatus.REJECTED,
-] as const;
-
-const buildMockList = (): EliteReward[] =>
-  Array.from({ length: MOCK_LIST_LENGTH }, (_, i) => ({
-    id: String(i + 1),
-    user: MOCK_NAMES[i]!,
-    role: MOCK_ROLES[i]!,
-    referralsCount: MOCK_REFERRAL_COUNT,
-    monthAchieved: MOCK_MONTH_ACHIEVED,
-    rewardAmount: MOCK_REWARD_AMOUNT,
-    status: MOCK_STATUSES[i]!,
-  }));
+function mapReward(r: ApiEliteReward): EliteReward {
+  return {
+    id: r.id,
+    user: r.referrer_name ?? r.referrer_id,
+    role: (r.referrer_role as UserType) ?? UserType.RUNNER,
+    // The reward row does not carry the referrer's referral count.
+    referralsCount: 0,
+    monthAchieved: formatMonthAchieved(r.month),
+    rewardAmount: r.amount_ngn,
+    status:
+      (r.status as ReferralRewardStatus) ?? ReferralRewardStatus.UNDER_REVIEW,
+  };
+}
 
 export const eliteRewardApi = {
   async getEliteRewards(
     _filters: EliteRewardFilters,
     page: number = 1,
   ): Promise<EliteRewardListResponse> {
-    if (USE_MOCKS) {
-      await new Promise((r) => setTimeout(r, MOCK_FETCH_DELAY_MS));
-      return {
-        data: buildMockList(),
-        pagination: {
-          currentPage: page,
-          totalPages: MOCK_TOTAL_PAGES,
-          totalItems: MOCK_TOTAL_ITEMS,
-          itemsPerPage: MOCK_ITEMS_PER_PAGE,
-        },
-      };
-    }
-    throw new Error("Live elite-rewards endpoint not yet wired in the admin UI");
+    const res = await referralService.getEliteReview({
+      page,
+      limit: ITEMS_PER_PAGE,
+    });
+    const total = res.meta?.total ?? 0;
+    return {
+      data: (res.data ?? []).map(mapReward),
+      pagination: {
+        currentPage: res.meta?.page ?? page,
+        totalPages: Math.max(1, Math.ceil(total / ITEMS_PER_PAGE)),
+        totalItems: total,
+        itemsPerPage: res.meta?.limit ?? ITEMS_PER_PAGE,
+      },
+    };
   },
 
   async getEliteRewardStats(): Promise<EliteRewardStats> {
-    if (USE_MOCKS) {
-      await new Promise((r) => setTimeout(r, MOCK_FETCH_DELAY_MS));
-      return { awaitingReview: 8, approvedMTD: 12, totalElitePayouts: 300000 };
-    }
-    throw new Error("Live elite-reward-stats endpoint not yet wired in the admin UI");
-  },
-
-  async approveReward(_id: string): Promise<void> {
-    if (USE_MOCKS) {
-      await new Promise((r) => setTimeout(r, MOCK_ACTION_DELAY_MS));
-      return;
-    }
-    throw new Error("Live approve-reward endpoint not yet wired in the admin UI");
-  },
-
-  async rejectReward(_id: string): Promise<void> {
-    if (USE_MOCKS) {
-      await new Promise((r) => setTimeout(r, MOCK_ACTION_DELAY_MS));
-      return;
-    }
-    throw new Error("Live reject-reward endpoint not yet wired in the admin UI");
+    // Awaiting-review count = size of the elite review queue. Approved-MTD and
+    // total elite payouts are not exposed by a dedicated endpoint yet.
+    const res = await referralService.getEliteReview({ page: 1, limit: 1 });
+    return {
+      awaitingReview: res.meta?.total ?? 0,
+      approvedMTD: 0,
+      totalElitePayouts: 0,
+    };
   },
 };

@@ -1,10 +1,13 @@
 "use client";
 
 import { Star, User } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { DataTable } from "@/components/ui/data-table";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { USE_MOCKS } from "@/lib/config/feature-flags";
 import { MAX_RATING } from "@/lib/config/feature-flags";
+import { reviewsService } from "@/lib/services";
+import { queryKeys } from "@/lib/query/keys";
+import { formatDate } from "@/lib/utils/date";
 
 interface Review {
   id: string;
@@ -14,25 +17,36 @@ interface Review {
   comment: string;
 }
 
-const MOCK_REVIEWS: Review[] = USE_MOCKS
-  ? [
-      { id: "1", reviewerName: "Chioma O.", date: "2025-10-28", rating: 5, comment: "Excellent service, highly recommended." },
-      { id: "2", reviewerName: "Chioma O.", date: "2025-10-28", rating: 5, comment: "Excellent service, highly recommended." },
-      { id: "3", reviewerName: "Chioma O.", date: "2025-10-28", rating: 5, comment: "Excellent service, highly recommended." },
-      { id: "4", reviewerName: "Chioma O.", date: "2025-10-28", rating: 5, comment: "Excellent service, highly recommended." },
-      { id: "5", reviewerName: "Chioma O.", date: "2025-10-28", rating: 5, comment: "Excellent service, highly recommended." },
-    ]
-  : [];
+interface RunnerRatingTabProps {
+  runnerId: string;
+  completedTasks?: number;
+}
 
-const MOCK_AVERAGE_RATING = 4.8;
-const MOCK_TOTAL_REVIEWS = 4;
-const MOCK_COMPLETED_TASKS = 138;
+export function RunnerRatingTab({
+  runnerId,
+  completedTasks = 0,
+}: RunnerRatingTabProps) {
+  const { data: summary } = useQuery({
+    queryKey: queryKeys.runners.ratingSummary(runnerId),
+    queryFn: () => reviewsService.getRunnerRatingSummary(runnerId),
+    enabled: Boolean(runnerId),
+  });
 
-export function RunnerRatingTab() {
-  const reviews = MOCK_REVIEWS;
-  const averageRating = USE_MOCKS ? MOCK_AVERAGE_RATING : 0;
-  const totalReviews = USE_MOCKS ? MOCK_TOTAL_REVIEWS : 0;
-  const completedTasks = USE_MOCKS ? MOCK_COMPLETED_TASKS : 0;
+  const { data: reviewRows } = useQuery({
+    queryKey: queryKeys.runners.reviews(runnerId),
+    queryFn: () => reviewsService.getRunnerReviews(runnerId),
+    enabled: Boolean(runnerId),
+  });
+
+  const reviews: Review[] = (reviewRows ?? []).map((r) => ({
+    id: r.id,
+    reviewerName: r.client_name ?? "Anonymous",
+    date: formatDate(r.created_at),
+    rating: r.rating,
+    comment: r.review ?? "",
+  }));
+  const averageRating = summary?.average_rating ?? 0;
+  const totalReviews = summary?.total_reviews ?? reviews.length;
 
   const columns = [
     {

@@ -86,6 +86,13 @@ export interface AdminTask {
 
 export type AdminTasksListResponse = PaginatedResponse<AdminTask>;
 
+/** GET /tasks/admin/stats — dashboard counters for the Tasks page. */
+export interface AdminTaskStats {
+  activeTasks: number;
+  approvedRefunds: number;
+  activeRunners: number;
+}
+
 /** Reported issue (task_proof_submissions where status = issue_reported) */
 export interface ReportedIssue {
   id: string;

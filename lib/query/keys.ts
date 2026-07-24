@@ -19,6 +19,11 @@ export const queryKeys = {
     detail: (id: string) => [...queryKeys.runners.all, "detail", id] as const,
     wallet: (id: string) => [...queryKeys.runners.all, "wallet", id] as const,
     tasks: (id: string) => [...queryKeys.runners.all, "tasks", id] as const,
+    reviews: (id: string) => [...queryKeys.runners.all, "reviews", id] as const,
+    ratingSummary: (id: string) =>
+      [...queryKeys.runners.all, "rating-summary", id] as const,
+    documents: (id: string) =>
+      [...queryKeys.runners.all, "documents", id] as const,
     subscriptionStats: () =>
       [...queryKeys.runners.all, "subscription-stats"] as const,
   },
@@ -47,6 +52,8 @@ export const queryKeys = {
   tasks: {
     all: ["admin", "tasks"] as const,
     list: (params?: unknown) => [...queryKeys.tasks.all, "list", params] as const,
+    detail: (id: string) => [...queryKeys.tasks.all, "detail", id] as const,
+    stats: () => [...queryKeys.tasks.all, "stats"] as const,
     reportedIssues: () =>
       [...queryKeys.tasks.all, "reported-issues"] as const,
   },

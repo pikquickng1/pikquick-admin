@@ -14,6 +14,7 @@ export { TaskDetailsSkeleton } from "./components/TaskDetailsSkeleton";
 // Hooks
 export { useTaskList } from "./hooks/useTaskList";
 export { useTask } from "./hooks/useTask";
+export { useTaskStats } from "./hooks/useTaskStats";
 
 // Types
 export type {
@@ -29,6 +30,3 @@ export type {
 } from "./types/task.types";
 
 export { PaymentType } from "@/lib/types/enums";
-
-// API
-export { taskApi } from "./api/taskApi";

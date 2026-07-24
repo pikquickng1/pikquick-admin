@@ -268,9 +268,14 @@ export function RunnerDetails({ runnerId, onBack }: RunnerDetailsProps) {
         />
       )}
 
-      {activeTab === "kyc" && <RunnerKYCTab />}
+      {activeTab === "kyc" && <RunnerKYCTab runnerId={runnerId} />}
 
-      {activeTab === "rating" && <RunnerRatingTab />}
+      {activeTab === "rating" && (
+        <RunnerRatingTab
+          runnerId={runnerId}
+          completedTasks={runner.tasksCompleted}
+        />
+      )}
 
       {activeTab === "taskRecords" && (
         <RunnerTaskRecordsTab runnerId={runnerId} tasks={taskHistory} />

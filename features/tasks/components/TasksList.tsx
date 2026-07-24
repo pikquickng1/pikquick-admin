@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
 import { CheckSquare, DollarSign, UserCheck, ChevronDown, Plus } from "lucide-react";
 import { Pagination } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
@@ -17,9 +16,8 @@ import { DEFAULT_SEARCH_DEBOUNCE_MS } from "@/lib/config/pagination";
 import { ALL_FILTER } from "@/lib/types/enums";
 import { DATE_FILTER_OPTIONS } from "@/lib/constants/filters";
 import { useDebouncedValue } from "@/lib/hooks/useDebouncedValue";
-import { dashboardService } from "@/lib/services";
-import { queryKeys } from "@/lib/query/keys";
 import { useTaskList } from "../hooks/useTaskList";
+import { useTaskStats } from "../hooks/useTaskStats";
 import { TaskListTable } from "./TaskListTable";
 import { TaskListSkeleton } from "./TaskListSkeleton";
 import { CreateTaskModal } from "./CreateTaskModal";
@@ -42,22 +40,13 @@ export function TasksList() {
   const debouncedSearch = useDebouncedValue(filters.search, DEFAULT_SEARCH_DEBOUNCE_MS);
   const apiFilters = { ...filters, search: debouncedSearch };
 
-  const { data: dashboardStats } = useQuery({
-    queryKey: queryKeys.dashboard.stats(),
-    queryFn: () => dashboardService.getStats(),
-  });
+  const { stats } = useTaskStats();
 
   const { tasks, loading, pagination } = useTaskList(apiFilters, currentPage);
 
   const handleFiltersChange = (nextFilters: Filters) => {
     setFilters(nextFilters);
     setCurrentPage(1);
-  };
-
-  const stats = {
-    activeTasks: dashboardStats?.tasks?.total ?? 0,
-    approvedRefunds: 0,
-    activeRunners: dashboardStats?.users?.by_role?.runner ?? 0,
   };
 
   const toggleRow = (id: string) => {

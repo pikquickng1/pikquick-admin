@@ -1,31 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Task } from "../types/task.types";
-import { taskApi } from "../api/taskApi";
+import { useQuery } from "@tanstack/react-query";
+import { tasksService } from "@/lib/services";
+import { queryKeys } from "@/lib/query/keys";
+import { mapAdminTaskToDetail } from "../lib/mapAdminTaskToDetail";
 
 export function useTask(id: string) {
-  const [task, setTask] = useState<Task | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: queryKeys.tasks.detail(id),
+    queryFn: () => tasksService.getById(id),
+    enabled: Boolean(id),
+  });
 
-  const fetchTaskData = async () => {
-    try {
-      setLoading(true);
-      const taskData = await taskApi.getTaskById();
-      setTask(taskData);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch task data");
-    } finally {
-      setLoading(false);
-    }
+  return {
+    task: data ? mapAdminTaskToDetail(data) : null,
+    loading: isLoading,
+    error: error instanceof Error ? error.message : null,
+    refetch,
   };
-
-  useEffect(() => {
-    if (id) {
-      fetchTaskData();
-    }
-  }, [id]);
-
-  return { task, loading, error, refetch: fetchTaskData };
 }

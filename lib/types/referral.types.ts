@@ -51,6 +51,14 @@ export interface ReferralRecord {
   referred_user_id: string;
   status: string;
   month: string;
+  first_task_id?: string | null;
+  qualified_at?: string | null;
+  created_at?: string;
+  // Joined from the users table on the admin list endpoint.
+  referrer_name?: string | null;
+  referrer_role?: string | null;
+  referred_name?: string | null;
+  referred_role?: string | null;
 }
 
 export interface ReferralRecordsParams extends PaginationParams {
@@ -76,6 +84,21 @@ export interface ReferralRecordDetail {
   month: string;
   first_task_id: string | null;
   qualified_at: string | null;
+  created_at?: string;
+  utm_source?: string | null;
+  referrer_ip?: string | null;
+  metadata?: Record<string, unknown> | null;
+  // Joined referrer + referred profiles (admin detail endpoint).
+  referrer_name?: string | null;
+  referrer_role?: string | null;
+  referrer_email?: string | null;
+  referrer_phone?: string | null;
+  referrer_joined_at?: string | null;
+  referred_name?: string | null;
+  referred_role?: string | null;
+  referred_email?: string | null;
+  referred_phone?: string | null;
+  referred_joined_at?: string | null;
 }
 
 export interface ReferralRecordDetailResponse {
@@ -89,6 +112,10 @@ export interface EliteReward {
   amount_ngn: number;
   status: string;
   month: string;
+  created_at?: string;
+  // Joined from the users table on the admin elite-review endpoint.
+  referrer_name?: string | null;
+  referrer_role?: string | null;
 }
 
 export type EliteReviewListParams = PaginationParams;
@@ -100,6 +127,22 @@ export interface EliteReviewListResponse {
     page: number;
     limit: number;
     hasMore: boolean;
+  };
+}
+
+export interface EliteReviewDetailResponse {
+  detail: {
+    reward: EliteReward & {
+      tier_key: string;
+      amount_ngn: number;
+      referrer_joined_at?: string | null;
+    };
+    monthlyStats: { total: number; active: number };
+    history: Array<{
+      month: string;
+      total_rewards: number;
+      total_amount_ngn: number;
+    }>;
   };
 }
 

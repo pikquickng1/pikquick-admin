@@ -1,86 +1,91 @@
 import { UserType, VerificationStatus } from "@/lib/types/enums";
-import { USE_MOCKS } from "@/lib/config/feature-flags";
-import type { ReferralDetails } from "../types/referral-detail.types";
+import { referralService } from "@/lib/services";
+import { formatDate } from "@/lib/utils/date";
+import type { ReferralRecordDetail } from "@/lib/types";
+import type {
+  ReferralDetails,
+  TimelineEvent,
+} from "../types/referral-detail.types";
 
-const MOCK_DELAY_MS = 300;
-const MOCK_ACTION_DELAY_MS = 500;
+const PLACEHOLDER = "—";
 
-const MOCK_DETAILS: ReferralDetails = {
-  referrer: {
-    id: "RUN-2045",
-    name: "Adebayo Samuel",
-    role: UserType.RUNNER,
-    email: "a.samuel@example.com",
-    phone: "+234 812 345 6789",
-    joinedDate: "2023-08-15",
-    totalReferrals: 42,
-  },
-  referredUser: {
-    id: "REQ-1522",
-    name: "John Doe",
-    role: UserType.CLIENT,
-    email: "j.doe@example.com",
-    phone: "+234 803 111 2233",
-    joinedDate: "2024-03-12",
-    status: VerificationStatus.VERIFIED,
-  },
-  timeline: [
-    { id: "1", event: "Invite sent", timestamp: "2024-03-10 14:30", completed: true },
-    { id: "2", event: "Signup via referral link", timestamp: "2024-03-12 09:15", completed: true },
-    { id: "3", event: "First task requested", timestamp: "2024-03-12 11:45", completed: true },
-    { id: "4", event: "First task completed", timestamp: "2024-03-14 16:20", completed: true },
-  ],
-  qualificationTask: {
-    taskId: "TASK-4521",
-    serviceType: "Grocery Shopping",
-    totalPaid: 12500,
-    completionDate: "March 14, 2024",
-    status: "completed",
-  },
-  fraudIndicators: [
-    { type: "device_similarity", label: "Device Similarity", level: "Low", value: "Low (0%)", status: "safe" },
-    { type: "ip_match", label: "IP Match Warning", level: "Medium", value: "Medium (15%)", status: "warning" },
-    { type: "rapid_referral", label: "Rapid Referral Flag", level: "Low", value: "Safe", status: "safe" },
-  ],
-  systemMetadata: {
-    referralId: "REF-883921",
-    trackingCode: "PIK-AD72",
-    utmSource: "mobile_app",
-    referrerIp: "192.168.1.45",
-  },
-  internalNotes: "",
-};
+function buildTimeline(r: ReferralRecordDetail): TimelineEvent[] {
+  const events: TimelineEvent[] = [
+    {
+      id: "signup",
+      event: "Signup via referral link",
+      timestamp: formatDate(r.created_at),
+      completed: true,
+    },
+  ];
+  events.push({
+    id: "first-task",
+    event: "First task completed",
+    timestamp: r.qualified_at ? formatDate(r.qualified_at) : PLACEHOLDER,
+    completed: Boolean(r.qualified_at),
+  });
+  return events;
+}
+
+function mapDetails(r: ReferralRecordDetail): ReferralDetails {
+  return {
+    referrer: {
+      id: r.referrer_id,
+      name: r.referrer_name ?? r.referrer_id,
+      role: (r.referrer_role as UserType) ?? UserType.CLIENT,
+      email: r.referrer_email ?? PLACEHOLDER,
+      phone: r.referrer_phone ?? PLACEHOLDER,
+      joinedDate: r.referrer_joined_at ? formatDate(r.referrer_joined_at) : PLACEHOLDER,
+      // Referrer's lifetime referral count is not returned by this endpoint.
+      totalReferrals: 0,
+    },
+    referredUser: {
+      id: r.referred_user_id,
+      name: r.referred_name ?? r.referred_user_id,
+      role: (r.referred_role as UserType) ?? UserType.CLIENT,
+      email: r.referred_email ?? PLACEHOLDER,
+      phone: r.referred_phone ?? PLACEHOLDER,
+      joinedDate: r.referred_joined_at ? formatDate(r.referred_joined_at) : PLACEHOLDER,
+      status: VerificationStatus.PENDING,
+    },
+    timeline: buildTimeline(r),
+    qualificationTask: r.first_task_id
+      ? {
+          taskId: r.first_task_id,
+          serviceType: PLACEHOLDER,
+          totalPaid: 0,
+          completionDate: r.qualified_at ? formatDate(r.qualified_at) : PLACEHOLDER,
+          status: r.qualified_at ? "completed" : "pending",
+        }
+      : null,
+    // Fraud scoring is not implemented on the backend.
+    fraudIndicators: [],
+    systemMetadata: {
+      referralId: r.id,
+      trackingCode: r.id,
+      utmSource: r.utm_source ?? PLACEHOLDER,
+      referrerIp: r.referrer_ip ?? PLACEHOLDER,
+    },
+    internalNotes:
+      ((r.metadata as { admin_notes?: string } | null)?.admin_notes) ?? "",
+  };
+}
 
 export const referralDetailApi = {
-  async getReferralDetails(_id: string): Promise<ReferralDetails> {
-    if (USE_MOCKS) {
-      await new Promise((r) => setTimeout(r, MOCK_DELAY_MS));
-      return MOCK_DETAILS;
-    }
-    throw new Error("Live referral-detail endpoint not yet wired in the admin UI");
+  async getReferralDetails(id: string): Promise<ReferralDetails> {
+    const res = await referralService.getRecordById(id);
+    return mapDetails(res.referral);
   },
 
-  async updateInternalNotes(_id: string, _notes: string): Promise<void> {
-    if (USE_MOCKS) {
-      await new Promise((r) => setTimeout(r, MOCK_ACTION_DELAY_MS));
-      return;
-    }
-    throw new Error("Live referral-notes endpoint not yet wired in the admin UI");
+  async updateInternalNotes(id: string, notes: string): Promise<void> {
+    await referralService.updateRecordNotes(id, notes);
   },
 
-  async approveReferral(_id: string): Promise<void> {
-    if (USE_MOCKS) {
-      await new Promise((r) => setTimeout(r, MOCK_ACTION_DELAY_MS));
-      return;
-    }
-    throw new Error("Live approve-referral endpoint not yet wired in the admin UI");
+  async approveReferral(id: string): Promise<void> {
+    await referralService.approveRecord(id);
   },
 
-  async disqualifyReferral(_id: string): Promise<void> {
-    if (USE_MOCKS) {
-      await new Promise((r) => setTimeout(r, MOCK_ACTION_DELAY_MS));
-      return;
-    }
-    throw new Error("Live disqualify-referral endpoint not yet wired in the admin UI");
+  async disqualifyReferral(id: string): Promise<void> {
+    await referralService.disqualifyRecord(id);
   },
 };

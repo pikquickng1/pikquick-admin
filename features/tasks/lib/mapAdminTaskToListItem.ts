@@ -1,9 +1,9 @@
 import type { AdminTask } from "@/lib/types";
 import { TaskStatus } from "@/lib/types/enums";
 import { formatDate } from "@/lib/utils/date";
-import type { TaskListItem } from "../types/task.types";
+import type { TaskDisplayStatus, TaskListItem } from "../types/task.types";
 
-const STATUS_MAP: Record<string, TaskListItem["status"]> = {
+const STATUS_MAP: Record<string, TaskDisplayStatus> = {
   [TaskStatus.TASK_ASSIGNED]: "In Progress",
   [TaskStatus.TASK_STARTED]: "In Progress",
   [TaskStatus.EN_ROUTE_TO_DROPOFF]: "In Progress",
@@ -15,8 +15,15 @@ const STATUS_MAP: Record<string, TaskListItem["status"]> = {
   [TaskStatus.CANCELLED]: "Cancelled",
 };
 
+/** Maps a raw backend task status to the admin display label. */
+export function mapTaskStatusToDisplay(
+  status: string | undefined,
+): TaskDisplayStatus {
+  const raw = status?.toLowerCase() ?? TaskStatus.PENDING;
+  return STATUS_MAP[raw] ?? "Pending";
+}
+
 export function mapAdminTaskToListItem(task: AdminTask): TaskListItem {
-  const raw = (task.status as string | undefined)?.toLowerCase() ?? TaskStatus.PENDING;
   return {
     id: task.id,
     title: (task.description as string) ?? `Task ${task.id}`,
@@ -24,6 +31,6 @@ export function mapAdminTaskToListItem(task: AdminTask): TaskListItem {
     runnerName: (task.runner_name as string) ?? null,
     budget: (task.budget as number) ?? 0,
     datePosted: formatDate(task.created_at as string | undefined),
-    status: STATUS_MAP[raw] ?? "Pending",
+    status: mapTaskStatusToDisplay(task.status as string | undefined),
   };
 }

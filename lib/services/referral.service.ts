@@ -13,6 +13,7 @@ import type {
   ReferralRecordDetailResponse,
   EliteReviewListParams,
   EliteReviewListResponse,
+  EliteReviewDetailResponse,
   EliteReviewApproveDto,
   EliteReviewRejectDto,
   EliteRewardResponse,
@@ -54,11 +55,38 @@ export const referralService = {
       .then((r) => r.data);
   },
 
+  approveRecord(id: string): Promise<ReferralRecordDetailResponse> {
+    return apiClient
+      .post(`/admin/referral/records/${id}/approve`)
+      .then((r) => r.data);
+  },
+
+  disqualifyRecord(
+    id: string,
+    reason?: string
+  ): Promise<ReferralRecordDetailResponse> {
+    return apiClient
+      .post(`/admin/referral/records/${id}/disqualify`, { reason })
+      .then((r) => r.data);
+  },
+
+  updateRecordNotes(id: string, notes: string): Promise<ReferralRecordDetailResponse> {
+    return apiClient
+      .patch(`/admin/referral/records/${id}/notes`, { notes })
+      .then((r) => r.data);
+  },
+
   getEliteReview(
     params?: EliteReviewListParams
   ): Promise<EliteReviewListResponse> {
     return apiClient
       .get("/admin/referral/elite-review", { params })
+      .then((r) => r.data);
+  },
+
+  getEliteReviewById(id: string): Promise<EliteReviewDetailResponse> {
+    return apiClient
+      .get(`/admin/referral/elite-review/${id}`)
       .then((r) => r.data);
   },
 

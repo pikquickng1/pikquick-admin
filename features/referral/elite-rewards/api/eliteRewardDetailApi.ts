@@ -1,89 +1,86 @@
-import { ReferralTierKey, UserType } from "@/lib/types/enums";
-import { USE_MOCKS } from "@/lib/config/feature-flags";
+import { UserType } from "@/lib/types/enums";
+import { referralService } from "@/lib/services";
+import { formatDate } from "@/lib/utils/date";
+import type { EliteReviewDetailResponse } from "@/lib/types";
 import type { EliteRewardDetail } from "../types/elite-reward-detail.types";
 
-const MOCK_DELAY_MS = 300;
-const MOCK_ACTION_DELAY_MS = 500;
-const MOCK_ACTIVE_REFERRALS = 152;
-const MOCK_REFERRALS_CHANGE = "+18% vs last month";
-const MOCK_LIFETIME_TOTAL = 412;
-const MOCK_VERIFIED_REFERRALS = 152;
-const MOCK_PENDING_COMPLETION = 14;
-const MOCK_DISQUALIFIED_REFERRALS = 3;
-const MOCK_CONVERSION_RATE = 92;
-const MOCK_REWARD_AMOUNT = 25000;
-const MOCK_TAX_DEDUCTIONS = 0;
-
-const MOCK_HISTORICAL = [
-  { month: "Sep", referrals: 45 },
-  { month: "Oct", referrals: 52 },
-  { month: "Nov", referrals: 48 },
-  { month: "Dec", referrals: 58 },
-  { month: "Jan", referrals: 62 },
-  { month: "Feb", referrals: 68 },
+const SHORT_MONTHS = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 ];
 
-const MOCK_DETAIL: EliteRewardDetail = {
-  user: {
-    id: "RUN-2045",
-    name: "Adebayo Samuel",
-    role: UserType.RUNNER,
-    joinedDate: "August 15, 2023",
-  },
-  metrics: {
-    activeReferrals: MOCK_ACTIVE_REFERRALS,
-    activeReferralsChange: MOCK_REFERRALS_CHANGE,
-    lifetimeTotal: MOCK_LIFETIME_TOTAL,
-    monthTargetAchieved: "February",
-    tier: ReferralTierKey.ELITE,
-  },
-  integrityCheck: {
-    systemFraudScore: {
-      level: "LOW",
-      message:
-        "Candidate has consistently passed all automated integrity checks over 6 months.",
+function shortMonth(month: string): string {
+  const idx = Number((month ?? "").split("-")[1]) - 1;
+  return SHORT_MONTHS[idx] ?? month;
+}
+
+function mapDetail(res: EliteReviewDetailResponse): EliteRewardDetail {
+  const { reward, monthlyStats, history } = res.detail;
+  const lifetimeTotal = history.reduce((acc, h) => acc + h.total_rewards, 0);
+
+  return {
+    user: {
+      id: reward.referrer_id,
+      name: reward.referrer_name ?? reward.referrer_id,
+      role: (reward.referrer_role as UserType) ?? UserType.RUNNER,
+      joinedDate: reward.referrer_joined_at
+        ? formatDate(reward.referrer_joined_at)
+        : "—",
     },
-    deviceSharing: { status: "NONE DETECTED" },
-    ipGeolocation: { status: "CONSISTENT" },
-    taskGenuinity: { status: "100% VALID" },
-  },
-  referralBreakdown: {
-    verifiedAndActive: MOCK_VERIFIED_REFERRALS,
-    pendingCompletion: MOCK_PENDING_COMPLETION,
-    disqualifiedReferrals: MOCK_DISQUALIFIED_REFERRALS,
-    firstTaskConversionRate: MOCK_CONVERSION_RATE,
-  },
-  rewardDetails: {
-    totalPayableAmount: MOCK_REWARD_AMOUNT,
-    rewardType: "Elite Tier Performance",
-    taxDeductions: MOCK_TAX_DEDUCTIONS,
-  },
-  decisionComments: "",
-  historicalPerformance: MOCK_HISTORICAL,
-};
+    metrics: {
+      activeReferrals: monthlyStats.active,
+      activeReferralsChange: "",
+      lifetimeTotal,
+      monthTargetAchieved: reward.month,
+      tier: reward.tier_key,
+    },
+    // Automated integrity scoring is not implemented on the backend; present
+    // neutral placeholders rather than fabricated scores.
+    integrityCheck: {
+      systemFraudScore: {
+        level: "LOW",
+        message: "Automated integrity scoring is not yet available.",
+      },
+      deviceSharing: { status: "NONE DETECTED" },
+      ipGeolocation: { status: "CONSISTENT" },
+      taskGenuinity: { status: "100% VALID" },
+    },
+    referralBreakdown: {
+      verifiedAndActive: monthlyStats.active,
+      pendingCompletion: Math.max(0, monthlyStats.total - monthlyStats.active),
+      disqualifiedReferrals: 0,
+      firstTaskConversionRate:
+        monthlyStats.total > 0
+          ? Math.round((monthlyStats.active / monthlyStats.total) * 100)
+          : 0,
+    },
+    rewardDetails: {
+      totalPayableAmount: reward.amount_ngn,
+      rewardType: "Elite Tier Performance",
+      taxDeductions: 0,
+    },
+    decisionComments: "",
+    historicalPerformance: history
+      .slice()
+      .reverse()
+      .map((h) => ({ month: shortMonth(h.month), referrals: h.total_rewards })),
+  };
+}
 
 export const eliteRewardDetailApi = {
-  async getEliteRewardDetail(_id: string): Promise<EliteRewardDetail> {
-    if (USE_MOCKS) {
-      await new Promise((r) => setTimeout(r, MOCK_DELAY_MS));
-      return MOCK_DETAIL;
-    }
-    throw new Error("Live elite-reward-detail endpoint not yet wired in the admin UI");
+  async getEliteRewardDetail(id: string): Promise<EliteRewardDetail> {
+    const res = await referralService.getEliteReviewById(id);
+    return mapDetail(res);
   },
 
-  async approveReward(_id: string, _comments: string): Promise<void> {
-    if (USE_MOCKS) {
-      await new Promise((r) => setTimeout(r, MOCK_ACTION_DELAY_MS));
-      return;
-    }
-    throw new Error("Live approve-reward-detail endpoint not yet wired in the admin UI");
+  async approveReward(id: string, comments: string): Promise<void> {
+    await referralService.approveEliteReward(id, { notes: comments });
   },
 
-  async rejectReward(_id: string, _comments: string): Promise<void> {
-    if (USE_MOCKS) {
-      await new Promise((r) => setTimeout(r, MOCK_ACTION_DELAY_MS));
-      return;
-    }
-    throw new Error("Live reject-reward-detail endpoint not yet wired in the admin UI");
+  async rejectReward(id: string, comments: string): Promise<void> {
+    await referralService.rejectEliteReward(id, {
+      reason: comments || "Rejected by admin",
+      notes: comments,
+    });
   },
 };

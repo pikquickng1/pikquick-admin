@@ -27,3 +27,4 @@ export { activityLogService } from "./activity-log.service";
 export { analyticsService } from "./analytics.service";
 export { adminService } from "./admin.service";
 export { transactionService } from "./transaction.service";
+export { reviewsService } from "./reviews.service";

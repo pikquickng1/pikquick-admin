@@ -3,6 +3,7 @@ import type {
   AdminTask,
   AdminTaskListParams,
   AdminTasksListResponse,
+  AdminTaskStats,
   CreateTaskDto,
   UpdateTaskDto,
   CancelTaskDto,
@@ -61,5 +62,9 @@ export const tasksService = {
 
   getAllReportedIssues(): Promise<ReportedIssue[]> {
     return apiClient.get("/tasks/admin/all-reported-issues").then((r) => r.data);
+  },
+
+  getStats(): Promise<AdminTaskStats> {
+    return apiClient.get("/tasks/admin/stats").then((r) => r.data);
   },
 };

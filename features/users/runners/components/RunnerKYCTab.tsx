@@ -1,6 +1,13 @@
+"use client";
+
 import { CheckCircle } from "lucide-react";
-import { USE_MOCKS } from "@/lib/config/feature-flags";
+import { useQuery } from "@tanstack/react-query";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { runnerDocumentsService } from "@/lib/services";
+import { queryKeys } from "@/lib/query/keys";
+import { formatDate } from "@/lib/utils/date";
+import { DocumentVerificationStatus } from "@/lib/types/enums";
+import type { RunnerDocument } from "@/lib/types";
 
 interface KYCDocument {
   id: string;
@@ -11,37 +18,32 @@ interface KYCDocument {
   status: "verified" | "pending" | "rejected";
 }
 
-const MOCK_DOCUMENTS: KYCDocument[] = USE_MOCKS
-  ? [
-      {
-        id: "1",
-        type: "ID Verification",
-        title: "National ID Card",
-        description: "",
-        verifiedDate: "Oct 15, 2025",
-        status: "verified",
-      },
-      {
-        id: "2",
-        type: "Selfie",
-        title: "Face Match Confirmed",
-        description: "",
-        verifiedDate: "Oct 15, 2025",
-        status: "verified",
-      },
-      {
-        id: "3",
-        type: "Address",
-        title: "Utility Bill",
-        description: "",
-        verifiedDate: "Oct 15, 2025",
-        status: "verified",
-      },
-    ]
-  : [];
+interface RunnerKYCTabProps {
+  runnerId: string;
+}
 
-export function RunnerKYCTab() {
-  const documents = MOCK_DOCUMENTS;
+function toKycDocument(doc: RunnerDocument): KYCDocument {
+  const status = (doc.verification_status ??
+    DocumentVerificationStatus.PENDING) as KYCDocument["status"];
+  return {
+    id: doc.id,
+    type: doc.document_type_name ?? doc.document_name ?? "Document",
+    title: doc.document_name ?? doc.document_number ?? "—",
+    description:
+      status === "rejected" ? (doc.rejection_reason ?? "") : "",
+    verifiedDate: formatDate(doc.verified_at ?? doc.submitted_at),
+    status,
+  };
+}
+
+export function RunnerKYCTab({ runnerId }: RunnerKYCTabProps) {
+  const { data } = useQuery({
+    queryKey: queryKeys.runners.documents(runnerId),
+    queryFn: () => runnerDocumentsService.getByRunnerId(runnerId),
+    enabled: Boolean(runnerId),
+  });
+
+  const documents = (data ?? []).map(toKycDocument);
   const allVerified =
     documents.length > 0 && documents.every((doc) => doc.status === "verified");
 

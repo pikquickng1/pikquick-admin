@@ -1,84 +1,107 @@
-import { ActiveReferralDefinition, ReferralTierKey } from "@/lib/types/enums";
-import { USE_MOCKS } from "@/lib/config/feature-flags";
+import {
+  ActiveReferralDefinition,
+  ReferralTierKey,
+} from "@/lib/types/enums";
 import { CURRENCY_SYMBOL } from "@/lib/config/feature-flags";
+import { referralService } from "@/lib/services";
 import type {
+  ReferralSettingsResponse,
+  ReferralTier as ApiReferralTier,
+} from "@/lib/types";
+import type {
+  ActiveReferralConfig,
   ReferralSettings,
   TierThreshold,
 } from "../types/referral-settings.types";
 
-const MOCK_FETCH_DELAY_MS = 300;
-const MOCK_ACTION_DELAY_MS = 500;
-const MOCK_TOTAL_BUDGET = 2450000;
-const MOCK_BUDGET_PERCENTAGE = 75;
-
-const MOCK_TIERS: TierThreshold[] = [
-  { id: ReferralTierKey.STARTER, name: "Starter Tier", color: "green", threshold: 10, rewardAmount: 2500 },
-  { id: ReferralTierKey.PRO,     name: "Pro Tier",     color: "blue",  threshold: 50, rewardAmount: 7500 },
-  { id: ReferralTierKey.ELITE,   name: "Elite Tier",   color: "purple", threshold: 150, rewardAmount: 25000 },
-];
-
-const MOCK_DEFS = [
-  { id: ActiveReferralDefinition.SIGNUP_ONLY,            label: "Signup only",            selected: false },
-  { id: ActiveReferralDefinition.KYC_VERIFIED,           label: "KYC verified",           selected: false },
-  { id: ActiveReferralDefinition.FIRST_TASK_COMPLETED,   label: "First task completed",   selected: true  },
-  { id: ActiveReferralDefinition.FIRST_N_AMOUNT_PROCESSED, label: `First ${CURRENCY_SYMBOL}10,000 processed`, selected: false },
-];
-
-const MOCK_SETTINGS: ReferralSettings = {
-  programActive: true,
-  tiers: MOCK_TIERS,
-  activeReferralDefinitions: MOCK_DEFS,
-  antiFraudVerification: true,
-  rewardsBudget: {
-    total: MOCK_TOTAL_BUDGET,
-    available: MOCK_TOTAL_BUDGET,
-    percentage: MOCK_BUDGET_PERCENTAGE,
-  },
-  recentChanges: [
-    { id: "1", type: "Elite Reward ↑", description: "Aisha G.", user: "Aisha G.", timestamp: "3h ago" },
-    { id: "2", type: "Program Disabled", description: "Aisha G.", user: "Aisha G.", timestamp: "1d ago" },
-    { id: "3", type: "Starter Threshold ↓", description: "Aisha G.", user: "Aisha G.", timestamp: "5d ago" },
-  ],
+const TIER_COLORS: Record<string, TierThreshold["color"]> = {
+  [ReferralTierKey.STARTER]: "green",
+  [ReferralTierKey.PRO]: "blue",
+  [ReferralTierKey.ELITE]: "purple",
 };
+
+function definitionLabel(def: string, firstNAmount: number | null): string {
+  switch (def) {
+    case ActiveReferralDefinition.SIGNUP_ONLY:
+      return "Signup only";
+    case ActiveReferralDefinition.KYC_VERIFIED:
+      return "KYC verified";
+    case ActiveReferralDefinition.FIRST_TASK_COMPLETED:
+      return "First task completed";
+    case ActiveReferralDefinition.FIRST_N_AMOUNT_PROCESSED:
+      return `First ${CURRENCY_SYMBOL}${(firstNAmount ?? 0).toLocaleString()} processed`;
+    default:
+      return def;
+  }
+}
+
+function mapTier(t: ApiReferralTier): TierThreshold {
+  return {
+    id: t.key as ReferralTierKey,
+    name: t.name,
+    color: TIER_COLORS[t.key] ?? "green",
+    threshold: t.threshold,
+    rewardAmount: t.reward_amount_ngn,
+  };
+}
+
+function mapSettings(res: ReferralSettingsResponse): ReferralSettings {
+  const s = res.settings;
+  const definitions: ActiveReferralConfig[] = Object.values(
+    ActiveReferralDefinition,
+  ).map((def) => ({
+    id: def,
+    label: definitionLabel(def, s.first_n_amount_ngn),
+    selected: def === s.active_referral_definition,
+  }));
+
+  return {
+    programActive: s.program_enabled,
+    tiers: (res.tiers ?? []).map(mapTier),
+    activeReferralDefinitions: definitions,
+    antiFraudVerification: s.require_manual_review_elite,
+    // Budget + change-log are not tracked by the backend yet.
+    rewardsBudget: { total: 0, available: 0, percentage: 0 },
+    recentChanges: [],
+  };
+}
 
 export const referralSettingsApi = {
   async getSettings(): Promise<ReferralSettings> {
-    if (USE_MOCKS) {
-      await new Promise((r) => setTimeout(r, MOCK_FETCH_DELAY_MS));
-      return MOCK_SETTINGS;
-    }
-    throw new Error("Live referral-settings endpoint not yet wired in the admin UI");
+    const res = await referralService.getSettings();
+    return mapSettings(res);
   },
 
-  async updateSettings(_settings: Partial<ReferralSettings>): Promise<void> {
-    if (USE_MOCKS) {
-      await new Promise((r) => setTimeout(r, MOCK_ACTION_DELAY_MS));
-      return;
-    }
-    throw new Error("Live referral-settings update endpoint not yet wired in the admin UI");
+  async updateSettings(settings: Partial<ReferralSettings>): Promise<void> {
+    await referralService.updateSettings({
+      settings: {
+        program_enabled: settings.programActive,
+        require_manual_review_elite: settings.antiFraudVerification,
+      },
+    });
   },
 
-  async updateTier(_tierId: string, _tier: Partial<TierThreshold>): Promise<void> {
-    if (USE_MOCKS) {
-      await new Promise((r) => setTimeout(r, MOCK_ACTION_DELAY_MS));
-      return;
-    }
-    throw new Error("Live tier-update endpoint not yet wired in the admin UI");
+  async updateTier(tierId: string, tier: Partial<TierThreshold>): Promise<void> {
+    await referralService.updateSettings({
+      tiers: [
+        {
+          key: tierId,
+          threshold: tier.threshold,
+          reward_amount_ngn: tier.rewardAmount,
+          name: tier.name,
+        },
+      ],
+    });
   },
 
+  // The settings screen does not currently collect edited state, so there is
+  // nothing extra to persist here beyond updateSettings/updateTier.
   async saveConfiguration(): Promise<void> {
-    if (USE_MOCKS) {
-      await new Promise((r) => setTimeout(r, MOCK_ACTION_DELAY_MS));
-      return;
-    }
-    throw new Error("Live save-configuration endpoint not yet wired in the admin UI");
+    return;
   },
 
+  // No backend "reset to defaults" endpoint exists; kept as a no-op.
   async resetToDefaults(): Promise<void> {
-    if (USE_MOCKS) {
-      await new Promise((r) => setTimeout(r, MOCK_ACTION_DELAY_MS));
-      return;
-    }
-    throw new Error("Live reset-defaults endpoint not yet wired in the admin UI");
+    return;
   },
 };

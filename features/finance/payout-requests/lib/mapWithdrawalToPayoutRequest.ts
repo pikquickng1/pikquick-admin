@@ -17,10 +17,12 @@ export function mapWithdrawalToPayoutRequest(w: AdminWithdrawal): PayoutRequest 
   return {
     id: w.id,
     runnerId: w.user_id,
-    runnerName: PLACEHOLDER,
+    runnerName: w.user_name ?? PLACEHOLDER,
     runnerRating: 0,
     runnerTasks: 0,
     amount: koboToNgn(w.amount),
+    // Bank name/account are held by Paystack (recipient_code) and not exposed
+    // by the list endpoint.
     bankName: PLACEHOLDER,
     accountNumber: PLACEHOLDER,
     date: formatDate(w.created_at),

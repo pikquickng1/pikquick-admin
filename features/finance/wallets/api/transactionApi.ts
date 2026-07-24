@@ -1,62 +1,58 @@
-import { USE_MOCKS } from "@/lib/config/feature-flags";
-import type { WalletTransactionHistory } from "../types/transaction.types";
+import { walletsService } from "@/lib/services";
+import { WalletTxType } from "@/lib/types/enums";
+import type { AdminWalletTransaction } from "@/lib/types";
+import type {
+  WalletTransaction,
+  WalletTransactionHistory,
+} from "../types/transaction.types";
 
-const MOCK_HISTORY_DELAY_MS = 300;
-const MOCK_USER_NAME = "Adewale Johnson";
-const MOCK_CURRENT_BALANCE = 15000;
-const MOCK_TOTAL_TX = 24;
+/** Transaction types that represent money leaving the wallet (debit). */
+const DEBIT_TYPES = new Set([
+  "escrow_hold",
+  "escrow_transfer",
+  "escrow_release",
+  "manual_escrow_release",
+  "withdrawal",
+  "daily_auto_deduction",
+  "daily_fee_deducted",
+  "availability_block_renewal",
+  "availability_activated",
+  "task_cancellation",
+]);
 
-const MOCK_HISTORY: WalletTransactionHistory = {
-  userId: "REQ001",
-  userName: MOCK_USER_NAME,
-  currentBalance: MOCK_CURRENT_BALANCE,
-  totalTransactions: MOCK_TOTAL_TX,
-  transactions: [
-    {
-      id: "TXN001",
-      type: "debit",
-      description: "Task Payment - Grocery Shopping",
-      amount: 12500,
-      balance: 15000,
-      date: "2025-10-30T14:30:00.000Z",
-      category: "Task Payment",
-    },
-    {
-      id: "TXN002",
-      type: "credit",
-      description: "Wallet Top-up via Paystack",
-      amount: 10000,
-      balance: 17500,
-      date: "2025-10-29T16:45:00.000Z",
-      category: "Top-up",
-    },
-    {
-      id: "TXN003",
-      type: "debit",
-      description: "Task Payment - Document Delivery",
-      amount: 1200,
-      balance: 7500,
-      date: "2025-10-28T11:20:00.000Z",
-      category: "Task Payment",
-    },
-    {
-      id: "TXN004",
-      type: "credit",
-      description: "Refund - Cancelled Task",
-      amount: 5000,
-      balance: 8700,
-      date: "2025-10-27T10:30:00.000Z",
-      category: "Refund",
-    },
-  ],
-};
+function humanize(type: string): string {
+  return type.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function toTransaction(row: AdminWalletTransaction): WalletTransaction {
+  const type = (row.type ?? "").toLowerCase();
+  const meta = (row.metadata ?? {}) as { description?: string };
+  return {
+    id: row.id,
+    type: DEBIT_TYPES.has(type) ? WalletTxType.DEBIT : WalletTxType.CREDIT,
+    description: meta.description ?? humanize(row.type ?? "Transaction"),
+    amount: Number(row.amount ?? 0),
+    // The backend does not store a per-row running balance.
+    balance: 0,
+    date: row.created_at,
+    category: humanize(row.type ?? ""),
+  };
+}
 
 export const transactionApi = {
-  getTransactionHistory: async (_walletId: string): Promise<WalletTransactionHistory> => {
-    if (USE_MOCKS) {
-      await new Promise((r) => setTimeout(r, MOCK_HISTORY_DELAY_MS));
-      return MOCK_HISTORY;
-    }
-    throw new Error("Live wallet history endpoint not yet wired in the admin UI");
+  getTransactionHistory: async (
+    walletId: string
+  ): Promise<WalletTransactionHistory> => {
+    const [detail, tx] = await Promise.all([
+      walletsService.getById(walletId),
+      walletsService.transactions(walletId, { page: 1, limit: 50 }),
+    ]);
+    return {
+      userId: detail.user_id,
+      userName: detail.user_name ?? detail.user_id,
+      currentBalance: Number(detail.balance ?? 0),
+      totalTransactions: tx.meta?.total ?? tx.data.length,
+      transactions: (tx.data ?? []).map(toTransaction),
+    };
   },
 };
