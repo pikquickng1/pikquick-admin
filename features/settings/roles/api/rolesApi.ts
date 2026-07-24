@@ -17,7 +17,9 @@ export function toPermissionStrings(perms: DefaultPermission[]): string[] {
 
 export const rolesApi = {
   async getRoles(): Promise<Role[]> {
-    return (await adminService.getRoles()) as Role[];
+    const res = (await adminService.getRoles()) as Role[] | { data?: Role[] };
+    // Tolerate both the flat array and the legacy { data: [...] } wrapper.
+    return Array.isArray(res) ? res : (res?.data ?? []);
   },
 
   async createRole(data: {

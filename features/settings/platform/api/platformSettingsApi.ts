@@ -33,7 +33,11 @@ export const platformSettingsApi = {
   },
 
   async getTaskCategories(): Promise<TaskCategory[]> {
-    return (await adminService.getTaskCategories()) as TaskCategory[];
+    const res = (await adminService.getTaskCategories()) as
+      | TaskCategory[]
+      | { data?: TaskCategory[] };
+    // Tolerate both the flat array and the legacy { data: [...] } wrapper.
+    return Array.isArray(res) ? res : (res?.data ?? []);
   },
 
   async addTaskCategory(category: Omit<TaskCategory, "id">): Promise<void> {

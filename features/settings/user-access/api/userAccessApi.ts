@@ -3,7 +3,11 @@ import { adminService } from "@/lib/services/admin.service";
 
 export const userAccessApi = {
   async getAdminUsers(): Promise<AdminUser[]> {
-    return (await adminService.getAdminUsers()) as AdminUser[];
+    const res = (await adminService.getAdminUsers()) as
+      | AdminUser[]
+      | { data?: AdminUser[] };
+    // Tolerate both the flat array and the legacy { data: [...] } wrapper.
+    return Array.isArray(res) ? res : (res?.data ?? []);
   },
 
   async createAdminUser(data: {
