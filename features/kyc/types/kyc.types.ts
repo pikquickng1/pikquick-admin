@@ -16,6 +16,24 @@ export interface KycDocument {
   selfie?: string;
 }
 
+/** How a document reached its current status. */
+export type VerificationMethod = "manual" | "didit_auto" | "didit_review";
+
+/**
+ * What the Didit provider reported, when the document went through them.
+ *
+ * Shown to reviewers so an "In Review" item arrives with the evidence behind
+ * it rather than asking a human to re-decide from nothing. Every field is
+ * nullable: which checks run depends on the Didit workflow configuration.
+ */
+export interface DiditFindings {
+  livenessScore: number | null;
+  faceMatchScore: number | null;
+  idStatus: string | null;
+  amlHits: number | null;
+  warnings: string[];
+}
+
 export interface KYCVerification {
   id: string;
   runnerName: string;
@@ -26,6 +44,11 @@ export interface KYCVerification {
   status: KycStatus;
   documents?: KycDocument;
   rejectionReason?: string;
+  verificationMethod?: VerificationMethod;
+  diditSessionId?: string | null;
+  adminOverride?: boolean;
+  adminOverrideReason?: string | null;
+  didit?: DiditFindings | null;
 }
 
 export interface KYCListFilters {
