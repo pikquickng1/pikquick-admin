@@ -221,6 +221,8 @@ function KYCVerificationBody({
         </div>
       </div>
 
+      <DiditFindingsPanel verification={verification} />
+
       {isResubmission && verification.rejectionReason && (
         <div>
           <h3 className="text-base font-semibold text-text-primary mb-3">Resubmission Reason</h3>
@@ -303,6 +305,74 @@ function DocumentCard({
         <ZoomIn className="w-4 h-4" />
         Enlarge
       </button>
+    </div>
+  );
+}
+
+/**
+ * Shows what the identity provider found, when a document went through Didit.
+ *
+ * Renders nothing for manually uploaded documents so the panel does not add
+ * noise to the flow that has no provider behind it.
+ *
+ * The point of this panel: an "In Review" item is one Didit could not decide
+ * on its own. Without the scores and warnings a reviewer is being asked to
+ * re-adjudicate with strictly less information than the machine had.
+ */
+function DiditFindingsPanel({ verification }: { verification: KYCVerification }) {
+  const method = verification.verificationMethod ?? "manual";
+  if (method === "manual" && !verification.didit) return null;
+
+  const d = verification.didit;
+  const score = (v: number | null | undefined) =>
+    typeof v === "number" ? `${v}%` : "—";
+
+  return (
+    <div>
+      <h3 className="text-base font-semibold text-text-primary mb-3">
+        Identity provider (Didit)
+      </h3>
+      <div className="bg-neutral-50 rounded-lg p-4 space-y-3">
+        <div className="grid grid-cols-2 gap-4">
+          <FieldCol
+            label="Decided by"
+            value={
+              method === "didit_auto"
+                ? "Didit — automatic"
+                : method === "didit_review"
+                  ? "Didit — sent for review"
+                  : "Manual upload"
+            }
+          />
+          <FieldCol label="ID check" value={d?.idStatus ?? "—"} />
+          <FieldCol label="Liveness" value={score(d?.livenessScore)} />
+          <FieldCol label="Face match" value={score(d?.faceMatchScore)} />
+        </div>
+
+        {typeof d?.amlHits === "number" && d.amlHits > 0 && (
+          <p className="text-sm text-amber-700">
+            AML screening returned {d.amlHits} potential match
+            {d.amlHits === 1 ? "" : "es"}.
+          </p>
+        )}
+
+        {d?.warnings?.length ? (
+          <ul className="list-disc pl-5 text-sm text-amber-700">
+            {d.warnings.map((w) => (
+              <li key={w}>{w}</li>
+            ))}
+          </ul>
+        ) : null}
+
+        {verification.adminOverride && (
+          <p className="text-sm text-blue-700">
+            An admin overrode this result
+            {verification.adminOverrideReason
+              ? `: ${verification.adminOverrideReason}`
+              : "."}
+          </p>
+        )}
+      </div>
     </div>
   );
 }
