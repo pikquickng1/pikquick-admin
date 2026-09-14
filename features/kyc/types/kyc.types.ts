@@ -34,6 +34,22 @@ export interface DiditFindings {
   warnings: string[];
 }
 
+/**
+ * The runner's overall verification state, across every required document.
+ *
+ * Distinct from the status of the document being reviewed. Showing only the
+ * document made the dashboard look self-contradictory: two approved documents
+ * read as "verified" here while the runners table still said "pending",
+ * because a third required document had never been submitted.
+ */
+export interface RunnerVerificationSummary {
+  status: KycStatus | "unverified" | null;
+  requiredTotal: number;
+  verifiedCount: number;
+  /** Required document types not yet verified, by name. */
+  outstanding: string[];
+}
+
 export interface KYCVerification {
   id: string;
   runnerName: string;
@@ -49,6 +65,7 @@ export interface KYCVerification {
   adminOverride?: boolean;
   adminOverrideReason?: string | null;
   didit?: DiditFindings | null;
+  runnerVerification?: RunnerVerificationSummary | null;
 }
 
 export interface KYCListFilters {

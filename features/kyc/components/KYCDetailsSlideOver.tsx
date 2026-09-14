@@ -221,6 +221,8 @@ function KYCVerificationBody({
         </div>
       </div>
 
+      <RunnerVerificationPanel verification={verification} />
+
       <DiditFindingsPanel verification={verification} />
 
       {isResubmission && verification.rejectionReason && (
@@ -319,6 +321,49 @@ function DocumentCard({
  * on its own. Without the scores and warnings a reviewer is being asked to
  * re-adjudicate with strictly less information than the machine had.
  */
+/**
+ * Where this runner stands overall, not just on the document being reviewed.
+ *
+ * Approving a document does not verify a runner: the profile only flips once
+ * every required type is verified. Without this, a reviewer saw "verified"
+ * against two documents and had no way to know a third had never been
+ * submitted — while the runners table said "pending" and looked like a bug.
+ */
+function RunnerVerificationPanel({ verification }: { verification: KYCVerification }) {
+  const summary = verification.runnerVerification;
+  if (!summary) return null;
+
+  const complete =
+    summary.requiredTotal > 0 && summary.verifiedCount === summary.requiredTotal;
+
+  return (
+    <div>
+      <h3 className="text-base font-semibold text-text-primary mb-3">
+        Runner Verification
+      </h3>
+      <div
+        className={`rounded-lg p-4 ${complete ? "bg-green-50" : "bg-amber-50"}`}
+      >
+        <p
+          className={`text-sm font-medium ${
+            complete ? "text-green-700" : "text-amber-800"
+          }`}
+        >
+          {summary.verifiedCount} of {summary.requiredTotal} required documents
+          verified
+          {summary.status ? ` — profile is ${summary.status}` : ""}
+        </p>
+        {summary.outstanding.length > 0 && (
+          <p className="text-sm text-amber-700 mt-1">
+            Still outstanding: {summary.outstanding.join(", ")}.
+            {" "}Approving this document alone will not verify the runner.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function DiditFindingsPanel({ verification }: { verification: KYCVerification }) {
   const method = verification.verificationMethod ?? "manual";
   if (method === "manual" && !verification.didit) return null;
